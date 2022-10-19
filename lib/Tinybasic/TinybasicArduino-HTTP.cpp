@@ -363,7 +363,7 @@ char autorun() {
 #if defined(FILESYSTEMDRIVER) // || ! defined(ARDUINO) /*spuggy0919*/
 /* on a POSIX or DOS platform, we check the command line first and the autoexec */
 // #ifndef ARDUINO  /*spuggy0919*/
-    if (bargc > 0) {
+    if (bargc > 1) { /* bug cmd argc=2 with argv[1]*/
         if (ifileopen(bargv[1])) {
           	xload(bargv[1]);
   		    st=SRUN;
