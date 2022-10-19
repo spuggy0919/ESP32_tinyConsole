@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>ESP WebSocket Console </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body >
+    <div class="topnav">
+      <h1>ESP WebSocket Console</h1>
+    </div>
+    <div class="content" >
+        <!-- Control textarealog .  Begin  rows='15' cols="24"  -->
+        <div class="card" style = "background-color: eef2c1;">
+          <p class="card-title">Monitor</p>
+          <p><textarea  id="terminal" name="review" style="font-size:10px;" rows='20' cols="40" 
+            onkeypress="textKeypress(event)" onkeydown="textKeydown(event)" onkeyup="textKeyup(event)">%</textarea></p>
+          <div>
+            <select name="selectio" id="rcselect" onchange = "updateRowCol(this)" style="width:100px">
+              <option id="rc5x16">5x16</option>
+              <option id="rc10x32">10x32</option>
+              <option id="rc15x48">15x48</option>
+              <option id="rc25x80">25x80</option>
+              <option id="rc30x96">30x96</option>
+              <option id="rc35x102">35x102</option>
+              <option id="rc40x118">40x118</option>
+            </select>     
+            <select name="selectio" id="idselect" onchange = "updateStyle(this)" style="width:100px">
+              <option id="font10">10</option>
+              <option id="font15">15</option>
+              <option id="font20">20</option>
+              <option id="font25">25</option>
+              <option id="font30">30</option>
+              <option id="font30">35</option>
+            </select>      
+            <input type="checkbox" id="scales" name="scales" onclick='scrollchecked(this);' checked >
+            <label for="scales">scroll</label>
+          <!--     <input type="checkbox" id="scales" name="scales" onclick='terminallinemode(this);' checked >
+            <label for="scales">linemode</label>-->
+            <button name="ctrlcBtn" value="ctrlcBtn" onclick="CTRLCKey('terminal')" class="button-on">ctrl-c</button>
+            <!-- upload begin -->
+             <form id= "upload-form"  name = "upload-form"  method="POST" action="/upload"  enctype="multipart/form-data" >
+              <input  name="uploadbtn" value="uploadbtn" type="file"  multiple="true">
+              <button type="submit" onclick="uploadfile(this)" class="button-on">upload</button>
+            <!-- upload end -->
+            <!-- upload begin
+
+              <div class="upload-container">
+                <input type="file" id="file_upload"  multiple="true">
+              </div> <br>
+              <button class="upload-btn">Submit</button>        
+           upload end -->
+
+              <!--           upload</button>
+  label to change style log . <label name="text" ></label> Endding  
+            
+              <input type="file" name="data" /><input type="submit" name="upload" value="Upload" title="Upload" >-->
+             
+          </div>
+         
+        </div>
+        <!-- Control textarea log .  Endding -->
+        <!-- Control textarealog .  Begin 
+        <div class="card" style = "background-color: #eef2c1;">
+          <p class="card-title">Web Serial Monitor</p>
+          <p><textarea  id="consolelog" name="review" style="font-size:10px;"></textarea></p>
+          <div> -->
+      
+          <!--  <input type="checkbox" id="scroll" name="scroll" onclick='scrollchecked(this);' checked >
+            <label for="scroll">scroll</label>
+          
+                <button name="clearbtn" value="clearbtn" onclick="clearTextarea('consolelog')" >clear</button>
+            
+                  upload</button>
+      label to change style log . <label name="text" ></label> Endding  
+            
+              <input type="file" name="data" /><input type="submit" name="upload" value="Upload" title="Upload" >
+              <button type="submit">upload</button>-->
+          <!--  </div>
+        
+        </div> 
+               Control textarealog .  Ending -->
+
+    </div>
+  <!-- Control textarea log .  Endding -->
+        <script>
+
+            function sendTime() { // client set ESP32 timer
+                console.log("sendTime");
+
+                const date= new Date();
+                var xhr = new XMLHttpRequest();
+                //xhr.open("POST", "/"timer?value="+"element.value, true); 
+                console.log(date);
+                xhr.open("POST", "/param?timer=" + date.getTime(), true); 
+                xhr.send();
+            }           // download {
+            // active time interval task to retrieve output from host, if Host is passive mode
+
+           function  downloadFile(e){
+                   // Create anchor element.
+                   console.log("download");
+                   console.log(e.data);
+                   var a = document.createElement('a'); 
+                    // Create the text node for anchor element.
+                    var link = document.createTextNode(e.data);
+                  // Set the title.
+                  a.title = "This is Link"; 
+                                    
+                  // Set the href property.
+                  a.href = e.data;
+                  a.download = e.data; 
+            
+                  // Append the anchor element to the body.
+                  // document.body.appendChild(a);                   // Append the text node to anchor element.
+                  a.appendChild(link); 
+                  a.click();
+                  // document.body.removeChild(a);
+                  console.log(a);
+
+          }
+ 
+          function uploadfile(element) {
+            var form = document.getElementById('upload-form');
+            form.onsubmit = function () {
+                var formData = new FormData(form);
+                formData.append('file', file);
+                var xhr = new XMLHttpRequest();
+              
+                // Add any event handlers here...
+                xhr.open('POST', form.getAttribute('action'), true);
+                xhr.send(formData);
+              
+                // false To avoid actual submission of the form
+                return false;
+            }
+          }
+          // for terminal shell
+            // SSE output console
+            var editor = document.getElementById("terminal");
+            editor.addEventListener('compositionend',function(e){
+                console.log('text compostionend');
+                console.log(e.data);
+                wsSentChar(e.data);
+            });
+            var eventk = new CompositionEvent('compositionend');
+            var terminalLineMode = true;
+            var scrollcheck = true;
+            var shiftkey = false;
+            var controlkey = false;
+            var altkey = false;
+            function  disabledefault(event){
+              // event.preventDefault(); // prevent enter behavior for correct prompt cursor
+    
+            }
+            var linebuf = "";
+            let  cacheLineBuf = new Array("");
+            let  cacheIndex = 0;
+
+            function textKeydown(event){
+              var key =  event.keyCode;
+                console.log("D:"+key);
+                switch(key){
+                  case 16:// shift
+                    shiftkey = true;
+                    break;
+                  case 17:// shift
+                    controlkey = true;
+                    break;
+                  case 18:// shift
+                    altkey = true;
+                    break;
+                  case 37://left
+                    event.preventDefault(); // prevent enter behavior for correct prompt cursor
+                    break;                    
+                  case 38:// up
+                    event.preventDefault(); // prevent enter behavior for correct prompt cursor
+                    break;    
+                  case 39:// right 
+                    // event.preventDefault(); // prevent enter behavior for correct prompt cursor
+                    break;    
+                  case 40: // down
+                    // event.preventDefault(); // prevent enter behavior for correct prompt cursor
+                    break;   
+                  case 8: // backspace
+                    break;   
+                     
+                 }
+            }
+
+            function textKeyup(event){
+              var key =  event.keyCode;
+              var t = document.getElementById("terminal");
+                console.log("u:"+key);
+                switch(key){
+                  case 16:// shift
+                    shiftkey = false;
+                    break;
+                  case 17:// shift
+                    controlkey = false;
+                    break;
+                  case 18:// shift
+                    altkey = false;
+                    break;
+                  case 8:// backspace
+                    altkey = false;
+                    linebuf=linebuf.slice(0, -1);
+                    break;
+                  case 38: // up
+                    if (cacheIndex>0) cacheIndex--;
+                    linebuf = cacheLineBuf.at(cacheIndex);
+                    console.log(cacheLineBuf);
+                    console.log(linebuf);
+                    
+                    t.value = t.value.slice(0,terminalData)+ linebuf;
+                    return;
+                  case 40: // down
+                    if (cacheIndex<cacheLineBuf.length-1) cacheIndex++;
+                    console.log(cacheLineBuf);
+                    console.log(linebuf);
+                    linebuf = cacheLineBuf.at(cacheIndex);
+                    t.value = t.value.slice(0,terminalData)+ linebuf;
+                    return;
+                  }
+                }
+                String.prototype.hexEncode = function(){
+                    var hex, i;
+
+                    var result = "";
+                    for (i=0; i<this.length; i++) {
+                        hex = this.charCodeAt(i).toString(16);
+                        result += ("000"+hex).slice(-4);
+                    }
+
+                    return result;
+                }
+                String.prototype.convertToHex = function (delim) {
+                         return this.split("").map(function(c) {
+                         return ("0" + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(delim || "");}
+            function textKeypress(event){
+              var key =  event.keyCode;
+                c = String.fromCharCode(key);
+                console.log(key);
+                console.log(linebuf.length);
+                if ( (c == 127 || c == 8) && linebuf.length>1) {
+                  linebuf.text(linebuf.text().slice(0, -1));
+                  console.log(c);
+                  console.log(linebuf);
+                  return ; 
+                }
+                if (c == '\r' || c == '\n'|| c == ' ' || c == -1 || c=='#' || c=='\x1b' || c=='\x03'){
+                  if ( c == '\r') {
+                     event.preventDefault();
+                     // linebuf = linebuf.concat('\n');
+                  }
+                  if (c == '\r' || c == '\n') linebuf = linebuf.concat('\n');
+                  if (c == '#' || c == '\x1b' ||c == '\x03' || c == ' ' ) linebuf = linebuf.concat(c);
+
+                  console.log(linebuf);
+                  // console.log(ascii_to_hexa(linebuf));
+                  console.log(linebuf.hexEncode());
+                  console.log(linebuf.convertToHex(" "));
+                  if (c=='\r' || c == '#' || c == '\x1b' ||c == '\x03'){
+                    // if (terminalLineMode ) {
+                        if (linebuf.length>1 && linebuf.slice(0,1)=="\0xd"){
+                          console.log("ledaing xd found");
+                        }
+                         wsSentChar(linebuf);
+                        if (linebuf.length>=2) { // more than one key 
+                          cacheLineBuf.pop();
+                          if (cacheLineBuf.length>=25) {
+                            cacheLineBuf.shift();
+                          }
+                          cacheLineBuf.push(linebuf.slice(0,-1));  // add cacheBuffer
+                          cacheLineBuf.push("");  // add cacheBuffer
+                         // cacheIndex = cacheLineBuf.length;
+                          console.log(cacheLineBuf);
+                          cacheIndex = cacheLineBuf.length-1;
+                        }
+                    // }else{
+                    //     console.log("char mode");
+                    //     wsSentChar(linebuf);
+                    // }
+                    linebuf = "";                  
+                  } 
+              
+
+                  // linebuf = linebuf.concat('\x0a');
+
+                  // event.preventDefault(); // prevent enter behavior for correct prompt cursor
+                  // console.log("enter:");
+                  // var text = document.getElementById("terminal").value;
+                  // var lines = text.split('\n');
+                  // var last = lines[lines.length-1].replace(/[\r|\n|%]+/g,"");
+                  // console.log(lines);
+                  // console.log(last);
+                  // document.getElementById("terminal").value = text ;
+                  // document.getElementById("terminal").scrollTop = document.getElementById("terminal").scrollHeight;
+                 
+                  // var xhr = new XMLHttpRequest();
+                  // //xhr.open("POST", "/"param?gpio="+"element.value, true); 
+                  // xhr.open("POST", "/param?cmd="+lines[lines.length-1], true); 
+                  // xhr.send();
+                }else{
+                  linebuf = linebuf.concat(c);
+                }
+          
+                console.log(typeof linebuf);
+                console.log(linebuf);
+              
+              }
+            
+            function clearTextarea(byid) {
+              document.getElementById(byid).value = "";
+              document.getElementById("consolelog").value = ""; 
+              wsSentChar("\n"); // enter for terminal
+            }
+            function CTRLCKey() {             
+              wsSentChar("\x03\n"); // enter for terminal
+            }     
+            function scrollchecked() {
+              scrollcheck = ! scrollcheck;
+            }
+            function terminallinemode() {
+              terminalLineMode = ! terminalLineMode;
+            }
+            function checkEscCommand(seq){
+                console.log("ESC check");
+                var eschex = seq.convertToHex();
+                console.log(seq.hexEncode());
+                if (eschex == "1b5b324a") {
+                  console.log("ESC Found");
+                  return true;
+                }
+                return false;
+            }
+            function updateTextarea(txt) {
+                var txtValue = document.getElementById("terminal").value;
+                var inmsg= window.atob(txt);
+                console.log("terminal");
+                console.log(inmsg);
+                if (checkEscCommand(inmsg)) { // clear screen
+                   document.getElementById("terminal").value = "";
+                }else{
+                   document.getElementById("terminal").value += inmsg ;
+                }
+                terminalData = document.getElementById("terminal").value.length; // keep data before keyin
+
+                if (scrollcheck){
+                  document.getElementById("terminal").scrollTop = document.getElementById("terminal").scrollHeight;
+                }
+            }
+            function updateConsoleLog(txt) {
+                var txtValue = document.getElementById("consolelog").value;
+                console.log("consolelog");
+                console.log(txtValue);
+                document.getElementById("consolelog").value += window.atob(txt) ;
+                if (scrollcheck){
+                  document.getElementById("consolelog").scrollTop = document.getElementById("consolelog").scrollHeight;
+                }
+            }
+            // change Textarea Style
+            function updateRowCol(element) {
+              var rowcol = document.getElementById("rcselect").value;
+                    // var selectValue = document.getElementById("terminal").value;
+                    var rowcols = rowcol.split('x');
+                    console.log(rowcol);
+                    console.log(rowcols);
+                    console.log(rowcols[0]);
+                    console.log(rowcols[1]);
+                    document.getElementById("terminal").style.height = (parseInt(rowcols[0])*2).toString+"em";
+                    document.getElementById("terminal").style.width =  rowcols[1]+"em";            
+                    document.getElementById("consolelog").style.height  =  (parseInt(rowcols[0])*2).toString+"em";                 
+                    document.getElementById("consolelog").style.width  =  rowcols[1]+"em";
+            }
+            function updateStyle(element) {
+                    var fontsize = document.getElementById("idselect").value;
+                    var selectValue = document.getElementById("terminal").value;
+                    document.getElementById("terminal").style = "font-size:" + fontsize + "px;";
+                    document.getElementById("consolelog").style = "font-size:" + fontsize + "px;";
+            }
+// websocket protocol
+var gateway = `ws://${window.location.hostname}/ws`;
+var websocket;
+window.addEventListener('load', onload);
+
+var charbuf;
+function onload(event) {
+    initWebSocket();
+
+}
+function initWebSocket() {
+    console.log('Trying to open a WebSocket connection…');
+    websocket = new WebSocket(gateway);
+    websocket.onopen = onOpen;
+    websocket.onclose = onClose;
+    websocket.onmessage = onMessage;
+    // setInterval(wsGetCharRequest, 200);
+  //  setInterval(wswsPingRequest, 1000);
+
+}
+function wswsPingRequest(){
+    if (!websocket) return;
+    // if (websocket.readyState!==1) return;
+    websocket.send("P:Hello World!");
+
+}
+function wsGetCharRequest(){
+  if (!websocket) return;
+    websocket.send("R:");
+
+}
+function wsSentChar(key){ // send textarea keyin 
+  if (!websocket) return;
+  console.log("key");
+  console.log(key.length);
+    console.log("X:"+key);
+    websocket.send("X:"+key);
+
+}
+
+
+
+function onOpen(event) {
+    console.log('Connection Websocket opened');
+    // getValues();
+    sendTime();
+    editor.dispatchEvent(eventk); // check editor for IME
+
+}
+
+function onClose(event) {
+    console.log('Connection Websocket closed');
+    setTimeout(initWebSocket, 2000);
+}
+
+
+function onMessage(event) {
+    console.log(event.data);
+    var msg = event.data;
+    var lines= msg.split(":");
+    switch(lines[0]){
+      case "0":
+       updateTextarea(lines[1]);
+        break;
+      case "1":
+        updateConsoleLog(lines[1]);
+      break;
+    }
+    // if (lines[0]=="0") {
+      // updateTextarea(lines[1]);
+    // }else{
+    //   updateConsoleLog(lines[1]);
+    // }
+}
+
+// WS endding -----
+
+//  Server Sent Event (SSE) Listener Handle      
+          if (!!window.EventSource) {
+          var source = new EventSource('/events');
+  
+          source.addEventListener('Eventdoownload', function(e) {
+              console.log("e:downloadFile"+e.data);
+              downloadFile(e)
+          }, false);
+          
+          // log textare show eventlog ouput 
+          var linebuf;
+          source.addEventListener('textarea', function(e) {
+            // console.log("textarea", e.data);
+         //   if (linebuf.indexOf("\r") > 0){
+  
+          //  }
+            var datastream = window.atob(e.data);
+            console.log(e.data);
+            console.log(datastream);
+         //   document.getElementById("terminal").value += datastream ;
+            if (scrollcheck){
+              document.getElementById("terminal").scrollTop = document.getElementById("terminal").scrollHeight;
+            }
+          }, false);
+        }
+        // SSE end
+      </script>
+  </body>
+</html>

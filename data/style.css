@@ -1,0 +1,228 @@
+html {
+  font-family: Arial, Helvetica, sans-serif; 
+  display: inline-block; 
+  text-align: center;
+}
+
+h1 {
+  font-size: 1.8rem; 
+  color: white;
+}
+
+p { 
+  font-size: 1.4rem;
+}
+
+.topnav { 
+  overflow: hidden; 
+
+  background-color: #370c58;
+}
+
+body {  
+  margin: 0;
+}
+
+.content { 
+  padding: 2%;
+}
+
+.card-grid { 
+  max-width: 900px; 
+  width: auto;
+
+  margin: 0 auto; 
+  display: grid; 
+  grid-gap: 2rem; 
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.card { 
+  background-color: white; 
+  border-radius: 10px;
+  width: auto;
+  box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5);
+}
+
+.card-title { 
+  font-size: 1.0rem;
+  font-weight: bold;
+  color: #483b9b
+}
+.fit-picture {
+  width: 64px;
+  height: auto;
+}
+textarea {
+  width: 80em;
+  height: 25em;
+  padding: 20px 20px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #000000;
+  color: #f0f0f0;
+  font-size: 25px;
+  resize: none;
+
+}
+input[type=submit] {
+  border: none;
+  color: #FEFCFB;
+  background-color: #034078;
+  padding: 15px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  width: 100px;
+  margin-right: 10px;
+  border-radius: 4px;
+  transition-duration: 0.4s;
+  }
+
+input[type=submit]:hover {
+  background-color: #1282A2;
+}
+
+input[type=text], input[type=number], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 18px;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+
+label {
+  font-size: 1.2rem; 
+}
+.value{
+  font-size: 1.2rem;
+  color: #1282A2;  
+}
+.state {
+  font-size: 1.2rem;
+  color: #1282A2;
+}
+/* This is button style*/
+button {
+  border: none;
+  color: #FEFCFB;
+  padding: 8px 8px;
+  text-align: center;
+  font-size: 15px;
+  width: 85px;
+  height: 40px;
+  border-radius: 4px;
+  transition-duration: 0.4s;
+  border-radius: 12px;
+}
+.button-on {
+  background-color: #483b9b;
+}
+.button-on:hover {
+  background-color: #1282A2;
+}
+.button-off {
+  background-color: #858585;
+}
+.button-off:hover {
+  background-color: #252524;
+} 
+.button-trigger {
+  background-color: #434078;
+}
+.button-trigger:hover {
+  background-color: #5282A2;
+}
+
+
+/* This is a slider switch input type=checkbox*/
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  top: 2px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input[type= checkbox]:checked + .slider {
+  background-color: green;
+}
+
+input[type= checkbox]:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+
+/* The slider itself input range */
+input[type="range"]{
+  width:200px;
+  height:16px;
+  outline : none;
+  background:none;
+}
+
+input[type="range"]::-moz-range-track{
+  height:4px;
+  background:#edc;
+  border:none;
+}
+
+input[type="range"]::-moz-range-thumb{
+  width:10px;
+  height:10px;
+  background:#f22;
+  border:none;
+  border-radius:50%;
+}
+
+input[type="range"]::-moz-range-thumb:hover,input[type="range"]:active::-moz-range-thumb{
+  width:16px;
+  height:16px;
+}
+
+input[type="range"]::-moz-range-progress{
+  height:4px;
+  background:#f22;
+}
+
+input[type="range"]::-moz-focus-outer{
+  border:none;    /* 去除 focus 時候的外框虛線 */
+}
