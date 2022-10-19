@@ -116,7 +116,7 @@ Hello World
 
 ```
 # Demo
-![Demo](png/TinyConsole.mov)
+![Demo](png/tinyConsoleDemo.mov)
 
 ### TinyConsole built in TinyBasic, I have not run all examples yet!
 
