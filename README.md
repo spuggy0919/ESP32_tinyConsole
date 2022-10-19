@@ -5,7 +5,7 @@ ESP32 Web Server (tinyConsole) use me-no-dev/ESPAsyncWebServer, bases on WebSock
 
 ## Functions
   
-1. borwser LittleFS File System of ESP32.
+1. browser LittleFS File System of ESP32.
 2. upload or download file to File System.
 3. You can use Phone APP, Pad App to edit program, then upload for running on ESP32 Board.
 4. TinyBasic Program can be upload to LittleFS, and run by TinyBasic Interpreter.
@@ -131,4 +131,4 @@ for example LED pin 2 , EN button pin 0, and ESP32 3.3V.
 
 # Good Luck！ 
 
-# [Back to Top](../README.md)
+[Back to top](#)
