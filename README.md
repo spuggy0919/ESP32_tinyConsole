@@ -87,7 +87,7 @@ WebServerGPIOControl Starting...
 #  Login Console, Copyright Notices.
 ![login](png/login.png)
 
-#  輸入 help enter, 目前指令有分大小寫不要打錯。
+#  Keyin help enter, these command is simple and case sensitive, they are still awkward.
 ```
 %help [enter]
 ```
