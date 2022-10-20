@@ -87,17 +87,17 @@ WebServerGPIOControl Starting...
 #  Login Console, Copyright Notices.
 ![login](png/login.png)
 
-#  Keyin help enter, these command is simple and case sensitive, they are still awkward.
+#  Keyin help enter, these command are simple, case sensitive, and still awkward.
 ```
 %help [enter]
 ```
 ![Help](png/help.png)
-####  upload Select button then dialog showup，selected, click Upload button.
+####  upload, click Select file button then dialog show up, file selected, click Upload button.
 ####  dl file for download file to client。
 ```
 %dl hello.bas [enter]
 ```
-####  Run TinyBasic instructions。
+####  Run TinyBasic interpreter, use "TinyBasic" or "tb", then '>' in Tinybasic Interactive mode.
 ```
 %TinyBasic hello.bas [enter]
 ```
@@ -109,14 +109,14 @@ Hello World
 100 PRINT "Hello World"
 > save "h.bas" 
 > new
-> load "blinkwod.bas"   // blink on ESP32 
-> run                   // press '#' for break
->Crtl-C                 // press 'Crtl-C ' back to tinyConsole
+> load "blinkwod.bas"   // blink basic example for ESP32 
+> run                   // press '#' for break running loop
+>Crtl-C                 // press 'Crtl-C ' back to tinyConsole prompt '%' shell mode
 %
 
 ```
 # Demo
-![Demo](https://youtu.be/u21vfK_kkIA)
+[Demo](https://youtu.be/u21vfK_kkIA)
 
 ### TinyConsole built in TinyBasic, I have not run all examples yet!
 
