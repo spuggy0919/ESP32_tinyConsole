@@ -125,7 +125,7 @@ Blink example
 %tb blinkwod.bas
 ```
 # Demo
-[Demo](https://youtu.be/u21vfK_kkIA)
+[Demo](https://youtu.be/75JKm-M19pE)
 
 ### TinyConsole built in TinyBasic, I have not run all examples yet!
 
