@@ -199,7 +199,7 @@ bool WSTransferBufferTaskInit(int wi){
     // }
     bool ret = xTaskCreate(WSTransferBufferTask,"WSTxTask",4096,NULL,2,&vTaskBufferHandle);  
     Serial.println("task Create with Queue...");
-    vTaskStartScheduler();
+    // vTaskStartScheduler();
 
     return ret;
 }
