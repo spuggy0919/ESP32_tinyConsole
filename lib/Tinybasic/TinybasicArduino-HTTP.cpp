@@ -6922,8 +6922,8 @@ int tbloop() {
 	iodefaults();
 
 /* the prompt and the input request */
-//	printmessage(MPROMPT); /*spuggy0919*/
-          wsTextPrint("> ");
+	printmessage(MPROMPT); /*spuggy0919*/
+        //   wsTextPrint("> ");
 
     // WSTransferBufferFlush(0); /*spuggy0919*/
 	
