@@ -21,8 +21,8 @@
  */
 
 //Variables to save values from HTML form
-String ssid = WIFISSID;   // modfied for STA mode
-String pass = PASSWORD; // modfied for STA mode
+String ssidname = WIFISSID;   // modfied for STA mode
+String password = PASSWORD; // modfied for STA mode
 String ip = LOCAL_IP; // modfied for STA static ip mode
 String gateway = GATEWAY; // modfied for STA static ip mode
 
@@ -53,16 +53,16 @@ bool WiFiInit(int mode,...)
       r = WiFiAP();
       break;
     case WIFI_STA_AUTO_MODE:
-        ssid = String (va_arg ( arguments, const char* ));
-        pass = String (va_arg ( arguments, const char* ));
+        ssidname = String (va_arg ( arguments, const char* ));
+        password = String (va_arg ( arguments, const char* ));
         r = WiFiSTAAutoIP();
       break;
     case WIFI_STA_STATIC_MODE:
-        ssid = String (va_arg ( arguments, const char* ));
-        pass = String (va_arg ( arguments, const char* ));
+        ssidname = String (va_arg ( arguments, const char* ));
+        password = String (va_arg ( arguments, const char* ));
         ip = String (va_arg ( arguments, const char* ));
         gateway = String (va_arg ( arguments, const char* ));
-        r = WiFiSTAStaticIP(ssid, pass, ip, gateway);
+        r = WiFiSTAStaticIP(ssidname, password, ip, gateway);
       break;
     default: r=false;
           break;
@@ -76,7 +76,7 @@ bool WiFiInit(int mode,...)
 bool WiFiSTAAutoIP() 
 {
      Serial.println("WiFiSTA() AutoMode ");
-     return WiFiSTAStaticIP(ssid, pass, "", "");
+     return WiFiSTAStaticIP(ssidname, password, "", "");
 }
 bool WiFiSTAStaticIP(String ssid,String pass,String ip, String gateway) {
   Serial.println("WiFiSTAStatic(ssid "+ ssid +",pwd "+ pass +",ip"+ ip +", gw "+ gateway +") ");

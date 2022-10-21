@@ -402,15 +402,19 @@
 #define ILI_DC 27
 #define ILI_RST 14
 #define ILI_LED 26
+#define SDA_PIN 21 /*spuggy0919*/
+#define SCL_PIN 22 /*spuggy0919*/
 #undef USESPICOSERIAL
 #define HTTPWSSERIAL	/*spuggy0919*/
 #undef ESPSPIFFS			
 #define ESPLITTLEFS				/*spuggy0919*/
-#define DISPLAYCANSCROLL
+#undef DISPLAYCANSCROLL
 #undef ARDUINOILI9488 /*spuggy0919*/
-#undef ARDUINOEEPROM/*spuggy0919*/
-#undef ARDUINOMQTT/*spuggy0919*/
-#undef ARDUINOWIRE/*spuggy0919*/
+#define ARDUINOSSD1306 /*spuggy0919*/
+#undef ARDUINOEEPROM 
+#undef  ARDUINOMQTT
+#define ARDUINOWIRE/*spuggy0919*/
+#undef STANDALONE  /*spuggy0919 no PS2 Keyboad*/
 #endif
 
 /* a board based on the Arduino MKR 1010 Wifi 
@@ -1029,7 +1033,9 @@ U8G2_SSD1306_128X32_UNIVISION_F_SW_I2C u8g2(U8G2_R0, SCL, SDA, U8X8_PIN_NONE);
 #ifdef ARDUINO_heltec_wifi_lora_32_V2
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16); 
 #else 
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, SCL, SDA, U8X8_PIN_NONE); 
+// U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, SCL, SDA, U8X8_PIN_NONE); 
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); //  22, 21, Arduino搭配SSD1306(0.96" OLED)用這行
+
 #endif
 #endif
 const char dspfontsize = 8;
@@ -1949,6 +1955,9 @@ void netbegin() {
   Ethernet.begin(mac);
 #else  
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
+#ifdef HTTPWSSERIAL  /*spuggy0919 it has actived by HTTPWSSERIAL*/ 
+	return ;
+#endif 
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(ssid, password);
 	WiFi.setAutoReconnect(true);
@@ -1965,6 +1974,9 @@ void netbegin() {
  * 
  */
 void netstop() {
+#ifdef HTTPWSSERIAL  /*spuggy0919 it should be actived by HTTPWSSERIAL*/ 
+	return ;
+#endif 
 #ifdef ARDUINOETH
 /* to be done */
 #else  
@@ -1982,6 +1994,9 @@ void netstop() {
  * 
  */
 void netreconnect() {
+#ifdef HTTPWSSERIAL  /*spuggy0919 it should be actived by HTTPWSSERIAL*/ 
+	return ;
+#endif 
 #ifdef ARDUINOETH
 /* */
 #else 
@@ -2003,6 +2018,9 @@ void netreconnect() {
  * repeated reconnects
  */
 char netconnected() {
+#ifdef HTTPWSSERIAL  /*spuggy0919 it should be actived by HTTPWSSERIAL*/ 
+	return true;
+#endif 
 #ifdef ARDUINOETH
   return bethclient.connected();
 #else
@@ -2440,8 +2458,10 @@ char tmpfilename[10+SBUFSIZE];
 /* add the prefix to the filename */
 char* mkfilename(const char* filename) {
 	short i,j;
+	Serial.printf("mkfilename=%s,%s", filename, tmpfilename); /*spuggy0919*/
+
 	for(i=0; i<10 && rootfsprefix[i]!=0; i++) tmpfilename[i]=rootfsprefix[i];
-	// tmpfilename[i++]='/'; *spuggy0919 */
+    // tmpfilename[i++]='/'; /*spuggy0919 double "//" found */
 	for(j=0; j<SBUFSIZE && filename[j]!=0; j++) tmpfilename[i++]=filename[j];
 	tmpfilename[i]=0;
 		Serial.printf("mkfilename=%s",tmpfilename); /*spuggy0919*/
@@ -2451,10 +2471,21 @@ char* mkfilename(const char* filename) {
 
 /* remove the prefix from the filename */
 const char* rmrootfsprefix(const char* filename) {
-	short i=0;
-	while (filename[i] == rootfsprefix[i] && rootfsprefix[i] !=0 && filename[i] !=0 ) i++;
-	if (filename[i]=='/') i++;
-	Serial.printf("rmrootfsprefix=%s",filename[i]); /*spuggy0919*/
+	short i=0; 
+	// return &filename[i];
+	// Serial.printf("rmrootfsprefix=%s,%s",rootfsprefix,filename); /*spuggy0919*/
+
+	while (rootfsprefix[i] !=0 && filename[i] !=0   ) {
+        // Serial.printf("c comp=%c,%c",rootfsprefix[i],filename[i]); /*spuggy0919*/
+
+		if ( filename[i] == rootfsprefix[i])i++;
+		else{
+			if (filename[i]=='/') i++;
+			break; 
+		} 
+	}
+	
+	// Serial.printf("rmrootfsprefix=%s",filename[i]); /*spuggy0919*/
 	return &filename[i];
 }
 #endif
@@ -2482,7 +2513,7 @@ void fsbegin(char v) {
 		outsc("File system used "); outnumber(fs_info.usedBytes); outcr();
  	}
 #endif
-#if defined(EPSLITTLEFS)  /* spuggy0919 */
+#if defined(ESPLITTLEFS)  /* spuggy0919 */
 	Serial.println("fsbegin"); /*spuggy0919*/
  	//if (LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED) && v) {
 		Serial.printf("success %d,%d\n",LittleFS.totalBytes(),LittleFS.usedBytes());
@@ -2544,9 +2575,11 @@ void filewrite(char c) {
 char fileread(){
 	char c;
 #if defined(ARDUINOSD) || defined(ESPSPIFFS) || defined(ESPLITTLEFS) /*spuggy0919*/
+
 	if (ifile) c=ifile.read(); else { ert=1; return 0; }
 	if (c == -1 ) ert=-1;
-	Serial.printf("fileread[%2x]%c\n",c,c);
+	if (c == 0xff ) ert=-1; /* spuggy0919 EOF BUG ? S=0*/
+	// Serial.printf("fileread[%2x]%c ert=%d\n",c,c,ert);
 
 	return c;
 #endif
@@ -2565,9 +2598,10 @@ char fileread(){
 
 int fileavailable(){
 #if defined(ARDUINOSD) || defined(ESPSPIFFS) || defined(ESPLITTLEFS) /*spuggy0919*/
-	 Serial.printf("fileavailable[%4x]\n",ifile.available());
-
-	return ifile.available();
+	//  Serial.printf("fileavailable[%4x]\n",ifile.available());
+	int len = ifile.available();
+	if (len == 0) { ert=-1;}  /*EOF BUG? Spuggy0919*/
+	return len;
 #endif
 #ifdef RP2040LITTLEFS
 	return !feof(ifile);
@@ -2701,9 +2735,10 @@ int rootnextfile() {
 #endif
 #ifdef ESPLITTLEFS /*spuggy0919*/
 	file=root.openNextFile();
-	Serial.printf("openNextFile[%4x]\n",file);
-	Serial.printf("name=%s,size=%d,isDir%s\n",file.name(),file.size(),(file.isDirectory())?"Yes":"NO");
-
+	// if (file) {
+	// 	Serial.printf("openNextFile[%4x]\n",file);
+	// 	Serial.printf("name=%s,size=%d,isDir%s\n",file.name(),file.size(),(file.isDirectory())?"Yes":"NO");
+	// }
 	return (file != 0);
 #endif
 #ifdef ESPSPIFFS
@@ -2764,9 +2799,10 @@ const char* rootfilename() {
  return rmrootfsprefix(file.name());
 #endif
 #ifdef ESPLITTLEFS
+	// Serial.printf("name=%s,size=%d,isDir(%s)\n",file.name(),file.size(),((file.isDirectory())?"true":"false"));
+
 	const char * fname = rmrootfsprefix(file.name());
-	Serial.printf("rmrootfsprefix(%s)\n",fname);
-	Serial.printf("name=%s,size=%d,isDir(%s)\n",file.name(),file.size(),((file.isDirectory())?"true":"false"));
+	// Serial.printf("rmrootfsprefix(%s)\n",fname);
  return fname;
 #endif 
 #ifdef ESPSPIFFS
@@ -2792,7 +2828,7 @@ const char* rootfilename() {
 }
 
 int rootfilesize() {
-#if defined(ARDUINOSD) || defined(ESPSPIFFS) 
+#if defined(ARDUINOSD) || defined(ESPSPIFFS) || defined(ESPLITTLEFS)
   return file.size();
 #endif  
 #ifdef RP2040LITTLEFS
@@ -2805,7 +2841,7 @@ int rootfilesize() {
 
 void rootfileclose() {
 #if defined(ARDUINOSD) || defined(ESPSPIFFS) || defined(ESPLITTLEFS) /*spuggy0919*/
-		Serial.printf("rootfileclose[%4x]name=%s\n",file,file.name());
+		// Serial.printf("rootfileclose[%4x]name=%s\n",file,file.name());
   		file.close();
 #endif 
 #ifdef RP2040LITTLEFS
@@ -2819,7 +2855,7 @@ void rootclose(){
   root.close();
 #endif
 #ifdef ESPLITTLEFS /*spuggy0919*/
-		Serial.printf("rootfileclose[%4x],name=%s\n",root,root.name());
+		// Serial.printf("rootfileclose[%4x],name=%s\n",root,root.name());
   root.close();
 #endif
 #if defined(ESPSPIFFS) && defined(ESPLITTLEFS) /*spuggy0919*/
@@ -3184,6 +3220,7 @@ short wireavailable() {
 #ifdef ARDUINOWIRESLAVE
   else return wirereceivechars; 
 #endif
+  return 0;
 }
 
 #ifdef ARDUINOWIRESLAVE

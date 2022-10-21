@@ -174,6 +174,13 @@ const char *statemsg[]={
 };
 char buf[LINE_LIMIT];
 int len = 0;
+String BannerTinyConsoleCopyRightNotice =" \
+ESP32 Websocket TinyConsole(%s) 2022/10/19 \n \
+https://github.com/spuggy0919/ESP32_tinyConsole.git \n \
+(GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007) \n \
+Author:spuggy0919 \n  \
+";
+
 String BannerMessageWithTinyBasicCopyRightNotice ="\n \
 /* \n \
  *	$Id: basic.c,v 1.138 2022/08/15 18:08:56 stefan Exp stefan $ \n \
@@ -185,20 +192,21 @@ String BannerMessageWithTinyBasicCopyRightNotice ="\n \
  *    (GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007)\n \
  *\n \
  *	Author: Stefan Lenz, sl001@serverfabrik.de\n \
- */ \
- press any key to continue, try help or ? or h \n ";
+ */ \n\
+ Press any key to continue, try help, ? or h ";
 int interpreter() {
     int ret;
     // Serial.printf("State:%s\n",statemsg[interpreterState]);
     switch(interpreterState) {
       case INTERPRETER_STARTUP:
            if (!WebWSConnect()) break;
-           wsTextPrintln("ESP32 Websocket TinyConsole (spuggy0919) 2022/10/19" +  HTTP_CONSOLE_Version);
-           wsTextPrintln("Buildin TinyBasic");
+           sprintf(buf, BannerTinyConsoleCopyRightNotice.c_str() , HTTP_CONSOLE_Version);
+           wsTextPrintln(String(buf));
+           wsTextPrintln("Buildin TinyBasic with below");
            wsTextPrintln(BannerMessageWithTinyBasicCopyRightNotice);
            _d_GetChar();
            cmd_cls(argc,argv);
-           wsTextPrintln("ESP32 Websocket TinyConsole (spuggy0919) " +  HTTP_CONSOLE_Version);
+           wsTextPrintln("ESP32 Websocket TinyConsole (Author:spuggy0919) " +  HTTP_CONSOLE_Version);
           wsTextPrint("\n%");
           interpreterCmdBuf = "";
           interpreterState = INTERPRETER_WAITING;
@@ -226,7 +234,6 @@ int interpreter() {
        case INTERPRETER_RUNNING:  
           Serial.printf("Interpreter Running...%s\n",interpreterCmdBuf.c_str());
           ret = InterpreterExcute(&interpreterCmdBuf);
-          // WSTransferBufferFlush(0) ; // empty transfer buffer; spuggy0919
           if (ret!=0) Serial.println("fail");
           interpreterState = INTERPRETER_DONE;
           break;

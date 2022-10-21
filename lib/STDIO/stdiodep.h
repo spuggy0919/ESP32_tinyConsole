@@ -24,7 +24,6 @@ int _d_isrxavailable();
 bool _d_insertrxdata(const char* data, int len);
 bool _d_fetchrxdata(char *c);
 int _d_GetChar();
-int _d_PutChar(char c);
 
 
 bool _d_inserttxdata(unsigned char* data, int len);

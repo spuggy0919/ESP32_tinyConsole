@@ -78,14 +78,21 @@ void WSSendTXT(String msg);
 static char obuf[2][BUFFERSIZE];
 static int olen[2]={0,0};
 void WSTransferBufferFlush(int wi){
-   char obuf[2][BUFFERSIZE];
-   int olen[2]={0,0};
-  //  if (ws_connect){
+
+   if (ws_connect){
+    
+
+      // Serial.printf("WS:TX:\n");
       while (!_d_gettxbuf(obuf[wi],&(olen[wi]))){
-        wsTextPrintBase64(wi,String(obuf[wi])); olen[wi]=0;
-     //   yield();
+        char c;
+        for(int i = 0 ;i <olen[wi] ;i++) {
+            c=obuf[wi][i];
+              Serial.printf("[%2x]\n ",c);
+        } 
+          {wsTextPrintBase64(wi,String(obuf[wi])); olen[wi]=0;}
+         yield();
       }
-   // }
+   }
 
 }
 
@@ -102,142 +109,7 @@ void WSTransferChar(int wi,char c){
 
 
 }
-// WSTransferBuffer(0);  ***BUG need to transfer immediately 
-// #define _FREERTOS_QUEUE_
-// #ifdef _FREERTOS_QUEUE_
-// TaskHandle_t vTaskBufferHandle= NULL;
 
-// void WSTransferBufferTask(void *pvParameters){
-//    int idx;
-//    int wi = 0 ; // to textarea 
-//    while(1) {
-//       Serial.printf("WSTransferBufferTask\n");
-//  //   WSTransferBufferFlush(0);
-//       wsTextPrintBase64(0,"hello this is task message!");
-//      vTaskDelay( 1000 / portTICK_PERIOD_MS ); 
-
-//    }
-//     // while(queueTX == NULL){
-//     //     Serial.println("Error creating the queue1");
-//     //     vTaskDelay( 50 / portTICK_PERIOD_MS ); 
- 
-//     // }
-//     //     vTaskDelay( 50 / portTICK_PERIOD_MS ); 
-//     //     Serial.println("the queueTX is ready ");
-
-//     // while(1) {
-
-//     // //  if ((*(bool *)pvParameters)) { // true websocket connect
-
-//     //     idx=0;
-//     //       if (xQueueReceive(queueTX, &(obuf[wi][idx]), 10)) {
-//     //         idx++;
-//     //       //  vTaskDelay( 10 / portTICK_PERIOD_MS ); 
-//     //         // taskENTER_CRITICAL();
-       
-//     //         if (idx>0) {
-//     //           obuf[wi][idx]=0; olen[wi]=idx;
-//     //           Serial.printf("WSTransferBuffer..%slen=%d.\n",obuf[wi],idx);
-//     //     //     vTaskDelay( 100 / portTICK_PERIOD_MS ); 
-
-//     //           wsTextPrintBase64(wi,String(obuf[wi]));  olen[wi]=0; 
-//     //         }
-//     //         //  taskEXIT_CRITICAL();
-//     //       }
-         
-
-//     //   vTaskDelay( 100 / portTICK_PERIOD_MS ); 
-//     // }
-// }
-// // static bool taskin=false;
-// bool WSTransferBufferTaskInit(int wi){
-//   // if (taskin) return true;
-//   //   taskin = true;
-//    // queueTX = xQueueCreate(BUFFERSIZE, sizeof( unsigned char ) );
-//     // if(queueTX == NULL){
-//     //     Serial.println("Error creating the queue1");
-//     //     return false;
-//     // }
-//     bool ret = xTaskCreate(WSTransferBufferTask,"WSTxTask",4096,NULL,1,&vTaskBufferHandle);  
-//     Serial.println("task Create with Queue...");
-
-//     vTaskStartScheduler();
-
-//     return ret;
-// }
-
-// void WSTransferBuffer(int wi){
-//   if (olen[wi]>0) {
-//     int len= olen[wi];
-//     obuf[wi][olen[wi]]=0; olen[wi]+=1;
-//     wsTextPrintBase64(wi,String(obuf[wi]));  olen[wi]=0;
-//     Serial.printf("vxTask:flash buffer %d\n",len);
-//   }
-// }
-// bool WSTransferBufferTaskDestroy(){
-//     if( vTaskBufferHandle!= NULL )
-//      {
-//         Serial.printf("task Delete...\n");
-//          vTaskDelete( vTaskBufferHandle);
-//          return true;
-//      }
-//      return false;
-// }
-// #else
-// void WSTransferBufferTask(void *pvParameters){
-//    int len = 0;
-//    int wi = 0 ; // to textarea 
-//    char buf[BUFFERSIZE];
-//     while(1) {
-//         len=0;
-//           if (_d_gettxbuf(buf, &len)) {    
-//             if (len>0) {
-//               Serial.printf("WSTransferBuffer..%slen=%d.\n",buf,len);
-//               wsTextPrintBase64(wi,String(buf));  
-//             }
-//             //  taskEXIT_CRITICAL();
-//           }
-
-//       vTaskDelay( 100 / portTICK_PERIOD_MS ); 
-//     }
-// }
-// static bool taskin=false;
-// TaskHandle_t vTaskBufferHandle= NULL;
-
-// bool WSTransferBufferTaskInit(int wi){
-//   if (taskin) return true;
-//     taskin = true;
-//     // queueTX = xQueueCreate(BUFFERSIZE, sizeof( unsigned char ) );
-//     // if(queueTX == NULL){
-//     //     Serial.println("Error creating the queue1");
-//     //     return false;
-//     // }
-//     bool ret = xTaskCreate(WSTransferBufferTask,"WSTxTask",4096,NULL,1,&vTaskBufferHandle);  
-//     Serial.printf("task create...1\n");
-
-//     vTaskStartScheduler();
-
-//     return ret;
-// }
-// bool WSTransferBufferTaskDestroy(){
-//     if( vTaskBufferHandle!= NULL )
-//      {
-//         Serial.printf("task Delete...\n");
-//          vTaskDelete( vTaskBufferHandle);
-//          return true;
-//      }
-//      return false;
-// }
-
-// void WSTransferBuffer(int wi){
-//   if (olen[wi]>0) {
-//     int len= olen[wi];
-//     obuf[wi][olen[wi]]=0; olen[wi]+=1;
-//     wsTextPrintBase64(wi,String(obuf[wi]));  olen[wi]=0;
-//     Serial.printf("vxTask:flash buffer %d\n",len);
-//   }
-// }
-// #endif
 // msg with base64
 void WSTransferMessage(int wi,String msg){
 
@@ -254,7 +126,6 @@ void WebSocketMessageReceive(void *arg, uint8_t *data, size_t len) {
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
     data[len] = 0;
- 
     String receive = String((const char *)data);
     String cmd =  receive.substring(0,2);
     String msg =  receive.substring(2,receive.length());
@@ -266,11 +137,11 @@ void WebSocketMessageReceive(void *arg, uint8_t *data, size_t len) {
         char c;
         for(int i = 0 ;i <msg.length() ;i++) {
             c=msg.charAt(i);
-              Serial.printf("[%2x]%c\n ",c, c);
+              Serial.printf("[%2x]\n ",c);
         }
 
       if (!_d_insertrxdata((const char*)(msg.c_str()), msg.length())){
-        Serial.printf("ERROR: WS buffer full!");
+        Serial.printf("ERROR: WS:RECV: buffer full!");
       }
     }
     if (cmd == "R:"){ // request from client 

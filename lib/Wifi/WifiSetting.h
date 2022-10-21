@@ -2,8 +2,8 @@
 #define __WIFISETTING_H__
 /* Config your WIFI MODE, SSID, PASSWORD*/
 
-#define WIFISSID    ("SSID")                 // SSID
-#define PASSWORD    ("")                  // PASSWORD, default is none.
+#define WIFISSID    ("wifi8350")                 // SSID
+#define PASSWORD    ("22320397")                  // PASSWORD, default is none.
 #define LOCAL_IP    ("192.168.5.2")       // for static sta should be matched with your router NETMASK
 #define GATEWAY     ("192.168.5.1")       // for static sta or AP
 #define NMASK       ("255.255.255.0")     // for static sta or AP
@@ -11,9 +11,9 @@
 #define WIFIAPNAME  ("ESPCONSOLE-")       // ESPCONSOLE-XXXX for AP will appen four mac chars
 
 /* Select your WIFI MODE, default AP mode*/
-#undef WIFISTAAUTO
+#define WIFISTAAUTO
 #undef  WIFISTASTATIC
-#define  WIFIAPMODE
+#undef  WIFIAPMODE
 
 #ifdef WIFISTAAUTO
     #define WIFIMODE WIFI_STA_AUTO_MODE

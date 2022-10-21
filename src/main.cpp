@@ -117,7 +117,7 @@ void loop(){
       String tstr="E:"+timerCurrent()+"\n";
       // WSTransferMessage(1,tstr);
       // if (_d_puttxline((char *)(tstr.c_str()), tstr.length())){
-      //      WSTransferBufferFlush(1);
+         //  WSTransferBufferFlush(1);
       // } 
   }
 #endif 

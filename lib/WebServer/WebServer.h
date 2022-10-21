@@ -38,7 +38,6 @@ void wsTextPrintCstr(const char *msg);
 void wsTextPrintln(String msg);
 void WebServerPage();
 void webEventTask();
-void WSTransferBuffer(int wi);
 // bool WSTransferBufferTaskInit(int wi);
 // bool WSTransferBufferTaskDestroy();
 

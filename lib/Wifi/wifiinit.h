@@ -15,8 +15,8 @@
 #include "WifiSetting.h"
 
 //Variables to save values from HTML form
-extern String ssid;
-extern String pass;
+extern String ssidname;
+extern String password;
 extern String ip;
 extern String gateway;
 

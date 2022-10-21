@@ -617,7 +617,7 @@ number_t getvar(mem_t c, mem_t d){
 			case 'O':
 				return od;
 			case 'C':
-				if (availch()) return inch(); else return 0;
+				if (availch()) return inch(); else return 0; /*spuggy0919*/
 			case 'E':
 				return elength()/numsize;
 			case 0:
@@ -1324,7 +1324,7 @@ void printmessage(char i){
 	if (i > EGENERAL) return;
 #endif
 	outsc((char *)getmessage(i));
-	WSTransferBufferFlush(0); /*spuggy0919*/
+	// WSTransferBufferFlush(0); /*spuggy0919*/
 
 }
 
@@ -1619,14 +1619,16 @@ void iodefaults() {
 
 /* the generic inch code reading one character from a stream */
 char inch() {
+	char c;
 	switch(id) {
 		case ISERIAL:
 			// Serial.printf("ISERIAL"); /*spuggy0919*/
 			return serialread();		
 #ifdef FILESYSTEMDRIVER
 		case IFILE:
-			Serial.printf("IFILEfr"); /*spuggy0919*/
-			return fileread();
+		    c = fileread();
+		    Serial.printf("IFILEfr%2x",c); /*spuggy0919 BUG EOF char*/
+			return c;
 #endif
 #ifdef ARDUINOWIRE
 		case IWIRE:
@@ -1868,11 +1870,15 @@ void outcr() {
 	if (sendcr) outch('\r');
 #endif
 	outch('\n');
+//    WSTransferBufferFlush(0) ; // output and transfer buffer; spuggy0919
+
 } 
 
 /* send a space */
 void outspc() {
 	outch(' ');
+	// WSTransferBufferFlush(0) ; // output and transfer buffer; spuggy0919
+
 }
 
 /*
@@ -1907,7 +1913,7 @@ void outs(char *ir, address_t l){
 
 			}
 	}
-    WSTransferBufferFlush(0); /*spuggy0919*/
+    // WSTransferBufferFlush(0); /*spuggy0919*/
 
 	byield(); /* triggers yield on ESP8266 */
 }
@@ -1915,7 +1921,7 @@ void outs(char *ir, address_t l){
 /* output a zero terminated string at ir - c style */
 void outsc(const char *c){
 	while (*c != 0) outch(*c++);
-	    WSTransferBufferFlush(0); /*spuggy0919*/
+	    // WSTransferBufferFlush(0); /*spuggy0919*/
 
 }
 
@@ -1929,7 +1935,7 @@ void outscf(const char *c, short f){
 		f=f-i;
 		while (f--) outspc();
 	}
-	    WSTransferBufferFlush(0); /*spuggy0919*/
+	    // WSTransferBufferFlush(0); /*spuggy0919*/
 
 }
 
@@ -4195,6 +4201,8 @@ void assignment() {
  */
 void showprompt() {
 	outsc("? ");
+	// WSTransferBufferFlush(0) ; // output and transfer buffer; spuggy0919
+
 }
 
 void xinput(){
@@ -4247,7 +4255,10 @@ nextstring:
 
 nextvariable:
 	if (token == VARIABLE) {   
-		if (prompt) showprompt();
+		if (prompt) {
+			showprompt();
+		}
+
 		if (innumber(&xv) == BREAKCHAR) {
 			st=SINT;
 			token=EOL;
@@ -4673,6 +4684,8 @@ void outputtoken() {
 	}
 
 	lastouttoken=token;
+	// WSTransferBufferFlush(0) ; // output and transfer buffer; spuggy0919
+
 }
 
 /*
@@ -5862,6 +5875,8 @@ void xcatalog() {
 				if (rootfilesize()>0) outnumber(rootfilesize()); 
 				outcr();
 				if ( dspwaitonscroll() == 27 ) break;
+				// WSTransferBufferFlush(0) ; // output and transfer buffer; spuggy0919
+
 			}
 		}
 		rootfileclose();
@@ -6658,7 +6673,6 @@ void statement(){
 				return;
 			case TLIST:		
 				xlist();
-				// WSTransferBufferFlush(0) ; // output and transfer buffer; spuggy0919
 
 				break;
 			case TNEW: 		/* return here because new input is needed */
@@ -6908,7 +6922,11 @@ int tbloop() {
 	iodefaults();
 
 /* the prompt and the input request */
-	printmessage(MPROMPT);
+//	printmessage(MPROMPT); /*spuggy0919*/
+          wsTextPrint("> ");
+
+    // WSTransferBufferFlush(0); /*spuggy0919*/
+	
 	ins(ibuffer, BUFSIZE-2);
 	// Serial.printf("dumpibuffer\n");
 	// for (int i=0;i<=ibuffer[0];i++){

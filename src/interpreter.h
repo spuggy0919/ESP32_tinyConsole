@@ -1,6 +1,6 @@
 #define __INTEPRETER_H__
 #ifdef __INTEPRETER_H__
-#define  HTTP_CONSOLE_Version (String("0.1"))
+#define  HTTP_CONSOLE_Version (String("Version 0.1"))
 #include "ESP32_8266.h"
 #include <Base64.h>
 #include "TinybasicArduino.h"
