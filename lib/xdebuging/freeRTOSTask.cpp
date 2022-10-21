@@ -191,11 +191,16 @@ bool WSTransferBufferTaskInit(int wi){
     // return true ; //not work for Task
   // if (taskin) return true;
   //   taskin = true;
-  // queueTX move to stdio startup routine in setup()
-   // queueTX = xQueueCreate(BUFFERSIZE, sizeof( unsigned char ) );
+    // queueTX = xQueueCreate(BUFFERSIZE, sizeof( unsigned char ) );
     // if(queueTX == NULL){
     //     Serial.println("Error creating the queue1");
     //     return false;
+    // }
+    // muxTX = xSemaphoreCreateMutex();
+    // if(muxTX == NULL){
+    //     Serial.println("Error creating the queue1");
+    //             return false;
+
     // }
     bool ret = xTaskCreate(WSTransferBufferTask,"WSTxTask",4096,NULL,2,&vTaskBufferHandle);  
     Serial.println("task Create with Queue...");

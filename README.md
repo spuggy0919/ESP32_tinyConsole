@@ -115,6 +115,15 @@ Hello World
 %
 
 ```
+ESP32 SSD1306 Pin 21 SDA, Pin 22 SDL, Vcc 3.3V, GND, run
+```
+%tb SSD1306.bas  // or in TinyBasic use Load "SSD1306.bas"
+>
+```
+Blink example
+```
+%tb blinkwod.bas
+```
 # Demo
 [Demo](https://youtu.be/u21vfK_kkIA)
 
@@ -127,6 +136,7 @@ for example LED pin 2 , EN button pin 0, and ESP32 3.3V.
 
 [TinyBasic Examples](https://github.com/slviajero/tinybasic/tree/main/examples)
 
+# TinyBasic manual
 [TinyBasic Manual](https://github.com/slviajero/tinybasic/blob/main/MANUAL.md)
 
 # Good Luck！ 
