@@ -22,3 +22,5 @@ src/test
 lib/HTTPPacket
 lib/Tinybasic/tinybasic.bak
 databak
+data/bas
+lib/Wifi/WifiSetting.h

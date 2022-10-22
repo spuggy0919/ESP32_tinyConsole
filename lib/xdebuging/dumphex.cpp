@@ -15,6 +15,7 @@
  *
  *
  */
+#include <Arduino.h>
 
 #include <stdio.h>
 #include <ctype.h>
@@ -31,8 +32,8 @@ unsigned long  toUlong(const char *num){
 
 void wsTextPrintCstr(const char *msg); // from WebServer.h
 // Align memory addess x to an even page
-#define ALIGN_UP(x) ((unsigned char*)(((unsigned int)(x + 1) >> 1) << 1))
-#define ALIGN_DOWN(x) ((unsigned char*)(((unsigned int)x >> 1) << 1))
+#define ALIGN_UP(x) ((unsigned char*)(((unsigned long)(x + 1) >> 1) << 1))
+#define ALIGN_DOWN(x) ((unsigned char*)(((unsigned long)x >> 1) << 1))
 int printhexLong(const char *buf, unsigned int len){
     char linebuf[64];
     unsigned long *p=(unsigned long *)ALIGN_DOWN(buf);
@@ -57,7 +58,7 @@ int cmd_dumpHex(int argc,char * argv[]){
  
     const char * address = (const char *)toUlong(argv[1]);
     unsigned long length = toUlong(argv[2]);
-
+    Serial.printf("addr=%08x, len=%08x\n",address,length);
     while(length>0) {
         printhexLong(address,length); length-=16;
     }

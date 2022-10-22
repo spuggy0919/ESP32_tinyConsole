@@ -37,6 +37,7 @@ int cmd_prompt(int argc,char * argv[]);
 int cmd_call(int argc,char * argv[]);
 int cmd_dumpHex(int argc,char * argv[]);
 int cmd_cls(int argc,char * argv[]);
+int cmd_delay(int argc, char *argv[]);
 
 typedef int (*MAINPTR)(int argc,char * argv[]);
 
@@ -76,8 +77,9 @@ COMMAND_TABLE commandTable[]= {
   "?",      cmd_help,   "help",
  //  "%",      cmd_prompt,   "//prompt",
  "task",   cmd_task,  "  // tasktest testing...",
- "dump",  cmd_dumpHex,   "0xaddr len //  dump Physical memory testing...",
+//  "dump",  cmd_dumpHex,   "0xaddr len //  dump Physical memory testing...",
  "call",   cmd_call,     "address argv ...// call cmd function  testing...",
+ "delay",   cmd_delay,     "delaynum...// for wssockettask idle time...",
    "",      cmd_prompt,   "",
    "",      cmd_prompt,   "",
 

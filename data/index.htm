@@ -39,9 +39,10 @@
           <!--     <input type="checkbox" id="scales" name="scales" onclick='terminallinemode(this);' checked >
             <label for="scales">linemode</label>-->
             <button name="ctrlcBtn" value="ctrlcBtn" onclick="CTRLCKey('terminal')" class="button-on">ctrl-c</button>
+            <button name="clearBtn" value="clearBtn" onclick="clearTextarea('terminal')" class="button-on">Clear</button>
             <!-- upload begin -->
              <form id= "upload-form"  name = "upload-form"  method="POST" action="/upload"  enctype="multipart/form-data" >
-              <input  name="uploadbtn" value="uploadbtn" type="file"  multiple="true">
+              <input  name="uploadbtn" value="file" type="file"  multiple="true" id= "uploadfiles">
               <button type="submit" onclick="uploadfile(this)" class="button-on">upload</button>
             <!-- upload end -->
             <!-- upload begin
@@ -87,12 +88,12 @@
         <script>
 
             function sendTime() { // client set ESP32 timer
-                console.log("sendTime");
+                // console.log("sendTime");
 
                 const date= new Date();
                 var xhr = new XMLHttpRequest();
                 //xhr.open("POST", "/"timer?value="+"element.value, true); 
-                console.log(date);
+                // console.log(date);
                 xhr.open("POST", "/param?timer=" + date.getTime(), true); 
                 xhr.send();
             }           // download {
@@ -100,8 +101,8 @@
 
            function  downloadFile(e){
                    // Create anchor element.
-                   console.log("download");
-                   console.log(e.data);
+                  //  console.log("download");
+                  //  console.log(e.data);
                    var a = document.createElement('a'); 
                     // Create the text node for anchor element.
                     var link = document.createTextNode(e.data);
@@ -117,7 +118,7 @@
                   a.appendChild(link); 
                   a.click();
                   // document.body.removeChild(a);
-                  console.log(a);
+                  // console.log(a);
 
           }
  
@@ -125,7 +126,10 @@
             var form = document.getElementById('upload-form');
             form.onsubmit = function () {
                 var formData = new FormData(form);
-                formData.append('file', file);
+                let files = document.getElementById("uploadfiles"); // file from input
+
+                // console.log(files)
+                formData.append('file', files);
                 var xhr = new XMLHttpRequest();
               
                 // Add any event handlers here...
@@ -133,6 +137,8 @@
                 xhr.send(formData);
               
                 // false To avoid actual submission of the form
+                // wsSentChar("\n"); // enter for terminal
+
                 return false;
             }
           }
@@ -140,8 +146,8 @@
             // SSE output console
             var editor = document.getElementById("terminal");
             editor.addEventListener('compositionend',function(e){
-                console.log('text compostionend');
-                console.log(e.data);
+                // console.log('text compostionend');
+                // console.log(e.data);
                 wsSentChar(e.data);
             });
             var eventk = new CompositionEvent('compositionend');
@@ -210,15 +216,15 @@
                   case 38: // up
                     if (cacheIndex>0) cacheIndex--;
                     linebuf = cacheLineBuf.at(cacheIndex);
-                    console.log(cacheLineBuf);
-                    console.log(linebuf);
+                    // console.log(cacheLineBuf);
+                    // console.log(linebuf);
                     
                     t.value = t.value.slice(0,terminalData)+ linebuf;
                     return;
                   case 40: // down
                     if (cacheIndex<cacheLineBuf.length-1) cacheIndex++;
-                    console.log(cacheLineBuf);
-                    console.log(linebuf);
+                    // console.log(cacheLineBuf);
+                    // console.log(linebuf);
                     linebuf = cacheLineBuf.at(cacheIndex);
                     t.value = t.value.slice(0,terminalData)+ linebuf;
                     return;
@@ -242,12 +248,12 @@
             function textKeypress(event){
               var key =  event.keyCode;
                 c = String.fromCharCode(key);
-                console.log(key);
-                console.log(linebuf.length);
+                // console.log(key);
+                // console.log(linebuf.length);
                 if ( (c == 127 || c == 8) && linebuf.length>1) {
                   linebuf.text(linebuf.text().slice(0, -1));
-                  console.log(c);
-                  console.log(linebuf);
+                  // console.log(c);
+                  // console.log(linebuf);
                   return ; 
                 }
                 if (c == '\r' || c == '\n'|| c == ' ' || c == -1 || c=='#' || c=='\x1b' || c=='\x03'){
@@ -258,10 +264,10 @@
                   if (c == '\r' || c == '\n') linebuf = linebuf.concat('\n');
                   if (c == '#' || c == '\x1b' ||c == '\x03' || c == ' ' ) linebuf = linebuf.concat(c);
 
-                  console.log(linebuf);
+                  // console.log(linebuf);
                   // console.log(ascii_to_hexa(linebuf));
-                  console.log(linebuf.hexEncode());
-                  console.log(linebuf.convertToHex(" "));
+                  // console.log(linebuf.hexEncode());
+                  // console.log(linebuf.convertToHex(" "));
                   if (c=='\r' || c == '#' || c == '\x1b' ||c == '\x03'){
                     // if (terminalLineMode ) {
                         if (linebuf.length>1 && linebuf.slice(0,1)=="\0xd"){
@@ -276,7 +282,7 @@
                           cacheLineBuf.push(linebuf.slice(0,-1));  // add cacheBuffer
                           cacheLineBuf.push("");  // add cacheBuffer
                          // cacheIndex = cacheLineBuf.length;
-                          console.log(cacheLineBuf);
+                          // console.log(cacheLineBuf);
                           cacheIndex = cacheLineBuf.length-1;
                         }
                     // }else{
@@ -307,14 +313,14 @@
                   linebuf = linebuf.concat(c);
                 }
           
-                console.log(typeof linebuf);
-                console.log(linebuf);
+                // console.log(typeof linebuf);
+                // console.log(linebuf);
               
               }
             
             function clearTextarea(byid) {
               document.getElementById(byid).value = "";
-              document.getElementById("consolelog").value = ""; 
+              // document.getElementById("consolelog").value = ""; 
               wsSentChar("\n"); // enter for terminal
             }
             function CTRLCKey() {             
@@ -327,11 +333,11 @@
               terminalLineMode = ! terminalLineMode;
             }
             function checkEscCommand(seq){
-                console.log("ESC check");
+                // console.log("ESC check");
                 var eschex = seq.convertToHex();
-                console.log(seq.hexEncode());
+                // console.log(seq.hexEncode());
                 if (eschex == "1b5b324a") {
-                  console.log("ESC Found");
+                  // console.log("ESC Found");
                   return true;
                 }
                 return false;
@@ -339,8 +345,8 @@
             function updateTextarea(txt) {
                 var txtValue = document.getElementById("terminal").value;
                 var inmsg= window.atob(txt);
-                console.log("terminal");
-                console.log(inmsg);
+                // console.log("terminal");
+                // console.log(inmsg);
                 if (checkEscCommand(inmsg)) { // clear screen
                    document.getElementById("terminal").value = "";
                 }else{
@@ -366,10 +372,10 @@
               var rowcol = document.getElementById("rcselect").value;
                     // var selectValue = document.getElementById("terminal").value;
                     var rowcols = rowcol.split('x');
-                    console.log(rowcol);
-                    console.log(rowcols);
-                    console.log(rowcols[0]);
-                    console.log(rowcols[1]);
+                    // console.log(rowcol);
+                    // console.log(rowcols);
+                    // console.log(rowcols[0]);
+                    // console.log(rowcols[1]);
                     document.getElementById("terminal").style.height = (parseInt(rowcols[0])*2).toString+"em";
                     document.getElementById("terminal").style.width =  rowcols[1]+"em";            
                     document.getElementById("consolelog").style.height  =  (parseInt(rowcols[0])*2).toString+"em";                 
@@ -392,7 +398,7 @@ function onload(event) {
 
 }
 function initWebSocket() {
-    console.log('Trying to open a WebSocket connection…');
+    // console.log('Trying to open a WebSocket connection…');
     websocket = new WebSocket(gateway);
     websocket.onopen = onOpen;
     websocket.onclose = onClose;
@@ -413,37 +419,57 @@ function wsGetCharRequest(){
 
 }
 function wsSentChar(key){ // send textarea keyin 
-  if (!websocket) return;
-  console.log("key");
-  console.log(key.length);
-    console.log("X:"+key);
+  if (!websocket) {
+    // setTimeout(wsSentDelayChar, 2000);
+    return;
+  }
+  // console.log("key");
+  // console.log(key.length);
+  //   console.log("X:"+key);
     websocket.send("X:"+key);
 
 }
+function wsSentDeferChar(key){
+  websocket.send("X:"+key);
+}
+var fifo = new Array("");
 
-
-
+function wswsupdateText(){
+    // console.log(wswsupdateText)
+    if (fifo.length) {    
+      // console.log(fifo.length);
+        updateTextarea(fifo.shift());
+    }
+    
+}
 function onOpen(event) {
-    console.log('Connection Websocket opened');
+    // console.log('Connection Websocket opened');
     // getValues();
     sendTime();
     editor.dispatchEvent(eventk); // check editor for IME
+    fifo = [];
+    // setInterval(wswsupdateText, 50);
 
 }
 
 function onClose(event) {
-    console.log('Connection Websocket closed');
+    // console.log('Connection Websocket closed');
     setTimeout(initWebSocket, 2000);
 }
 
 
 function onMessage(event) {
-    console.log(event.data);
+    // console.log(event.data);
     var msg = event.data;
     var lines= msg.split(":");
     switch(lines[0]){
       case "0":
-       updateTextarea(lines[1]);
+        // console.log("push");
+        // console.log(lines[1]);
+        // fifo.push(lines[1]);
+        updateTextarea(lines[1]);
+        // console.log(fifo);
+
         break;
       case "1":
         updateConsoleLog(lines[1]);
@@ -463,7 +489,7 @@ function onMessage(event) {
           var source = new EventSource('/events');
   
           source.addEventListener('Eventdoownload', function(e) {
-              console.log("e:downloadFile"+e.data);
+              // console.log("e:downloadFile"+e.data);
               downloadFile(e)
           }, false);
           
@@ -475,8 +501,8 @@ function onMessage(event) {
   
           //  }
             var datastream = window.atob(e.data);
-            console.log(e.data);
-            console.log(datastream);
+            // console.log(e.data);
+            // console.log(datastream);
          //   document.getElementById("terminal").value += datastream ;
             if (scrollcheck){
               document.getElementById("terminal").scrollTop = document.getElementById("terminal").scrollHeight;

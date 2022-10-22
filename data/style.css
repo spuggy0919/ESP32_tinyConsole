@@ -63,6 +63,7 @@ textarea {
   background-color: #000000;
   color: #f0f0f0;
   font-size: 25px;
+  /* font-family:'Courier New', Courier, monospace; */
   resize: none;
 
 }

@@ -128,6 +128,7 @@ bool _d_fetchrxdata(char *c){
 
     return false;
 }
+void ESP_force_wdt(int minisec);
 #ifdef _FREERTOS_QUEUE_
 
 bool _d_istxready(){
@@ -135,15 +136,21 @@ bool _d_istxready(){
     //  if(xSemaphoreTake(muxTX, portMAX_DELAY) == pdTRUE) {
         bool ret = xQueuePeek(queueTX, &c, 10); //portMAX_DELAY
         // xSemaphoreGive(muxTX);
+        yield();
         return ret;
     //  }
      return false;
   
 }
+
+extern int insertDelay; /* in Task*/
+extern int fetchDelay;
+
 bool _d_inserttxdata(unsigned char*data, int len){
     int idx=0;
         while(idx<len) {
             // if(xSemaphoreTake(muxTX, 10) == pdTRUE) { //portMAX_DELAY
+                ESP_force_wdt(100);
                 if (xQueueSend(queueTX, &data[idx], 100)){
                         // Serial.printf("ix()[%2x]%c\n",data[idx],data[idx]);
                         idx++;
@@ -152,7 +159,7 @@ bool _d_inserttxdata(unsigned char*data, int len){
                 Serial.printf("Error:xQueueSend full\n");
 
                 yield(); // buffer full wait 
-                //  vTaskDelay( 100 / portTICK_PERIOD_MS ); 
+                if(insertDelay>0) vTaskDelay(insertDelay / portTICK_PERIOD_MS ); 
                 }
                 // xSemaphoreGive(muxTX);
             // }
@@ -164,16 +171,17 @@ bool _d_fetchtxdata(char *c){
         if (_d_istxready())  {
         //   if(xSemaphoreTake(muxTX, 10) == pdTRUE) {
 
-            if (xQueueReceive(queueTX, c, 10)){
+            if (xQueueReceive(queueTX, c, 66)){
                 // Serial.printf("fx()[%2x]%c\n",*c,*c);
                 return true;
             }else{
               Serial.printf("Error:xQueueReceive false\n");
                
             }
-            // vTaskDelay( 100 / portTICK_PERIOD_MS ); 
+            if (fetchDelay) vTaskDelay( fetchDelay / portTICK_PERIOD_MS ); 
             // xSemaphoreGive(muxTX);
 
+            ESP_force_wdt(100);
             yield();
         //   }
         }
@@ -297,7 +305,7 @@ bool _d_gettxbuf(char *buf, int *len){
                 *len = idx;
                 return false;
             }
-        //  vTaskDelay( 100 / portTICK_PERIOD_MS ); 
+        //    vTaskDelay( 10 / portTICK_PERIOD_MS );  output will slow down
             yield();
     }
    
@@ -314,7 +322,7 @@ bool stdioRedirector(){
         return true;
     }
     firstrun =  false;
-    queueTX = xQueueCreate(BUFFERSIZE, sizeof( unsigned char ) );
+    queueTX = xQueueCreate(BUFFERSIZE*8, sizeof( unsigned char ) );
     if(queueTX == NULL){
         Serial.println("Error creating the queue1");
         return false;

@@ -191,6 +191,25 @@ String getDirname(const char *pname){
 }
 
 
+bool  checkIsDir(fs::FS &fs,const char *pname, bool *dir){
+    File f = fs.open(getfullpathFileOrDir(fs,pname));
+    if (!f) return false; 
+    *dir = f.isDirectory();
+    return true;
+}
+/* check the pname is path or file, if path replace with path apeend fname*/
+String  getFullPath_File(const char *pname, const char *fname){
+    bool isDir;
+    String last =  getlastComponet(fname);
+    String prefix = getfullpathFileOrDir(LittleFS, pname);
+    if (checkIsDir(LittleFS, prefix.c_str(), &isDir)){
+        if (!isDir) return prefix;
+        return prefix+last;
+        
+    }
+    return String("");
+}
+
 String getfullpathFileOrDir(fs::FS &fs, const char *pname){
     // trim filename
     String ret;

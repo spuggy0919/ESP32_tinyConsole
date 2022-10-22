@@ -30,6 +30,7 @@
 #define SPIFFS LittleFS
 bool initLittleFS();
 String reportfs(fs::FS &fs);
+String  getFullPath_File(const char *pname, const char *fname);
 String currentDir();
 String getfullpathFileOrDir(fs::FS &fs, const char *pname);
 

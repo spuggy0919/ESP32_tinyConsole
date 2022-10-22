@@ -21,6 +21,18 @@ Currently, tinyConsole only supports DigitIO, Timer, FileIO, and WebSocket Seria
 
 (GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007)
 
+# TinyConsole base on following libraries and Platform. Thanks for them, and a lot of packages under these.
+[espressif/arduino-esp32](https://github.com/espressif/arduino-esp32)
+[me-no-dev/ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
+[fbiego/ESP32Time](https://github.com/fbiego/ESP32Time)
+[Xander-Electronics/Base64](https://github.com/Xander-Electronics/Base64)
+[slviajero/tinybasic](https://github.com/slviajero/tinybasic)
+[U8g2](https://github.com/olikraus/U8g2_Arduino)
+[Platform.io](https://platform.io)
+[VSCode](https://code.visualstudio.com)
+ 
+Don't worried, platform.ini will auto download, missing parts.
+
 # Platform.IO IDE
  ESP32 is supported
  *Platform.io* will check dependecy and download dependency libraries automatically.

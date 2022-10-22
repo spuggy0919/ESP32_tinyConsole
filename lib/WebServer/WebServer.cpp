@@ -87,7 +87,7 @@ void WSTransferBufferFlush(int wi){
         char c;
         for(int i = 0 ;i <olen[wi] ;i++) {
             c=obuf[wi][i];
-              Serial.printf("[%2x]\n ",c);
+              Serial.printf("f[%2x]\n ",c);
         } 
           {wsTextPrintBase64(wi,String(obuf[wi])); olen[wi]=0;}
          yield();
@@ -137,7 +137,7 @@ void WebSocketMessageReceive(void *arg, uint8_t *data, size_t len) {
         char c;
         for(int i = 0 ;i <msg.length() ;i++) {
             c=msg.charAt(i);
-              Serial.printf("[%2x]\n ",c);
+              Serial.printf("R[%2x]\n ",c);
         }
 
       if (!_d_insertrxdata((const char*)(msg.c_str()), msg.length())){

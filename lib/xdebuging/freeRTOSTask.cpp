@@ -31,6 +31,32 @@ TaskHandle_t TaskHandle_3;
 SemaphoreHandle_t mux;
 int txbuf[10];
 
+int TaskDelay = 10;
+int fetchDelay = 10;
+int insertDelay=10;
+int cmd_delay(int argc, char *argv[]){
+    if (argc >=2 && argv[1]!=NULL) {
+        int delay = (unsigned int ) strtoul(argv[1],0,10);
+        if (delay!=0) {
+            insertDelay = delay;
+        }
+    }
+    
+    if (argc >=3 && argv[2]!=NULL) {
+        int delay = (unsigned int ) strtoul(argv[2],0,10);
+        if (delay!=0) {
+            fetchDelay = delay;
+        }
+    }
+    if (argc >=4 && argv[3]!=NULL) {
+        int delay = (unsigned int ) strtoul(argv[3],0,10);
+        if (delay!=0) {
+            TaskDelay = delay;
+        }
+    }
+    return false;
+}
+
 int cmd_task(int argc, char *argv[]){
     //  app_main();
     //  return 0;
@@ -54,7 +80,7 @@ int cmd_task(int argc, char *argv[]){
     Serial.println("created the queues");
     Serial.println("created the mux");
 
-    xTaskCreate(TaskKeyIn,"TaskKeyIn",4096,NULL,tskIDLE_PRIORITY+3,NULL);   
+    xTaskCreate(TaskKeyIn,"TaskKeyIn",4096,NULL,tskIDLE_PRIORITY+2,NULL);   
     xTaskCreate(TaskBlink1,"TaskBlink",4096,NULL,tskIDLE_PRIORITY+2,NULL);   
     // xTaskCreate(Taskprint,"Task3",1024,NULL,3,NULL);   
     // xTaskCreate(TasktriggerLog,"Task3",1024,NULL,3,NULL);   
@@ -181,7 +207,9 @@ void WSTransferBufferTask(void *pvParameters){
     //    Serial.printf("WSTransferBufferTask\n");
       WSTransferBufferFlush(0);
     //   wsTextPrintBase64(0,"hello this is task message!");
-      vTaskDelay( 10 / portTICK_PERIOD_MS ); 
+      if(TaskDelay>0) vTaskDelay(TaskDelay / portTICK_PERIOD_MS ); 
+                ESP_force_wdt(100);
+                yield();
 
    }
 
@@ -202,9 +230,9 @@ bool WSTransferBufferTaskInit(int wi){
     //             return false;
 
     // }
-    bool ret = xTaskCreate(WSTransferBufferTask,"WSTxTask",4096,NULL,2,&vTaskBufferHandle);  
+    bool ret = xTaskCreate(WSTransferBufferTask,"WSTxTask",8192,NULL,tskIDLE_PRIORITY+1,&vTaskBufferHandle);  
     Serial.println("task Create with Queue...");
-    // vTaskStartScheduler();
+    // vTaskStartScheduler(); BUG, ESP app_main have already started
 
     return ret;
 }
