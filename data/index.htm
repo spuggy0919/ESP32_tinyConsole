@@ -388,7 +388,8 @@
                     document.getElementById("consolelog").style = "font-size:" + fontsize + "px;";
             }
 // websocket protocol
-var gateway = `ws://${window.location.hostname}/ws`;
+var wsgateway = `ws://${window.location.hostname}/ws`;
+var host = `http://${window.location.hostname}`;
 var websocket;
 window.addEventListener('load', onload);
 
@@ -399,7 +400,9 @@ function onload(event) {
 }
 function initWebSocket() {
     // console.log('Trying to open a WebSocket connection…');
-    websocket = new WebSocket(gateway);
+    console.log("host:"+host)
+    console.log("gateway:"+wsgateway)
+    websocket = new WebSocket(wsgateway,"my-custom-protocol");
     websocket.onopen = onOpen;
     websocket.onclose = onClose;
     websocket.onmessage = onMessage;

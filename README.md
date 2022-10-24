@@ -12,7 +12,7 @@ ESP32 Web Server (tinyConsole) use me-no-dev/ESPAsyncWebServer, bases on WebSock
 5. TinyBasic with interactive mode, it can write program.
 6. simple and tiny shell commands, ls, cat, cd, cp, append, rm, mkdir, help. But it is simple and no option operation, no wildcard filter.
 
-TinyBasic is ported from slviajero/tinybasic.
+TinyBasic is ported from slviajero/tinybasic. 
 Currently, tinyConsole only supports DigitIO, Timer, FileIO, and WebSocket Serial IO.
 
 # TinyBasic LICENSE:
@@ -31,11 +31,11 @@ Currently, tinyConsole only supports DigitIO, Timer, FileIO, and WebSocket Seria
 [Platform.io](https://platform.io)
 [VSCode](https://code.visualstudio.com)
  
-Don't worried, platform.ini will auto download, missing parts.
+Don't be worried, platform.ini will auto download, missing parts.
 
 # Platform.IO IDE
  ESP32 is supported
- *Platform.io* will check dependecy and download dependency libraries automatically.
+ *Platform.io* will check dependency and download dependency libraries automatically.
  Tool bar at bottom , click Switch  env icon to select Project and env
 ### For ESP32
 ```
@@ -46,7 +46,7 @@ Default(esp32_TinyConsole) folder*
 
 # Modified *WifiSetting.h*。SSID, PASSWORD, 
 
-### suggest STAAUTO Mode.
+### suggest STA AUTO Mode.
 
 ```
 #define WIFISSID    ("SSIDNAME")        // SSID
@@ -67,7 +67,7 @@ Default(esp32_TinyConsole) folder*
 
 ![pio Toolbar](png/toolbar.png)
 
-## *Notics* upload binary file or data to file system, you must close serial monitor to let seril driver be free.
+## *Important* upload binary file or data to file system, you must close serial monitor to let serial driver be free.
 
   In toolbar, (-> icon) can build and upload.
   for clean build, you can click clear icon, or delete *.pio* sub folder in explorer Window at first.
@@ -99,7 +99,7 @@ WebServerGPIOControl Starting...
 #  Login Console, Copyright Notices.
 ![login](png/login.png)
 
-#  Keyin help enter, these command are simple, case sensitive, and still awkward.
+#  Key in help enter, these command are simple, case sensitive, and still awkward.
 ```
 %help [enter]
 ```
