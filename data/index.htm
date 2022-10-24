@@ -388,10 +388,9 @@
                     document.getElementById("consolelog").style = "font-size:" + fontsize + "px;";
             }
 // websocket protocol
-var wsgateway = `ws://${window.location.hostname}/ws`;
-var host = `http://${window.location.hostname}`;
+var gateway = `ws://${window.location.hostname}/ws`;
 var websocket;
-var prtov;
+window.addEventListener('load', onload);
 
 var charbuf;
 function onload(event) {
@@ -399,10 +398,8 @@ function onload(event) {
 
 }
 function initWebSocket() {
-    // console.log('Trying to open a WebSocket connection…');
-    console.log("host:"+host)
-    console.log("gateway:"+wsgateway)
-    websocket = new WebSocket(wsgateway,"my-custom-protocol");
+    console.log('Trying to open a WebSocket connection…');
+    websocket = new WebSocket(gateway);
     websocket.onopen = onOpen;
     websocket.onclose = onClose;
     websocket.onmessage = onMessage;
@@ -423,16 +420,16 @@ function wsGetCharRequest(){
 }
 function wsSentChar(key){ // send textarea keyin 
   if (!websocket) {
-    // setTimeout(wsSentDelayChar, 2000);
+    // setTimeout(wsSentDelayChar(key), 2000);
     return;
   }
-  // console.log("key");
-  // console.log(key.length);
-  //   console.log("X:"+key);
+  console.log("key");
+  console.log(key.length);
+    console.log("X:"+key);
     websocket.send("X:"+key);
 
 }
-function wsSentDeferChar(key){
+function wsSentDelayChar(key){
   websocket.send("X:"+key);
 }
 var fifo = new Array("");
