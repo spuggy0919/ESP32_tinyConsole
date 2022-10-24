@@ -250,10 +250,10 @@
                 c = String.fromCharCode(key);
                 // console.log(key);
                 // console.log(linebuf.length);
-                if ( (c == 127 || c == 8) && linebuf.length>1) {
-                  linebuf.text(linebuf.text().slice(0, -1));
-                  // console.log(c);
-                  // console.log(linebuf);
+                if ( (c == '\xff' || c == '\x08') && linebuf.length>1) {
+                  linebuf = (linebuf.slice(0, -1));
+                  console.log(c);
+                  console.log(linebuf);
                   return ; 
                 }
                 if (c == '\r' || c == '\n'|| c == ' ' || c == -1 || c=='#' || c=='\x1b' || c=='\x03'){
