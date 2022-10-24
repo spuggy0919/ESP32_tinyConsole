@@ -34,7 +34,11 @@ int txbuf[10];
 int TaskDelay = 10;
 int fetchDelay = 10;
 int insertDelay=10;
-int cmd_delay(int argc, char *argv[]){
+
+
+
+
+int cmd_taskdelay(int argc, char *argv[]){
     if (argc >=2 && argv[1]!=NULL) {
         int delay = (unsigned int ) strtoul(argv[1],0,10);
         if (delay!=0) {

@@ -37,7 +37,10 @@ int cmd_prompt(int argc,char * argv[]);
 int cmd_call(int argc,char * argv[]);
 int cmd_dumpHex(int argc,char * argv[]);
 int cmd_cls(int argc,char * argv[]);
-int cmd_delay(int argc, char *argv[]);
+int cmd_taskdelay(int argc, char *argv[]);
+int cmd_millisdelay(int argc, char *argv[]);
+int cmd_millis(int argc, char *argv[]);
+int cmd_option(int argc, char *argv[]);
 
 typedef int (*MAINPTR)(int argc,char * argv[]);
 
@@ -49,6 +52,8 @@ typedef struct COMMAND_TABLE_ITEM{
 
 COMMAND_TABLE commandTable[]= {
   // "TEST",   cmd_test,   "      // dummy command",
+  "tb",     cmd_tinybasic,  " // tinyBasic",
+  "TinyBasic",  cmd_tinybasic,  " // tinyBasic",
   "pwd",    cmd_pwd,    "      // current path",
   "cd",     cmd_cd,     " dir  //change directory",
   "fp",     cmd_fp,     " path // full path testing",
@@ -68,21 +73,22 @@ COMMAND_TABLE commandTable[]= {
   "pio",    cmd_pio,    "set LED pin output value",
   "dl",     cmd_download,"dl file  // download file to PC",
   "status", cmd_status,  "status",
-  "TinyBasic",  cmd_tinybasic,  " // tinyBasic",
-  "tb",     cmd_tinybasic,  " // tinyBasic",
+
   "ping",   cmd_ping,  " // ping test",
   "cls",    cmd_cls,  "  // clear screen",
   "help",   cmd_help,   " //help all command is case sensitive now!",
   "h",      cmd_help,   "help",
   "?",      cmd_help,   "help",
- //  "%",      cmd_prompt,   "//prompt",
- "task",   cmd_task,  "  // tasktest testing...",
-//  "dump",  cmd_dumpHex,   "0xaddr len //  dump Physical memory testing...",
- "call",   cmd_call,     "address argv ...// call cmd function  testing...",
- "delay",   cmd_delay,     "delaynum...// for wssockettask idle time...",
+ //  below internal teing commands
+ "task",    cmd_task,  "  // tasktest testing...",
+ "dump",    cmd_dumpHex,   "0xaddr len //  dump Physical memory testing...",
+ "call",    cmd_call,     "address argv ...// call cmd function  testing...",
+ "tdelay",  cmd_taskdelay,     "delaynum...// for wssockettask idle time...",
+ "option",  cmd_option,     "arglist // for '-' option check...",
+ "millis",  cmd_millis,     " // for '-' option check...",
+ "mdelay",  cmd_millisdelay,     "delaycnt // for '-' option check...",
+  "-",      cmd_prompt,   "",
    "",      cmd_prompt,   "",
-   "",      cmd_prompt,   "",
-
 };
 #define CMDNUMBERS (sizeof(commandTable)/sizeof(COMMAND_TABLE))
 
@@ -134,11 +140,12 @@ int InterpreterExcute(String *cmd){
   Serial.printf("Command:argc=%d, %s found!", argc, argv[0]);
 
   for(i=0;i<CMDNUMBERS;i++){
-      if (commandTable[i].funName == "" || argc == 0) break;
-      if (String(argv[0]) == commandTable[i].funName) {
+      if (commandTable[i].funName == "-1" || argc == 0) break;
+      if (String(argv[0])== (commandTable[i].funName)) {
          InterpreterCmdIndex = i;
          wsTextPrint("\n"); // newline for console
          Serial.printf("Command:%s found!",argv[0]);
+         cmd_option(argc,argv); // check option exist or not
          int ret=(*(commandTable[i].cmdPtr))(argc,argv);
           *cmd = "";
 
@@ -249,29 +256,56 @@ int interpreter() {
     }
     return 0;
 }
+int cmd_chkfileorPath(int argc, char *argv){
+  int file1 = 1;
+  int file2 = 2;
+  if (InterpreterCmdOption!=0) {
+    file1++; file2++;
+  }
+  return 0;
+}
+unsigned long curmillis = millis();
+int cmd_millis(int argc, char *argv[]){
+    char buffer[20];
+    sprintf(buffer, "%ul\n", millis());
+    wsTextPrintln(String(buffer));
+    return 0;
+}   
 
-bool option(char *argv){
+int cmd_millisdelay(int argc, char *argv[]){
+    if (argc >=2 && argv[1]!=NULL) {
+        int delay = (unsigned int ) strtoul(argv[1],0,10);
+        vTaskDelay( delay / portTICK_PERIOD_MS ); 
+    }
+    return true;
+}
+int cmd_option(int argc, char *argv[]){
+  // check optionexist or not 
   InterpreterCmdOption = 0;
    if (argv==NULL) return false;
-
-   char c=argv[0];
-   char *p=&argv[1];
-   if (c!='-') return false;
-   while(*p!=0){
-        switch(*p){
-        case 'h':
-        case '?':
-            wsTextPrintln("Oh Oh SOS ....\n");
-            wsTextPrintln(String(commandTable[InterpreterCmdIndex].description));
+   if (argc < 2 ) return false;
+   char c=argv[1][0];
+   char *p=argv[1];
+   if (c=='-') {  // option found
+      InterpreterCmdOption = COMMAND_OPTION_EXIST;
+      c = *p; p++;
+      while(c){
+          switch(*p){
+          case 'h':
+          case '?':
+              wsTextPrintln("Oh Oh SOS ....\n");
+              wsTextPrintln(String(commandTable[InterpreterCmdIndex].description));
+              break;
+          case 'v':
+              wsTextPrint("ESP CONSOLE: version "+ HTTP_CONSOLE_Version);
+              break;
+          case 'r':
+          case 'R':
+            InterpreterCmdOption |= COMMAND_RECURIVE_DIRECTORY;
             break;
-        case 'v':
-            wsTextPrint("ESP CONSOLE: version "+ HTTP_CONSOLE_Version);
-            break;
-        case 'r':
-        case 'R':
-          InterpreterCmdOption |= COMMAND_RECURIVE_DIRECTORY;
-          break;
-        }
+          }
+          c = *p++;
+     }
    }
    return (InterpreterCmdOption!=0);
 }
@@ -303,6 +337,7 @@ int cmd_pio(int argc,char * argv[]){
 }
 int cmd_help(int argc,char * argv[]){
     for (int i=0;i<CMDNUMBERS;i++){
+       if (commandTable[i].funName[0] == '-') break;
        wsTextPrintln(commandTable[i].funName + " " + commandTable[i].description);
     }
     wsTextPrintln("In TinyBasic, Running break press '#' \n");

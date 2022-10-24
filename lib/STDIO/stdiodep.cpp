@@ -280,7 +280,7 @@ bool _d_getrxline(char *buf, int *len){
                 *len=idx;
                 // Serial.printf("\nline complete %s idx=%d\n",buf,idx);
                 return true;
-            }else if ( (c == 127 || c == 8) && (idx)>1) {
+            }else if ( (c == '\xff' || c == '\x08') && (idx)>1) {
    			    (idx)--;
             } else {
                 buf[idx]=c; idx++;

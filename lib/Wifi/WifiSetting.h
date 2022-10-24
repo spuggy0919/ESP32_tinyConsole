@@ -2,8 +2,8 @@
 #define __WIFISETTING_H__
 /* Config your WIFI MODE, SSID, PASSWORD*/
 
-#define WIFISSID    ("SSID")                 // SSID
-#define PASSWORD    ("PASSWORD")                  // PASSWORD, default is none.
+#define WIFISSID    ("Kuo")                 // SSID
+#define PASSWORD    ("22320397")                  // PASSWORD, default is none.
 #define LOCAL_IP    ("192.168.5.2")       // for static sta should be matched with your router NETMASK
 #define GATEWAY     ("192.168.5.1")       // for static sta or AP
 #define NMASK       ("255.255.255.0")     // for static sta or AP

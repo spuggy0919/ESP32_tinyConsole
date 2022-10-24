@@ -112,7 +112,16 @@ bool relativePath(String path) {
      else Serial.println("fsfun:absolutePath:"+path);
      return ret;
 }
-bool checkDir(fs::FS &fs, const char *path){
+bool checkDir(fs::FS &fs, const char *path,int *filedirorNone);
+
+bool checkFileOrPAth(const char *path, int *filedirorNone){
+    int checktype;
+    if (checkDir(LittleFS, path,&checktype)){
+        *filedirorNone = DIRTYPE;
+    }
+    return true;
+}
+bool checkDir(fs::FS &fs, const char *path,int *filedirorNone){
     String tempPath = currentPath;
     String actualPath= "/";
     if (String(path) == "") {
@@ -146,21 +155,30 @@ bool checkDir(fs::FS &fs, const char *path){
     #else
             File file = fs.open((actualPath+prefix).c_str(), FILE_READ);
     #endif         // if (!file->exist()) return String(curpath);
-            if (file.isDirectory()){ // change to path 
-                actualPath += prefix + "/";
+            if (file) {
+                if (file.isDirectory()){ // change to path 
+                    actualPath += prefix + "/";
+                    *filedirorNone = DIRTYPE;
+                }else {
+                    *filedirorNone = FILETYPE;
+                    return false; 
+                }
             }else {
-                return false; 
+                *filedirorNone = NOTEXIST;
+                return false;
             }
     }   
     checkPath  =  actualPath;
     Serial.print("fsfun:tempPath"+tempPath);
     Serial.print("fsfun:actualPath"+actualPath);
     Serial.print("fsfun:checkPath"+checkPath);
-   return true; 
+    return true; 
 
 }
 String changeDir(fs::FS &fs, const char *path){
-       if (checkDir(fs, path)){
+      int checktype;
+       checkDir(fs, path, &checktype);
+       if (checktype == DIRTYPE){
             currentPath = checkPath;
        }
     Serial.print("fsfun:currentPath"+currentPath);
@@ -213,13 +231,14 @@ String  getFullPath_File(const char *pname, const char *fname){
 String getfullpathFileOrDir(fs::FS &fs, const char *pname){
     // trim filename
     String ret;
+    int checktype;
     Serial.printf("getfullpathFileOrDir %s\r\n", pname);
     String last =   getlastComponet(pname);
     if (last == "") return "";
     Serial.println("last:"+last);
     String dirpath = getDirname(pname);
     Serial.println("dirpath:"+dirpath);
-    if (checkDir(fs, dirpath.c_str())){
+    if (checkDir(fs, dirpath.c_str(),&checktype)){
         ret = checkPath + last;
     }else {
         String ret = currentPath+last;
@@ -260,7 +279,8 @@ String printdirentry(File direntry, int32_t levels){
 String dirlistContent = String();
 void listDir1(fs::FS &fs,  const char * dirname, uint8_t levels);
 String listDir(fs::FS &fs, const char * dirname, uint8_t levels){
-    if (!checkDir(fs, dirname)) return "";
+    int checktype;
+    if (!checkDir(fs, dirname,&checktype)) return "";
     String fdir = checkPath;
     if (fdir == "") return "";
     levellist = levels;

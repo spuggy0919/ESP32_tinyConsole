@@ -52,4 +52,7 @@ void deleteFile2(fs::FS &fs, const char * path);
 void testFileIO(fs::FS &fs, const char * path);
 
 
+#define DIRTYPE  1
+#define FILETYPE 2
+#define NOTEXIST 3
 #endif

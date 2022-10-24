@@ -60,7 +60,6 @@ void setup(){
 
 }
 
-static int curmillis = millis();
 
 void loop(){
 
@@ -74,52 +73,6 @@ void loop(){
 
    interpreter();
 
-#ifdef LOOP_SSE_TEST 
 
-  // similar as log data
-  pwmtrigger(500, triggerCnt, (bool)(triggerCnt%2)); // true:pwm, false: no pwm
-
-
-  // input key counter
-  int button = debounceKeyRead(BUTTON_PIN); // read new state  
-  if(button == LOW) {
-    triggerCnt++; 
-    if (triggerCnt>30) triggerCnt = 1;
-    // wsTextPrint("E: triggerCnt"+String(triggerCnt));
-    eventSend(String(triggerCnt).c_str(),"switchcnt");
-    // Serial.printf("The button is pressed(%2d)\r",triggerCnt);
-    // toggle state of LED
-    pwmled(255);
-    eventSend("ON","gpiostate");
-
-  }
-
-  if (KeygetChange()){
-     eventSend((button == LOW)? "1" : "0","onoff");
-     pwmled((button == LOW)? 255 : 0);
-     eventSend((button == LOW)? "ON": "OFF" ,"gpiostate");
-  }
-
-  // SSE push event Update
-  if (pwmledChange) {
-     Serial.println("pwmledChange"+pwmledState);
-     eventSend(pwmledState.c_str(),"gpiostate");
-    //  wsTextPrint("E:LED "+pwmledState+ " " +String(pwmtriggernum())+ "pwm:" +String(pwmledr()));
-  if (!pwmtriggerStopOrNot()){ // trigging
-      wsTextPrint(pwmlogData()+" \r");
-  }     pwmledChange =false;
-  }
-
-#ifdef ESP32
-  if ((millis() - curmillis) > 5000  ) {
-      curmillis = millis();
-      // eventSend(timerCurrent().c_str(),"currenttime");
-      String tstr="E:"+timerCurrent()+"\n";
-      // WSTransferMessage(1,tstr);
-      // if (_d_puttxline((char *)(tstr.c_str()), tstr.length())){
-         //  WSTransferBufferFlush(1);
-      // } 
-  }
-#endif 
-#endif 
+ 
 }
