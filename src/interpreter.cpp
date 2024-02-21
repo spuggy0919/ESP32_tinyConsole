@@ -41,6 +41,10 @@ int cmd_taskdelay(int argc, char *argv[]);
 int cmd_millisdelay(int argc, char *argv[]);
 int cmd_millis(int argc, char *argv[]);
 int cmd_option(int argc, char *argv[]);
+int cmd_video(int argc, char *argv[]);
+int cmd_avtest(int argc, char *argv[]);
+int cmd_export(int argc, char *argv[]);
+int cmd_reboot(int argc,char * argv[]);
 
 typedef int (*MAINPTR)(int argc,char * argv[]);
 
@@ -51,7 +55,7 @@ typedef struct COMMAND_TABLE_ITEM{
 } COMMAND_TABLE;
 
 COMMAND_TABLE commandTable[]= {
-  // "TEST",   cmd_test,   "      // dummy command",
+ "test",   cmd_test,   "      // dummy command",
   "tb",     cmd_tinybasic,  " // tinyBasic",
   "TinyBasic",  cmd_tinybasic,  " // tinyBasic",
   "pwd",    cmd_pwd,    "      // current path",
@@ -72,6 +76,7 @@ COMMAND_TABLE commandTable[]= {
   "time",   cmd_time,   "time",
   "pio",    cmd_pio,    "set LED pin output value",
   "dl",     cmd_download,"dl file  // download file to PC",
+  "reboot", cmd_reboot,  "reboot",
   "status", cmd_status,  "status",
 
   "ping",   cmd_ping,  " // ping test",
@@ -87,6 +92,9 @@ COMMAND_TABLE commandTable[]= {
  "option",  cmd_option,     "arglist // for '-' option check...",
  "millis",  cmd_millis,     " // for '-' option check...",
  "mdelay",  cmd_millisdelay,     "delaycnt // for '-' option check...",
+ "video",  cmd_video,       "video 0  // video graphics functions",
+ "avtest",  cmd_avtest,       "avtest  // video graphic testing",
+ "export",  cmd_export,       "export  // export all config or set config",
   "-",      cmd_prompt,   "",
    "",      cmd_prompt,   "",
 };
@@ -356,6 +364,7 @@ int cmd_pwd(int argc,char * argv[]){
     wsTextPrintln(currentDir());
     return 0;
 }
+
 int cmd_cd(int argc,char * argv[]){
   wsTextPrintln(changeDir(LittleFS,argv[1]));
   return 0;
@@ -377,7 +386,7 @@ int cmd_write(int argc,char * argv[]){
       writeFile(LittleFS, argv[1], argv[2]);
       String data = readFile(LittleFS, argv[1]);
 
-  wsTextPrintln(data.c_str());
+   wsTextPrintln(data.c_str());
    return 0;
  
 }
@@ -396,7 +405,9 @@ int cmd_ls0(int argc,char * argv[]){
 
 }
 int cmd_df(int argc,char * argv[]){
+  String freeheap="FreeHeap="+String(ESP.getFreeHeap());
   wsTextPrintln(reportfs(LittleFS).c_str());
+  wsTextPrintln(freeheap.c_str());
     return 0;
 
 }
@@ -438,9 +449,162 @@ int cmd_mv(int argc,char * argv[]){
   ret = cmd_rm(argc,argv);
   return ret;
 }
+int cmd_reboot(int argc,char * argv[]){
+  ESP.restart(); return 0;
+}
 int cmd_status(int argc,char * argv[]){
      return interpreterState;
+}
+// int cmd_exist(int argc,char * argv[]){
+//     String ret=getFullPath_File("/basic/", "autoexec.bas"){
+//     if (ret!=""){
+//     }
+//     return 0;
+// }
+// const functionTable = [
+//     createCard,   "0"
+//     drawFilledRect,    // 1 drawFilledRect(color, x, y, width, height)
+//     drawPixel,         // 2  drawPixel(color, x, y)
+//     drawText,          // 3 drawText(color, text, x, y, deg) 
+//     drawHLine,         // 4 drawHLine(color, x1, x2, y)
+//     drawVLine,         // 5 drawVLine(color, x, y1, y2
+//     plotto,            // 6 drawLine(color, x1, y1, x2, y2)
+// ];
+int cmd_video(int argc,char * argv[]){
+    video(argc,argv);
+    return 0;
+}
+static int videoflag=0;
+int cmd_avtest(int argc,char * argv[]){
 
+
+    if (argc==1) {
+        audiof("0"); // play test.mp3
+        for(int x=0; x<640/2; x+=20){
+          for(int y=x; y<480/2; y+=20){
+            int b = random(255);
+            int g = random(255);
+            int r = random(255);
+            int color = (r<<16)| (g<<8)|(b);
+            drawPenColor(color);  
+            drawFRect(x,y,(640-x*2),(480-y*2));
+            delay(30);
+          }
+        }
+        for(int y=0; y<480/2; y+=20){
+          for(int x=y; x<640/2; x+=20){
+            int b = random(255);
+            int g = random(255);
+            int r = random(255);
+            int color = (r<<16)| (g<<8)|(b);
+            drawPenColor(color);  
+            drawFRect(x,y,(640-x*2),(480-y*2));
+            delay(30);
+          }
+        }
+    }else{
+      char c=argv[1][0];
+      // consoloLog("avtest %d\n",c-'0');
+
+      switch(c) {
+        case '0': {// pixel
+          int color = 0xffffff;
+          drawPenColor(color);  
+
+          String cmd;
+          cmd = String("1 ");
+          cmd += String(0)+ " ";
+          cmd += String(0)+ " ";
+          cmd += String(640)+ " ";
+          cmd += String(480);          
+          videof(cmd.c_str());
+          delay(100);
+          }break;
+        case '2': // pixel
+        default:
+          for (int i=0;i<500;i++){
+            int b = random(255);
+            int g = random(255);
+            int r = random(255);
+            int color = (r<<16)| (g<<8)|(b);
+            drawPenColor(color);  
+
+            int x=random(639);
+            int y=random(480);
+            String cmd;
+            cmd = String("2 ");
+            cmd += String(x)+ " ";
+            cmd += String(y);
+            videof(cmd.c_str());
+            delay(100);       
+          }
+          break;       
+        case '4': // HLine / Vline
+          for(int y=0; y<480/2; y+=20){
+              int b = random(255);
+              int g = random(255);
+              int r = random(255);
+              int color = (r<<16)| (g<<8)|(b);
+            drawPenColor(color);  
+              String cmd;
+              cmd = String("4 ");
+              cmd += String(y)+ " ";
+              cmd += String(640-y*2)+ " ";
+              cmd += String(y)+ " ";
+              videof(cmd.c_str());
+              cmd = String("5 ");
+              cmd += String(y)+ " ";
+              cmd += String(480-y*2)+ " ";
+              cmd += String(y);
+              videof(cmd.c_str());           
+              delay(100);
+          }
+          break;
+ 
+        case '6': // TEXT
+        Serial.println("drawText");
+          for(int y=0; y<480; y+=19){
+              int b = random(255);
+              int g = random(255);
+              int r = random(255);
+              int color = (r<<16)| (g<<8)|(b);
+              drawPenColor(color);  
+              drawText("ABC DEF",0,y,0); 
+              delay(50);
+            }
+          break;
+        case '5': // Char
+        Serial.println("drawChar");
+          for(int y=0; y<3000; y+=1){
+              int b = random(255);
+              int g = random(255);
+              int r = random(255);
+              int color = (r<<16)| (g<<8)|(b);
+              drawPenColor(color);  
+              char c=((y/80)%25)+'A';
+              drawChar(c); 
+              delay(10);
+            }
+          break;
+      }        
+    }
+    
+
+    return interpreterState;
+
+}
+
+// export 
+int cmd_export(int argc,char * argv[]){
+    if (argc==1){
+        wsTextPrint(Config_Data());
+    }if (argc==2) {
+          return Config_Remove(String(argv[1]));
+    }else{
+       if (argc==3)
+          return Config_Set(String(argv[1]),String(argv[2]));
+    }
+    return 0;
 }
 
 int cmd_ping(int argc,char * argv[]){
@@ -466,7 +630,10 @@ void interpreterInit() {
 
 }
 int cmd_cls(int argc,char * argv[]){
+
     wsTextPrint("\x1b[2J");
+    drawPenColor(0);  
+    drawFRect(0,0,(640),(480));
     return 0;
 }
 int cmd_prompt(int argc,char * argv[]){

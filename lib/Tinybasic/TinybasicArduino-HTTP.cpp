@@ -1589,6 +1589,9 @@ void ioinit() {
 #ifdef ARDUINOVGA
 	vgabegin();  /* mind this - the fablib code is special here */
 #endif
+#ifdef HTTPWSVGA
+	vgabegin();  /* spuggy0919 mind this - the fablib code is special here */
+#endif
 #ifdef ARDUINOSENSORS
 	sensorbegin();
 #endif
@@ -1842,7 +1845,7 @@ void outch(char c) {
 			prtwrite(c);
 			break;
 #endif
-#ifdef ARDUINOVGA
+#if  defined(ARDUINOVGA) ||  defined(HTTPWSVGA)  /* spuggy0919 */
 		case ODSP: 
 			vgawrite(c);
 			break;
@@ -6153,6 +6156,8 @@ void xusr() {
 #if defined(DISPLAYDRIVER)
 			push(dspstat(arg));
 #elif defined(ARDUINOVGA)
+			push(vgastat(arg));
+#elif defined(HTTPWSVGA) /*spuggy0919*/
 			push(vgastat(arg));
 #else 
 			push(0);

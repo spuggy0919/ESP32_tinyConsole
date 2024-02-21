@@ -5,46 +5,76 @@
     <title>ESP WebSocket Console </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="script.js" defer></script>
   </head>
   <body >
-    <div class="topnav">
+    <div class="topnav" >
       <h1>ESP tinyConsole</h1>
     </div>
     <div class="content" >
+
         <!-- Control textarealog .  Begin  rows='15' cols="24"  -->
-        <div class="card" style = "background-color: eef2c1;">
-        <!--   <p class="card-title">Monitor</p> -->
-          <p><textarea  id="terminal" name="review" style="font-size:10px;" rows='20' cols="40" 
-            onkeypress="textKeypress(event)" onkeydown="textKeydown(event)" onkeyup="textKeyup(event)"></textarea></p>
+        <div class="card" id="cardtiles" style = "background-color: eef2c1; ">
+          <!-- <div class='card'  id="card-container"></div> -->
+          <canvas id="mycanvas" width="640" height="480"></canvas>
+          <audio id="myaudio" controls>
+            <source src="test.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>
+
+
+           <!--   <p class="card-title">Monitor</p> -->
+          <p><textarea  id="terminal" name="review" style="font-size:15px; "  rows='20' cols="40" 
+           onkeypress="textKeypress(event)" onkeydown="textKeydown(event)" onkeyup="textKeyup(event)"></textarea></p>
           <div>
-            <select name="selectio" id="rcselect" onchange = "updateRowCol(this)" style="width:100px">
+            <div class="group">
+              <!-- <select name="selectio" id="rcselect" onchange = "updateRowCol(this)" style="width:100px">
               <option id="rc5x16">5x16</option>
               <option id="rc10x32">10x32</option>
-              <option id="rc15x48">15x48</option>
+              <option id="rc15x40">15x40</option>
+              <option id="rc24x48">24x40</option>
               <option id="rc25x80">25x80</option>
               <option id="rc30x96">30x96</option>
               <option id="rc35x102">35x102</option>
               <option id="rc40x118">40x118</option>
-            </select>     
-            <select name="selectio" id="idselect" onchange = "updateStyle(this)" style="width:100px">
+              </select>      -->
+              <select name="selectio" id="idselect" onchange = "updateStyle(this)" style="width:100px">
               <option id="font10">10</option>
               <option id="font15">15</option>
               <option id="font20">20</option>
               <option id="font25">25</option>
               <option id="font30">30</option>
               <option id="font30">35</option>
-            </select>      
-            <input type="checkbox" id="scales" name="scales" onclick='scrollchecked(this);' checked >
-            <label for="scales">scroll</label>
+              </select>     
+               <!-- <br> 
+              <input type="checkbox" id="canvasck" name="canvasck" onclick='canvaschecked(this);' checked="false" >
+              <label for="canvasck">Canvas</label>
+              <input type="checkbox" id="console" name="console" onclick='consolechecked(this);' checked="true" >
+              <label for="console">Console</label>
+              <input type="checkbox" id="monitor" name="monitor" onclick='monitorchecked(this);' checked="false" >
+              <label for="monitor">Monitor</label> -->
+              <input type="checkbox" id="scroll" name="scroll" onclick='scrollchecked(this);' checked='true' >
+              <label for="scroll">Scroll</label>
+              <input type="checkbox" id="touch" name="touch" onclick='touchchecked(this);' checked="false"  >
+              <label for="touch">Touch</label>
+
+
+            </div>
           <!--     <input type="checkbox" id="scales" name="scales" onclick='terminallinemode(this);' checked >
             <label for="scales">linemode</label>-->
+            <div class="group">
             <button name="ctrlcBtn" value="ctrlcBtn" onclick="CTRLCKey('terminal')" class="button-on">ctrl-c</button>
-            <button name="clearBtn" value="clearBtn" onclick="clearTextarea('terminal')" class="button-on">Clear</button>
+            <button name="clearBtn" value="clearBtn" onclick="clearTextarea('terminal');clearTextarea('consolelog')" class="button-on">Clear</button>
             <!-- upload begin -->
-             <form id= "upload-form"  name = "upload-form"  method="POST" action="/upload"  enctype="multipart/form-data" >
+            </div>
+            <div class="group">
+              <form id= "upload-form"  name = "upload-form"  method="POST" action="/upload"  enctype="multipart/form-data" >
               <input  name="uploadbtn" value="file" type="file"  multiple="true" id= "uploadfiles">
               <button type="submit" onclick="uploadfile(this)" class="button-on">upload</button>
+              </form>
+            </div>
             <!-- upload end -->
+
             <!-- upload begin
 
               <div class="upload-container">
@@ -61,13 +91,19 @@
           </div>
          
         </div>
+    
+          <!-- Control textarealog .  Begin -->
+          <div class="card" style = "background-color: #eef2c1; width:640px; height:200px">
+            <p class="card-title">Web Serial Monitor</p>
+            <p><textarea  id="consolelog" name="review" style="font-size:10px;"></textarea></p>
+            <div> 
+           <!-- Control textarealog .  end -->
         <!-- Control textarea log .  Endding -->
         <!-- Control textarealog .  Begin 
-        <div class="card" style = "background-color: #eef2c1;">
+        <div class="card" style = "background-color: #eef2c1; width:640px">
           <p class="card-title">Web Serial Monitor</p>
           <p><textarea  id="consolelog" name="review" style="font-size:10px;"></textarea></p>
           <div> -->
-      
           <!--  <input type="checkbox" id="scroll" name="scroll" onclick='scrollchecked(this);' checked >
             <label for="scroll">scroll</label>
           
@@ -142,20 +178,62 @@
                 return false;
             }
           }
-          // for terminal shell
+         // ---------------- textarea terminal functions begin -------------------------------
+
+            // for terminal shell
             // SSE output console
             var editor = document.getElementById("terminal");
+            var eventk = new CompositionEvent('compositionend');
+            var terminalLineMode = true;
+            var scrollcheck = true;
+            var touchcheck = false;
+            var canvascheck = false;
+            var consolecheck = false;
+            var monitorcheck = false;
+            var touchcheck = true;
+            var shiftkey = false;
+            var controlkey = false;
+            var altkey = false;
+            // function terminalInit(){
             editor.addEventListener('compositionend',function(e){
                 // console.log('text compostionend');
                 // console.log(e.data);
                 wsSentChar(e.data);
             });
-            var eventk = new CompositionEvent('compositionend');
-            var terminalLineMode = true;
-            var scrollcheck = true;
-            var shiftkey = false;
-            var controlkey = false;
-            var altkey = false;
+            editor.addEventListener('paste', function (e) {
+                  // Prevent the default paste action (paste into the textarea)
+                  // e.preventDefault();
+                  // Get the pasted text from the clipboard
+                  const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                  // Iterate through each character in the pasted text
+                  wsSentChar(pastedText);
+                  // wsSentChar('\0xa');
+
+                  // for (let i = 0; i < pastedText.length; i++) {
+                  //     const char = pastedText.charAt(i);
+                      
+                      // // Create a keydown event for the character
+                      // char = 0xa;
+                      // const keydownEvent = new KeyboardEvent('keydown', {
+                      //     key: char,
+                      //     keyCode: char.charCodeAt(0),
+                      // });
+                      
+                      // // Create a keyup event for the character
+                      // const keyupEvent = new KeyboardEvent('keyup', {
+                      //     key: char,
+                      //     keyCode: char.charCodeAt(0),
+                      // });
+
+                      // Dispatch the keydown event
+                      editor.dispatchEvent(keydownEvent);
+
+                  //     // Dispatch the keyup event
+                  //     editor.dispatchEvent(keyupEvent);
+                  // }
+              
+              }); 
+            // }
             function  disabledefault(event){
               // event.preventDefault(); // prevent enter behavior for correct prompt cursor
     
@@ -248,6 +326,7 @@
             function textKeypress(event){
               var key =  event.keyCode;
                 c = String.fromCharCode(key);
+                // if (isCommandOrCtrlPressed && c=='v') return; // ignore paste key
                 // console.log(key);
                 // console.log(linebuf.length);
                 if ( (c == '\xff' || c == '\x08') && linebuf.length>1) {
@@ -317,7 +396,24 @@
                 // console.log(linebuf);
               
               }
-            
+
+            // function showCanvasCursor(){
+            //   const canvas = document.getElementById('mycanvas');
+            //   const ctx = canvas.getContext('2d');
+
+            //   // Load and draw a custom cursor image
+            //   const cursorImage = new Image();
+            //   cursorImage.src = 'cursor64.png';
+
+            //   // Track mouse movement and update the custom cursor position
+            //   canvas.addEventListener('mousemove', (e) => {
+            //       const cursorX = e.clientX - canvas.getBoundingClientRect().left;
+            //       const cursorY = e.clientY - canvas.getBoundingClientRect().top;
+
+            //       ctx.clearRect(0, 0, canvas.width, canvas.height);
+            //       ctx.drawImage(cursorImage, cursorX, cursorY, 32, 32); // Adjust width and height as needed
+            //   });
+            // }
             function clearTextarea(byid) {
               document.getElementById(byid).value = "";
               // document.getElementById("consolelog").value = ""; 
@@ -325,9 +421,28 @@
             }
             function CTRLCKey() {             
               wsSentChar("\x03\n"); // enter for terminal
-            }     
+            } 
+            function consolechecked() {
+              var terminal = document.getElementById("terminal");
+              consolecheck = ! consolecheck;
+              terminal.style.display = (consolecheck) ? 'block':'mome';
+            }    
+            function canvaschecked() {
+              var canvas = document.getElementById("mycanvas");
+              canvascheck = ! canvascheck;
+              canvas.style.display = (canvascheck) ? 'block':'mome';
+            }    
+            function monitorchecked() {
+              var monitor = document.getElementById("consolelog");
+              monitorcheck = ! monitorcheck;
+              monitor.style.display = (monitorcheck) ? 'block':'mome';
+            }    
             function scrollchecked() {
               scrollcheck = ! scrollcheck;
+            }
+            function touchchecked() {
+              touchcheck = ! touchcheck;
+              TouchEnable();
             }
             function terminallinemode() {
               terminalLineMode = ! terminalLineMode;
@@ -344,7 +459,7 @@
             }
             function updateTextarea(txt) {
                 var txtValue = document.getElementById("terminal").value;
-                var inmsg= window.atob(txt);
+                var inmsg= txt; //window.atob(txt);
                 // console.log("terminal");
                 // console.log(inmsg);
                 if (checkEscCommand(inmsg)) { // clear screen
@@ -362,7 +477,14 @@
                 var txtValue = document.getElementById("consolelog").value;
                 console.log("consolelog");
                 console.log(txtValue);
-                document.getElementById("consolelog").value += window.atob(txt) ;
+                document.getElementById("consolelog").value += txt; //window.atob(txt
+                if (scrollcheck){
+                  document.getElementById("consolelog").scrollTop = document.getElementById("consolelog").scrollHeight;
+                }
+            }
+            function MonitorConsoleLog(txt) {
+                var txtValue = document.getElementById("consolelog").value;
+                document.getElementById("consolelog").value += txt + "\n";
                 if (scrollcheck){
                   document.getElementById("consolelog").scrollTop = document.getElementById("consolelog").scrollHeight;
                 }
@@ -370,6 +492,9 @@
             // change Textarea Style
             function updateRowCol(element) {
               var rowcol = document.getElementById("rcselect").value;
+              const cardtiles = document.getElementById('cardtiles');
+              const cardWidth = cardtiles.offsetWidth;
+              const cardHeight = cardWidth * 3/4;    
                     // var selectValue = document.getElementById("terminal").value;
                     var rowcols = rowcol.split('x');
                     // console.log(rowcol);
@@ -377,112 +502,534 @@
                     // console.log(rowcols[0]);
                     // console.log(rowcols[1]);
                     document.getElementById("terminal").style.height = (parseInt(rowcols[0])*2).toString+"em";
-                    document.getElementById("terminal").style.width =  rowcols[1]+"em";            
+                    document.getElementById("terminal").style.width =  "100%";// "rowcols[1]+"em";            
                     document.getElementById("consolelog").style.height  =  (parseInt(rowcols[0])*2).toString+"em";                 
-                    document.getElementById("consolelog").style.width  =  rowcols[1]+"em";
+                    document.getElementById("consolelog").style.width  =  "100%";//  rowcols[1]+"em";
             }
             function updateStyle(element) {
                     var fontsize = document.getElementById("idselect").value;
                     var selectValue = document.getElementById("terminal").value;
-                    document.getElementById("terminal").style = "font-size:" + fontsize + "px;";
-                    document.getElementById("consolelog").style = "font-size:" + fontsize + "px;";
+                    document.getElementById("terminal").style = "font-size:" + fontsize + "px;"+ "width:100%";
+                    document.getElementById("consolelog").style = "font-size:" + fontsize + "px;"+ "width:100%";
             }
-// websocket protocol
-var gateway = `ws://${window.location.hostname}/ws`;
-var websocket;
-window.addEventListener('load', onload);
+            // ---------------- textarea terminal functions end -------------------------------
 
-var charbuf;
-function onload(event) {
-    initWebSocket();
+            // ---------------- display functions begin -------------------------------
+            // VGA size graphics Function to create a dynamic card
+            // display functions 
+            var scalewfactor=1,scalehfactor=1;
+            var canvas;
+            var ctx;
+            var audio;
+            // Function to create a dynamic card
+            function uiInit(){
+              var terminal = document.getElementById("terminal");
+              var monitor = document.getElementById("consolelog");
 
-}
-function initWebSocket() {
-    console.log('Trying to open a WebSocket connection…');
-    websocket = new WebSocket(gateway);
-    websocket.onopen = onOpen;
-    websocket.onclose = onClose;
-    websocket.onmessage = onMessage;
-    // setInterval(wsGetCharRequest, 200);
-  //  setInterval(wswsPingRequest, 1000);
+              // createCard();
+              canvas = document.getElementById("mycanvas");
+              ctx = canvas.getContext('2d');
+              canvascheck = false;
+              canvas.style.display = (consolecheck) ? 'block':'mome'; 
+              consolecheck = true;
+              terminal.style.display = (consolecheck) ? 'block':'mome'; 
+              monitorcheck = false;
+              monitor.style.display = (monitorcheck) ? 'block':'mome';
+              canvascheck = false;
+              canvas.style.display = (canvascheck) ? 'block':'mome';
+              TouchEnable();
+              drawclearTxt()
+              // Audio
+              audio = document.getElementById('myaudio'); // Get the audio element
 
-}
-function wswsPingRequest(){
-    if (!websocket) return;
-    // if (websocket.readyState!==1) return;
-    websocket.send("P:Hello World!");
+            }
+            // function createCard() {
+            //   const cardContainer = document.getElementById('card-container');
+            //   const cardtiles = document.getElementById('cardtiles');
+            //   const terminal = document.getElementById('terminal');
+            //     // Calculate the width and height for the card (4:3 aspect ratio)
+            //     const screenWidth = window.innerWidth;
+            //     const scalingFactor = screenWidth / 640;
+            //     // cardtiles.style.transform = `scale(${scalingFactor})`;
+            //     cardtiles.style.transformOrigin = 'top left'; // Optional: Set the transform origin
 
-}
-function wsGetCharRequest(){
-  if (!websocket) return;
-    websocket.send("R:");
+            //     // Create a card element
+            //     const card = document.createElement('div');
 
-}
-function wsSentChar(key){ // send textarea keyin 
-  if (!websocket) {
-    // setTimeout(wsSentDelayChar(key), 2000);
-    return;
-  }
-  console.log("key");
-  console.log(key.length);
-    console.log("X:"+key);
-    websocket.send("X:"+key);
+            //     card.width = 640;
+            //     card.height = 480;
+            //     card.border = '10px solid #eef2c1'; // 10px border
+            //     // card.style.transform = `scale(${scalingFactor})`;
+            //     // card.style.transformOrigin = 'top left'; // Optional: Set the transform origin
+            //     cardtiles.appendChild(card);
 
-}
-function wsSentDelayChar(key){
-  websocket.send("X:"+key);
-}
-var fifo = new Array("");
+            //     // Create a canvas element and add it to the card
+            //     canvas = document.createElement('canvas');
+            //     canvas.id = "mycanvas";
+            //     canvas.width = 640;// cardWidth - 10; // Subtract 20 for the border spacing
+            //     canvas.height = 480;//  canvas.width * 3/4; // Subtract 20 for the border spacing
+            //     // canvas.style.transform = `scale(${scalingFactor})`;
+            //     // canvas.style.transformOrigin = 'top left';
+            //     scalewfactor =  canvas.width/640;
+            //     scalehfactor =  canvas.height/480;
+            //     card.appendChild(canvas);
+                
+            //     // Append the card to the container
+            //     cardContainer.appendChild(card);
+            //     ctx = canvas.getContext('2d');
 
-function wswsupdateText(){
-    // console.log(wswsupdateText)
-    if (fifo.length) {    
-      // console.log(fifo.length);
-        updateTextarea(fifo.shift());
-    }
-    
-}
-function onOpen(event) {
-    // console.log('Connection Websocket opened');
-    // getValues();
-    sendTime();
-    editor.dispatchEvent(eventk); // check editor for IME
-    fifo = [];
-    // setInterval(wswsupdateText, 50);
+            //     // Define the rectangle parameters
+            //     const x = 0; // X-coordinate of the top-left corner of the rectangle
+            //     const y = 0; // Y-coordinate of the top-left corner of the rectangle
+            //     const width = canvas.width; // Width of the rectangle
+            //     const height = canvas.height ; // Height of the rectangle
+            //     const fillColor = 'yellow'; // Fill color of the rectangle (optional)
+            //     const borderColor = 'red'; // Border color of the rectangle (optional)
 
-}
+            //     // Draw a filled rectangle
+            //     ctx.fillStyle = fillColor; // Set the fill color
+            //     ctx.fillRect(x, y, width, height); // Draw the filled rectangle
 
-function onClose(event) {
-    // console.log('Connection Websocket closed');
-    setTimeout(initWebSocket, 2000);
-}
+            //     // Draw a stroked (bordered) rectangle (optional)
+            //     ctx.strokeStyle = borderColor; // Set the border color (optional)
+            //     ctx.lineWidth = 2; // Set the border line width (optional)
+            //     ctx.strokeRect(x, y, width, height); // Draw the stroked rectangle (optional)
+
+            //     ctx.fillStyle = 'blue'; //int32ToColorStyle(parseInt(color));
+            //     ctx.fillRect(50, 50, 100, 100); // Draw the filled rectangle
+            //     terminal.focus();
+
+            //     TouchEnable();
 
 
-function onMessage(event) {
-    // console.log(event.data);
-    var msg = event.data;
-    var lines= msg.split(":");
-    switch(lines[0]){
-      case "0":
-        // console.log("push");
-        // console.log(lines[1]);
-        // fifo.push(lines[1]);
-        updateTextarea(lines[1]);
-        // console.log(fifo);
+            //     }
+                var touchlisten=false;
+                function TouchEnable(){
+                    const canvas = document.getElementById('mycanvas');
+                    if (canvas) {
+                      if (touchcheck) {
+                          // Add touch event listeners
 
-        break;
-      case "1":
-        updateConsoleLog(lines[1]);
-      break;
-    }
-    // if (lines[0]=="0") {
-      // updateTextarea(lines[1]);
-    // }else{
-    //   updateConsoleLog(lines[1]);
-    // }
-}
+                          if (touchlisten) return;
+                          touchlisten = true;
+                          canvas.addEventListener('touchstart', handleTouchStart);
+                          canvas.addEventListener('touchmove', handleTouchMove);
+                          canvas.addEventListener('touchend', handleTouchEnd);
 
-// WS endding -----
+                          // Add mouse event listeners
+                          canvas.addEventListener('mousedown', handleMouseDown);
+                          canvas.addEventListener('mousemove', handleMouseMove);
+                          canvas.addEventListener('mouseup', handleMouseUp);
+                      }else{
+                          if (touchlisten){
+                            touchlisten = false;
+
+                            // Add touch event listeners
+                            canvas.removeEventListener('touchstart', handleTouchStart);
+                            canvas.removeEventListener('touchmove', handleTouchMove);
+                            canvas.removeEventListener('touchend', handleTouchEnd);
+
+                            // Add mouse event listeners
+                            canvas.removeEventListener('mousedown', handleMouseDown);
+                            canvas.removeEventListener('mousemove', handleMouseMove);
+                            canvas.removeEventListener('mouseup', handleMouseUp);  
+                          }                   
+                      }
+                    }
+                }
+                // Handle touch start event
+                function handleTouchStart(event) {
+                    event.preventDefault();
+                    const touch = event.touches[0]; // Get the first touch (assuming single touch)
+                    const x = touch.clientX - canvas.getBoundingClientRect().left;
+                    const y = touch.clientY - canvas.getBoundingClientRect().top;
+
+                    wsSentTouch(1,x,y);
+                }
+
+
+                // Handle touch move event
+                function handleTouchMove(event) {
+                    event.preventDefault();
+                    const touch = event.touches[0];
+                    const x = touch.clientX - canvas.getBoundingClientRect().left;
+                    const y = touch.clientY - canvas.getBoundingClientRect().top;
+
+                 // ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    // ctx.drawImage(cursorImage, x, y, 32, 32); // to low Adjust width and height as needed
+
+                    wsSentTouch(2,x,y);
+                }
+
+                // Handle touch end event
+                function handleTouchEnd(event) {
+                    event.preventDefault();
+
+                    const x = touch.clientX - canvas.getBoundingClientRect().left;
+                    const y = touch.clientY - canvas.getBoundingClientRect().top;
+
+                    wsSentTouch(0,x,y);
+                }
+
+                // Handle mouse down event
+                function handleMouseDown(event) {
+                    event.preventDefault();
+                    const x = event.clientX - canvas.getBoundingClientRect().left;
+                    const y = event.clientY - canvas.getBoundingClientRect().top;
+
+                    wsSentMouse(1,x,y);
+                }
+
+                // Handle mouse move event
+                function handleMouseMove(event) {
+                    event.preventDefault();
+                    const x = event.clientX - canvas.getBoundingClientRect().left;
+                    const y = event.clientY - canvas.getBoundingClientRect().top;
+
+                    wsSentMouse(2,x,y);
+                }
+
+                // Handle mouse up event
+                function handleMouseUp(event) {
+                    event.preventDefault();
+                    const x = event.clientX - canvas.getBoundingClientRect().left;
+                    const y = event.clientY - canvas.getBoundingClientRect().top;
+                    wsSentMouse(0,x,y);
+                    // Handle mouse up logic
+                }
+            // Call the createCard function to create the dynamic card
+            // createCard();  
+            // Define an array of functions
+            var PenColor=0;
+            const functionTable = [
+                clearScr,
+                drawFilledRect,
+                drawPixel,
+                drawText,
+                drawHLine,
+                drawVLine,
+                drawLine,
+                drawArc,
+                drawFillArc,
+                drawCircle,
+                drawFillCircle,
+                drawStrokeWidth,
+                drawSetPenColor,
+                drawRect,
+                drawChar,
+            ];
+
+            function VideoFunc(command){
+              // Example command format: "commandIndex arg1 arg2 arg3..."
+              // const command = "3 Hello 100 100"; // Example "drawText" command
+              
+
+              // if (!canvas) {
+              //   createCard();
+              // }
+
+              // Parse the command to get the function index and arguments
+              const commandParts = command.split(' ');
+              const functionIndex = parseInt(commandParts[0]);
+              const args = commandParts.slice(1);
+
+              // Check if the functionIndex is valid
+              if (functionIndex >= 0 && functionIndex < functionTable.length) {
+                  // Call the function indirectly using the function table
+                  const selectedFunction = functionTable[functionIndex];
+                  selectedFunction(...args); // Spread operator to pass arguments as separate parameters
+              } else {
+                  console.log('Invalid function index');
+              }
+            }
+            // Convert a 32-bit integer color to a CSS-style color string
+            function int32ToColorStyle(int32Color) {
+                const red = (int32Color >> 16) & 0xFF; // Extract the red component
+                const green = (int32Color >> 8) & 0xFF; // Extract the green component
+                const blue = int32Color & 0xFF; // Extract the blue component
+
+                // Create and return a CSS-style color string in the format "#RRGGBB"
+                return `#${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}`;
+            }
+            // Define the functions corresponding to the function table
+              function drawFilledRect( x, y, width, height) {
+                // Call the drawFilledRect function to draw a filled rectangle
+                const x1 = (x*scalewfactor); // X-coordinate of the top-left corner
+                const y1 = (y*scalehfactor); // Y-coordinate of the top-left corner
+                const width1 = (width*scalewfactor); // Width of the rectangle
+                const height1 = (height*scalehfactor); // Height of the rectangle
+
+                // ctx.fillStyle = "blue"; //int32ToColorStyle(parseInt(color));
+                // ctx.fillRect(50, 50, 100, 100); // Draw the filled rectangle
+                ctx.fillStyle = PenColor;
+                ctx.fillRect(x1, y1, width1, height1); // Draw the filled rectangle
+                console.log(`Drawing filled rectangle with color ${PenColor}, x=${x1}, y=${y1}, width=${width1}, height=${height1}`);
+            }
+
+            function drawRect( x, y, width, height) {
+                // Call the drawFilledRect function to draw a filled rectangle
+                const x1 = (x*scalewfactor); // X-coordinate of the top-left corner
+                const y1 = (y*scalehfactor); // Y-coordinate of the top-left corner
+                const width1 = (width*scalewfactor); // Width of the rectangle
+                const height1 = (height*scalehfactor); // Height of the rectangle
+
+                // ctx.fillStyle = "blue"; //int32ToColorStyle(parseInt(color));
+                // ctx.fillRect(50, 50, 100, 100); // Draw the filled rectangle
+                ctx.strokeStyle = PenColor; // Stroke color of the circle
+                ctx.strokeRect (x1, y1, width1, height1); // Draw the filled rectangle
+                console.log(`Drawing filled rectangle with color ${PenColor}, x=${x1}, y=${y1}, width=${width1}, height=${height1}`);
+            }           function drawPixel(x, y) {
+                // Implement drawing a pixel with the given color at the specified coordinates
+                drawFilledRect(x, y, 1, 1);
+                console.log(`Drawing pixel with color ${PenColor} at x=${x}, y=${y}`);
+            }
+
+            function drawText( text, x, y, deg) {
+                // Implement drawing text at the specified coordinates
+                // Remove quotation marks if they exist
+                const decodestr = window.atob(text)
+                ctx.fillStyle = PenColor;
+                ctx.font = '15px monospace';
+                ctx.fillText(decodestr,x,y);
+                ctx.stroke();
+                console.log(`Drawing text "${decodestr}" at x=${x}, y=${y}`);
+            }
+            const rows = 25;
+            const cols = 80;
+            var textBuffer=new Array(25*80);
+            var attrBuffer=new Array(25*80);
+            var currentRow = 0;
+            var currentCol = 0;
+            const charWidth = 8; // Adjust this based on your font size and canvas size
+            const charHeight = 19; // Adjust this based on your font size and canvas size
+            function drawclearTxt(){
+              for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                  textBuffer[row*cols+col]=' ';
+                  attrBuffer[row*cols+col]=0;
+                }
+              }
+            }
+            function drawScrollText() {
+              ctx.fillStyle = "black";
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              // Draw each character from the text buffer
+              for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                  drawCharAtPosXY(
+                    textBuffer[row*cols+col],
+                    attrBuffer[row*cols+col],
+                    col*charWidth,
+                    row*charHeight
+                  );
+                }
+              }
+            }
+            function scrollUp() {
+              // Move characters within the text buffer
+              for (let row = 1; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                  textBuffer[(row - 1)*cols+col] = textBuffer[row*cols+col];
+                  attrBuffer[(row - 1)*cols+col] = attrBuffer[row*cols+col];
+                }
+              }
+
+              // Clear the bottom row
+              for (let col = 0; col < cols; col++) {
+                textBuffer[(rows - 1)*cols+col] = ' ';
+                attrBuffer[(rows - 1)*cols+col] = 0;
+              }
+
+              // Redraw the canvas
+              drawScrollText();
+            }
+            function drawChar(cin) {
+              character = String.fromCharCode(cin)[0];
+              if (character === '\n') {
+                // Handle newline (0x0A): Move to the beginning of the next row
+                currentCol = 0;
+                currentRow++;
+              } else if (character === '\r') {
+                // Handle carriage return (0x0D): Move to the beginning of the current row
+                currentCol = 0;
+              } else {
+                // Regular character: Add it to the buffer and move to the next column
+                textBuffer[currentRow*cols+currentCol] = character;
+                attrBuffer[currentRow*cols+currentCol] = PenColor;
+                drawCharAtCuroser(character,PenColor);
+                currentCol++;
+              }
+              // Check for line overflow
+              if (currentCol >= cols) {
+                currentCol = 0;
+                currentRow++;
+              }
+
+              // Check for buffer overflow
+              if (currentRow >= rows) {
+                currentRow--;
+                scrollUp();
+                // setTimeout(scrollUp, 2000); // Scroll up after 2 seconds
+              }
+            }
+            function drawCharAtPosXY(c,attr,x,y) {
+                // Implement drawing text at the specified coordinates
+                // Remove quotation marks if they exist
+                ctx.fillStyle = attr;
+                ctx.font = '18px monospace';
+                ctx.fillText(
+                    c,
+                    x,
+                    y 
+                );
+                ctx.stroke();
+                console.log(`Drawing text "${c}" at x=${currentCol}, y=${currentRow}`);
+            }
+            function drawCharAtCuroser(c,attr) {
+                // Implement drawing text at the specified coordinates
+                // Remove quotation marks if they exist
+                ctx.fillStyle = attr;
+                ctx.font = '15px monospace';
+                ctx.fillText(
+                    c,
+                    currentCol * charWidth,
+                    currentRow * charHeight 
+                );
+                ctx.stroke();
+                console.log(`Drawing text "${c}" at x=${currentCol}, y=${currentRow}`);
+            }
+            function drawHLine(x1, x2, y) { // Hline x1,x2 at y
+                // Implement drawing a horizontal line from (x1, y) to (x2, y)
+                drawFilledRect(x1, y, x2-x1, 1);
+                console.log(`Drawing horizontal line from x=${x1} to x=${x2}, y=${y}`);
+            }
+
+            function drawVLine( y1, y2, x) { // Vline Y1,y2 at x
+            // Plot a line from (x, y) to (x1, y1) with color
+                ctx.beginPath();
+                ctx.moveTo(x*scalehfactor, y*scalehfactor);
+                ctx.lineTo(x1*scalehfactor, y1*scalehfactor);
+                ctx.strokeStyle = PenColor;
+                ctx.stroke();
+                console.log(`Drawing vertical line from x=${x}, y=${y1} to y=${y2}`);
+            }
+
+            function drawLine(x1, y1, x2, y2) {
+                // Implement plotting coordinates from (x1, y1) to (x2, y2)
+                ctx.beginPath();
+                ctx.moveTo(x1*scalehfactor, y1*scalehfactor);
+                ctx.lineTo(x2*scalehfactor, y2*scalehfactor);
+                ctx.strokeStyle = PenColor;
+                ctx.stroke();
+                console.log(`Plotting coordinates from x=${x1}, y=${y1} to x=${x2}, y=${y2}`);
+            }
+            function drawSetPenColor(color)
+            {
+               PenColor =int32ToColorStyle(color);
+            }
+            function drawStrokeWidth(width)
+            {          
+               ctx.lineWidth = width; // Line width (optional)
+            }
+            function drawCircle( x, y, radius)
+            {
+              ctx.beginPath(); // Begin a new path
+              ctx.arc(x, y, radius, 0, 2 * Math.PI); // Define the circle
+              ctx.strokeStyle = PenColor; // Stroke color of the circle
+              // ctx.lineWidth = 2; // Line width (optional)
+              ctx.stroke(); // Stroke the circle outline
+              ctx.closePath(); // Close the path
+            }
+            function drawFillCircle( x, y, radius)
+            {
+              ctx.beginPath(); // Begin a new path
+              ctx.arc(x, y, radius, 0, 2 * Math.PI); // Define the circle
+              ctx.fillStyle = PenColor; // Stroke color of the circle
+              ctx.fill(); // Stroke the circle outline
+              ctx.closePath(); // Close the path
+            }
+            function drawArc( x, y, radius, from, to )
+            {
+              ctx.beginPath(); // Begin a new path
+              ctx.arc(x, y, radius, from, to); // Define the circle
+              ctx.strokeStyle = PenColor; // Stroke color of the circle
+              // ctx.lineWidth = 2; // Line width (optional)
+              ctx.stroke(); // Stroke the circle outline
+              ctx.closePath(); // Close the path
+            }
+            function drawFillArc( x, y, radius, from, to )
+            {
+              ctx.beginPath(); // Begin a new path
+              ctx.arc(x, y, radius, from, to); // Define the circle
+              ctx.fillStyle = PenColor; // Stroke color of the circle
+              // ctx.lineWidth = 2; // Line width (optional)
+              ctx.stroke(); // Stroke the circle outline
+              ctx.closePath(); // Close the path
+            }
+            function clearScr()
+            {
+                  const canvas = document.getElementById('mycanvas');
+                  ctx.fillStyle = PenColor;
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }            // ---------------- display functions ends -------------------------------
+            // ---------------- Audio  functions Begins -------------------------------
+            const AudiofunctionTable = [
+                playAudio,
+                pauseAudio,
+                stopAudio,
+                seekForward,
+                seekBackward,
+                changeSong, // 5
+            ]; 
+            function AudioFunc(command){
+
+
+              // Parse the command to get the function index and arguments
+              const commandParts = command.split(' ');
+              const functionIndex = parseInt(commandParts[0]);
+              const args = commandParts.slice(1);
+
+              // Check if the functionIndex is valid
+              if (functionIndex >= 0 && functionIndex < functionTable.length) {
+                  // Call the function indirectly using the function table
+                  const selectedFunction = AudiofunctionTable[functionIndex];
+                  selectedFunction(...args); // Spread operator to pass arguments as separate parameters
+              } else {
+                  console.log('Invalid function index');
+              }
+            }
+            // Play the audio
+            function changeSong(filename) {
+              audio.src = filename;
+            }
+            // Play the audio
+            function playAudio() {
+              audio.play();
+            }
+
+            // Pause the audio
+            function pauseAudio() {
+              audio.pause();
+            }
+
+            // Stop the audio (pause and reset to the beginning)
+            function stopAudio() {
+              audio.pause();
+              audio.currentTime = 0;
+            }
+
+            // Seek forward in the audio by a specified number of seconds
+            function seekForward(seconds) {
+              audio.currentTime += seconds;
+            }
+
+            // Seek backward in the audio by a specified number of seconds
+            function seekBackward(seconds) {
+              audio.currentTime -= seconds;
+            }
+            // ---------------- Audio  functions ends -------------------------------
+
 
 //  Server Sent Event (SSE) Listener Handle      
           if (!!window.EventSource) {

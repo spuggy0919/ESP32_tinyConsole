@@ -1,5 +1,4 @@
 #include "wifiinit.h"
-#include "ledpwm.h"
 
 /* 
   WIFI utility wifi 0.3
@@ -46,7 +45,6 @@ bool WiFiInit(int mode,...)
   local_Gateway.fromString(gateway);
   subnet.fromString(NMASK);
     bool r=false;
-    pwminit();
     va_start ( arguments, mode );
     switch(mode) {
     case WIFI_AP_MODE:
@@ -69,7 +67,8 @@ bool WiFiInit(int mode,...)
     }
     va_end ( arguments ); 
     if (r) {
-      pwmled(255);
+      r = WiFimDNS();
+      if (!r) return false;
     }
     return r;
 }
@@ -139,5 +138,15 @@ bool WiFiAP() {
   Serial.println("mac:"+mac);
   Serial.print("AP IP address: ");
   Serial.println(IP);
+  return true;
+}
+bool WiFimDNS() 
+{
+String mac = WiFi.macAddress();
+ // Initialize mDNS
+  if (!MDNS.begin(WIFIAPACTUALNAME(mac))) {   // Set the hostname to "esp32.local"
+    Serial.println("Error setting up MDNS responder!");
+    return false;
+  }
   return true;
 }

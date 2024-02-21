@@ -215,7 +215,7 @@ bool  checkIsDir(fs::FS &fs,const char *pname, bool *dir){
     *dir = f.isDirectory();
     return true;
 }
-/* check the pname is path or file, if path replace with path apeend fname*/
+/* check the pname is path or file, if path replace with path append fname*/
 String  getFullPath_File(const char *pname, const char *fname){
     bool isDir;
     String last =  getlastComponet(fname);
@@ -374,7 +374,7 @@ String readFile(fs::FS &fs, const char * pathi){
 //   Serial.println(fileContent);
   return fileContent;
 }
-void writeFile(fs::FS &fs, const char * pathi, const char * message){
+int writeFile(fs::FS &fs, const char * pathi, const char * message){
     String paths =  getfullpathFileOrDir(fs, pathi);
     const char * path = paths.c_str();
     Serial.printf("Writing file: %s\r\n", path);
@@ -384,14 +384,16 @@ void writeFile(fs::FS &fs, const char * pathi, const char * message){
 
     if(!file){
         Serial.println("- failed to open file for writing");
-        return;
+        return -1;
     }
     if(!file.print(message)){
         Serial.println("- write failed");
     // } else {
     //     Serial.println("- write failed");
+        return -2;
     }
     file.close();
+    return 0;
 }
 
 void appendFile(fs::FS &fs, const char * pathi, const char * message){

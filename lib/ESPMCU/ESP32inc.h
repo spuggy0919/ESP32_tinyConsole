@@ -8,4 +8,5 @@
 #include "timerfun.h"       // for esp32  rtc
 #include "littlefsfun.h"    // LittleFS
 #include "WebServer.h"      // ESPASYNCWEBServer
+#include "audiovideo.h"          // ESPASYNCWEBServer
 #endif  //__ESP32INC__H__

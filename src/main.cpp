@@ -24,12 +24,7 @@ void setup(){
   Serial.begin(115200);
   Serial.println("Web Control");
   pwminit();
-  // 1. *** modified your SSID, PASSWORD pair 
-
-  if (!WiFiInit(WIFIMODE, WIFISSID, PASSWORD, LOCAL_IP, GATEWAY)) {
-      Serial.println("Error:Wifi fail");
-      return ;
-  } 
+  
   
   // 2, mount and initalize littlefs for reading page locates in file system
 
@@ -40,10 +35,19 @@ void setup(){
   // 2.1 IO create Queue
   if (!stdioRedirector()) {
       Serial.println("Error:Websocket Serial not starting...");
+      return;
   }
   // check LittleFS , it is not necessary 
   // listDir(LittleFS,"/",2);
   // String indexfile = readFile(LittleFS,"/index.html");
+
+// 1. *** modified your SSID, PASSWORD pair 
+//  modified after config file read from littlefs
+  int error = Config_Init();
+  if (error) {
+      Serial.println("Error:Wifi fail:"+String(error));
+      return ;
+  } 
 
   // 3, start up Web Server
   WebServerPage(); // HTTP SSE WS
@@ -53,7 +57,8 @@ void setup(){
 
   interpreterInit();
 
- 
+  // light up blue led
+  pwmled(255);
 
   // cmd_task(1,(char **)NULL); // testing for task
 

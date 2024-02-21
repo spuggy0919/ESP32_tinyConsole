@@ -19,30 +19,17 @@
   #include <Hash.h>
 #endif
 #include <ESPAsyncWebServer.h>
-
+#include "WebSocket.h"
 #define SETUP_STATE 0
 #define LOOP_STATE  1
 
-bool WebWSConnect();
-
-void WSSendTXT(String msg);
-void WSTransferMessage(int wi,String msg);
-void WSTransferChar(int wi,char c);
-void WSTransferBufferFlush(int wi);
 
 void eventSend(String msg,const char * key);
-void wsTextPrint(String msg);
-void wsTextPrintln(String msg);
-void wsTextPrint(String msg);
-void wsTextPrintCstr(const char *msg);
-void wsTextPrintln(String msg);
-void WebServerPage();
 void webEventTask();
-// bool WSTransferBufferTaskInit(int wi);
-// bool WSTransferBufferTaskDestroy();
+void WebServerPage();
 
-// bool WebNTPPage();
-// void WebInputServer();
+
+
 
 
 // // NTP

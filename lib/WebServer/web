@@ -1,0 +1,103 @@
+#include <Arduino.h>
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncWebSocket.h>
+#include <ArduinoJson.h>
+
+enum PACKET_TYPE{
+    DATA=0,
+    ACK,
+    SYNC,
+    ERROR
+}
+AsyncWebServer server(80);
+AsyncWebSocket ws("/ws");
+
+void onWebSocketEvent(AsyncWebSocket server, AsyncWebSocketClient client, AwsEventType type, void arg, uint8_t data, size_t len) {
+    switch(type){
+        case WS_EVT_CONNECT:
+            Serial.println("WebSocket client connected");
+            break;
+        case WS_EVT_DISCONNECT:
+            Serial.println("WebSocket client disconnected");
+            break;          
+
+        case WS_EVT_DATA:{
+            Serial.println("WebSocket client disconnected");
+            AwsFrameInfo* info = (AwsFrameInfo*)arg;
+            if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
+            // Parse JSON data from the client
+            DynamicJsonDocument doc(1024);
+            DeserializationError error = deserializeJson(doc, data, len);
+            if (!error) {
+                const char* messageType = doc["type"];
+                int messageId = doc["id"];
+                switch(messageType) {
+                    case DATA_PACKET:
+                         // Handle data message
+                        int receivedSno = doc["sno"];
+                        
+                        // Process the data...
+                        
+                        // Send an ACK back to the client
+                        JsonObject ackMessage = doc.to<JsonObject>();
+                        ackMessage["type"] = "ack";
+                        ackMessage["id"] = messageId;
+                        String ackJson;
+                        serializeJson(ackMessage, ackJson);
+                        client->text(ackJson);
+                         break;
+                    case ACK_PACKET:
+                        // Handle ACK message
+                        int ackedSno = doc["sno"];
+                
+                        // Process the ACK...
+                         break;
+                    case SYN_PACKET:
+                         break;
+                    case ERROR_PACKET:
+                         break;
+                }
+                if (strcmp(messageType, "data") == 0) {
+
+                } else if (strcmp(messageType, "ack") == 0) {
+                // Handle ACK message
+                int ackedSno = doc["sno"];
+                
+                // Process the ACK...
+                } else if (strcmp(messageType, "syn") == 0) {
+                // Handle SYN message
+                int synedSno = doc["sno"];
+                
+                // Resend data with the matching sno...
+                }
+            }
+            }
+            break;          
+        }
+    }
+}
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+
+  // Set up WebSocket event handler
+  ws.onEvent(onWebSocketEvent);
+  server.addHandler(&ws);
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request){
+    request->send(200, "text/html", "WebSocket Example");
+  });
+  
+  // Start the server
+  server.begin();
+}
+
+void loop() {
+  // Your main loop code here
+}

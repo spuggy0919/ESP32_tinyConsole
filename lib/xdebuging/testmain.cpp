@@ -22,16 +22,22 @@ bool option(int argc,char * argv[],int argcMax){
 int test_main(int argc,char * argv[])
 {
   char buf[256];
-      sprintf(buf,"test main argc=%d\n",argc);
+      sprintf(buf,"2:test main argc=%d\n",argc);
       WSSendTXT(String(buf));
-     for(int i;i<argc;i++){
+     for(int i=0;i<argc;i++){
 
-       sprintf(buf,"argv[%d]=%s\n",i,String(argv[i]));
+       sprintf(buf,"2:argv[%d]=%s\n",i,String(argv[i]));
        WSSendTXT(String(buf));
 
      }  
+     for(int i=0;i<1000;i++){
+       sprintf(buf,"2:%d\n",i);
+       if (!WSSendTXTAck(String(buf))) {
+          WSSendTXT(String(buf));
+          break;
+       }
 
-    //  FILE *fid=fopen("test.txt","w+");
+     }      //  FILE *fid=fopen("test.txt","w+");
      
     // //  fprintf(fid,"Hello World!");
     //  fclose(fid);

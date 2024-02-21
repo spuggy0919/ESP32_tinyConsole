@@ -14,6 +14,14 @@
         "string_view": "cpp",
         "initializer_list": "cpp",
         "regex": "cpp",
-        "tinybasicplusfileioport h": "cpp"
-    }
+        "tinybasicplusfileioport h": "cpp",
+        "stdexcept": "cpp",
+        "ios": "cpp",
+        "__locale": "cpp",
+        "__node_handle": "cpp",
+        "istream": "cpp",
+        "locale": "cpp"
+    },
+    "r.lsp.promptToInstall": false,
+    "cmake.configureOnOpen": false
 }

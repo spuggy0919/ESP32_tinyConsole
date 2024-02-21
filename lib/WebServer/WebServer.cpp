@@ -5,12 +5,8 @@
  *
  *	Author: spuggy0919, spuggy0919@gmail.com
  */
-#include <Webserver.h>
-#include "Base64.h"
-#include <Freertos/FreeRTOS.h>
+#include "WebServer.h"
 
-#include <freertos/task.h>
-#include <esp_system.h>
 // bool dummy(){return false;}
 
 // bool (*WebserForInterpreterSendCmd)()= dummy;
@@ -19,172 +15,10 @@
 AsyncWebServer  server(80);
 // Create an Server Sent Event (SSE) Source on /events
 AsyncEventSource events("/events");
-// websocket
-AsyncWebSocket ws("/ws");
-// websocket
-
-#define KEY_TERMINAL   0
-#define KEY_CONSOLELOG 1
-
-bool ws_connect=false;
-bool WebWSConnect(){
-    return ws_connect;
-}
-int ws_clientid ;
-void notifyClients(String sliderValues) {
-  ws.textAll(sliderValues);
-}
-void wsTextPrintBase64(int key,String msg){
-  String substr;
-  //  Serial.println("wsTextPrintBase64");
-   while(msg.length() > 0) {
-      if (msg.length()>=64) {
-        substr =  msg.substring(0,64);
-        msg = msg.substring(64,msg.length());
-      }else{
-        substr = msg;
-        msg = "";
-      }
-      // Serial.println(substr);
-
-      int encodedLength = Base64.encodedLength(substr.length());
-      char encodedString[encodedLength + 1];
-       Base64.encode(encodedString, (char *) substr.c_str(), substr.length());      
-      //  Serial.printf("str = %s, len = %d, enstr=%s,enlen=%d\n",substr.c_str(),substr.length(),encodedString,encodedLength);
-       String keystr=(key==KEY_TERMINAL)? "0:":"1:";
-       WSSendTXT((keystr+String(encodedString)).c_str());
-       //  events.send(encodedString,"textarea",millis());
-      //  vTaskDelay( 50 / portTICK_PERIOD_MS ); 
-    }
-    return ; // DEBUG
-
-}
-void wsTextPrintCstr(const char *msg){
-   wsTextPrint(String(msg));
-}
-void wsTextPrint(String msg){
-   wsTextPrintBase64(0,msg);
-    return ; // DEBUG
-
-}
-void wsTextPrintln(String msg){
-   wsTextPrintBase64(0,msg+"\n");
-  return ; // DEBUG
-
-}
-
-void WSSendTXT(String msg);
-
-static char obuf[2][BUFFERSIZE];
-static int olen[2]={0,0};
-void WSTransferBufferFlush(int wi){
-
-   if (ws_connect){
-    
-
-      // Serial.printf("WS:TX:\n");
-      while (!_d_gettxbuf(obuf[wi],&(olen[wi]))){
-        char c;
-        for(int i = 0 ;i <olen[wi] ;i++) {
-            c=obuf[wi][i];
-              Serial.printf("f[%2x]\n ",c);
-        } 
-          {wsTextPrintBase64(wi,String(obuf[wi])); olen[wi]=0;}
-         yield();
-      }
-   }
-
-}
-
-void WSTransferChar(int wi,char c){
-      // taskENTER_CRITICAL();
-      if (c=='\x0a'||c=='\x0d'||c=='?'||c=='.'||c=='!') {
-        obuf[wi][olen[wi]]='\n'; olen[wi]+=1;
-        obuf[wi][olen[wi]]=0;
-        wsTextPrintBase64(wi,String(obuf[wi]));  olen[wi]=0;
-      }else{
-        obuf[wi][olen[wi]]=c; olen[wi]+=1;
-      }
-      // taskEXIT_CRITICAL();
 
 
-}
-
-// msg with base64
-void WSTransferMessage(int wi,String msg){
-
-      wsTextPrintBase64(wi,String(msg)); 
 
 
-}
-// low evel sent 
-void WSSendTXT(String msg){
-    ws.text(ws_clientid, msg.c_str(),msg.length());
-}
-/* parser receive who:command:device:msg */
-void WebSocketMessageReceive(void *arg, uint8_t *data, size_t len) {
-  AwsFrameInfo *info = (AwsFrameInfo*)arg;
-  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
-    data[len] = 0;
-    String receive = String((const char *)data);
-    String cmd =  receive.substring(0,2);
-    String msg =  receive.substring(2,receive.length());
-
-    if (cmd == "X:"){ // transfer from client 
-      int loc = 0;
-      // if (data[2]=='\x0d') loc=3;
-        Serial.printf("WS:RECV:\n");
-        char c;
-        for(int i = 0 ;i <msg.length() ;i++) {
-            c=msg.charAt(i);
-              Serial.printf("R[%2x]\n ",c);
-        }
-
-      if (!_d_insertrxdata((const char*)(msg.c_str()), msg.length())){
-        Serial.printf("ERROR: WS:RECV: buffer full!");
-      }
-    }
-    if (cmd == "R:"){ // request from client 
-        WSTransferBufferFlush(0);
-    }
-    if (cmd == "P:"){ // request from client 
-        WSTransferMessage(1,msg);
-    }
-  }
-}
-void WSEventHandle(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
-  switch (type) {
-    case WS_EVT_CONNECT:
-      Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-      ws_clientid = client->id();
-      ws_connect = true;
-   //     WSTransferBufferTaskInit(0); // wi is 0 for textlog task sent message for basic
-     
-
-      break;
-    case WS_EVT_DISCONNECT:
-      Serial.printf("WebSocket client #%u disconnected\n", client->id());
-       ws_connect = false;
-
-      break;
-    case WS_EVT_DATA:
-
-      WebSocketMessageReceive(arg, data, len);
-      break;
-    case WS_EVT_PONG:
-        WSTransferMessage(1,"WebSocketPongEvent\n");
-        break;
-    case WS_EVT_ERROR:
-          WSTransferMessage(1,"WebSocketErrorEvent\n");
-
-      break;
-  }
-}
-
-void WebSocketStart() {
-  ws.onEvent(WSEventHandle);
-  server.addHandler(&ws);
-}
 
 //http
 void webEventTask(){
@@ -339,7 +173,7 @@ void WebServerPage()
     OK200();
   });
   // 4. Set up Server Sent Event
-  WebSocketStart();
+  WebSocketStart(server);
   webEventTask();
 
   server.begin();

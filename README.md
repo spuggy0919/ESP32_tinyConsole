@@ -11,7 +11,9 @@ ESP32 Web Server (tinyConsole) use me-no-dev/ESPAsyncWebServer, bases on WebSock
 4. TinyBasic Program can be upload to LittleFS, and run by TinyBasic Interpreter.
 5. TinyBasic with interactive mode, it can write program.
 6. simple and tiny shell commands, ls, cat, cd, cp, append, rm, mkdir, help. But it is simple and no option operation, no wildcard filter.
-
+7. add VGA graphics mode。
+8. Wifi Config.json file setting, if delete config.json, then use AP mode, add mDNSfunction, use network utility scan to find ESP32 IP.
+9. play (MP3)，Touch，Mouse Event is demo only。
 TinyBasic is ported from slviajero/tinybasic. 
 Currently, tinyConsole only supports DigitIO, Timer, FileIO, and WebSocket Serial IO.
 
@@ -125,7 +127,15 @@ Hello World
 > run                   // press '#' for break running loop
 >Crtl-C                 // press 'Crtl-C ' back to tinyConsole prompt '%' shell mode
 %
-
+%avtest [enter]         // internal command for graphics demo
+%cd basic [enter]       // emtering BASIC sub directory
+%tb v.bas [enter]       // BASIC draw circles demo
+>list [enter]           // emter BASIC interactive mode，list basic source code
+>20 [enter]             // delete line #20
+>RUN [enter]            // run text mode drawing demo
+>SAVE "v1.bas"          // save as v1.bas
+[ctrl-c]                // back to command shell mode
+%cat v1.bas             // list file content
 ```
 ESP32 SSD1306 Pin 21 SDA, Pin 22 SDL, Vcc 3.3V, GND, run
 ```

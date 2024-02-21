@@ -9,10 +9,13 @@
   #include <ESP8266WiFi.h>
   #include <WiFiUdp.h>
 #endif
+#include <ESPmDNS.h>
+
 #define WIFI_AP_MODE 0
 #define WIFI_STA_AUTO_MODE 1
 #define WIFI_STA_STATIC_MODE 2
 #include "WifiSetting.h"
+#include "config.h"
 
 //Variables to save values from HTML form
 extern String ssidname;
@@ -24,4 +27,6 @@ bool WiFiInit(int mode,...);
 bool WiFiSTAAutoIP();
 bool WiFiSTAStaticIP(String ssid,String pass,String ip, String gateway);
 bool WiFiAP();
+bool WiFimDNS();
+
 #endif

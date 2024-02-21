@@ -72,6 +72,7 @@
 #undef LCDSHIELD
 #undef ARDUINOTFT
 #undef ARDUINOVGA
+#undef HTTPWSVGA /*spuggy0919*/
 #undef ARDUINOEEPROM
 #undef ARDUINOEFS
 #undef ARDUINOSD
@@ -410,7 +411,8 @@
 #define ESPLITTLEFS				/*spuggy0919*/
 #undef DISPLAYCANSCROLL
 #undef ARDUINOILI9488 /*spuggy0919*/
-#define ARDUINOSSD1306 /*spuggy0919*/
+#undef ARDUINOSSD1306 /*spuggy0919*/
+#define HTTPWSVGA /*spuggy0919  vga bai http winsocket*/
 #undef ARDUINOEEPROM 
 #undef  ARDUINOMQTT
 #define ARDUINOWIRE/*spuggy0919*/
@@ -522,7 +524,7 @@ const char bsystype = SYSTYPE_UNKNOWN;
  * language setting 
  * this is odd and can be removed later on
  */
-#if !defined(ARDUINOTFT) && !defined(ARDUINOVGA) && !defined(ARDUINOILI9488) && !defined(ARDUINONOKIA51) && !defined(ARDUINOSSD1306)
+#if !defined(ARDUINOTFT) && !defined(ARDUINOVGA) && !defined(ARDUINOILI9488) && !defined(ARDUINONOKIA51) && !defined(ARDUINOSSD1306)  && !defined(HTTPWSVGA) /*spuggy0919**/
 #undef HASGRAPH
 #endif
 
@@ -1269,6 +1271,116 @@ void vgawrite(char c){
     	return;
   	}
   	Terminal.write(c);
+}
+
+#endif
+
+/* 
+ * spuggy0919
+ * this is the VGA code for httpwsVGA - experimental
+ * give a websocket protocol for drawing functions
+ */
+#if defined(HTTPWSVGA)
+#include "audiovideo.h"
+int vga_graph_pen=0;
+int vga_graph_pen_width=1;
+int vga_graph_brush = 0x000000;
+int vga_txt_pen = 0x00ff00;
+int vga_txt_background = 0x000000;
+int vga_pallete[16]={
+	0x000000,
+	0xFFFFFF,
+	0xFF0000,
+	0x00FF00,
+	0x0000FF,
+	0xFFFF00,
+	0xFF00FF,
+	0x00FFFF,
+	0x800000,
+	0x008000,
+	0x000080,
+	0x808000,
+	0x800080,
+	0x008080,
+	0xc0c0c0,
+	0x808080
+};
+
+
+
+/* this starts the vga controller and the terminal right now */
+void vgabegin() {
+	vga_graph_pen=0x000000;
+}
+
+int vgastat(char c) {return 0; }
+
+void vgascale(int* x, int* y) {
+	*y=*y*10/24;
+}
+
+void rgbcolor(int r, int g, int b) {
+	vga_graph_pen=(r<<16)|(g<<8)|(b);
+}
+int setPenColor(int color){
+	vga_graph_pen = color;
+	return 0;
+}
+int setPenWidth(int w){
+	vga_graph_pen_width = w;
+	return 0;
+}
+void vgacolor(short c) { vga_graph_pen = vga_pallete[c%16];}
+void plot(int x, int y) { 
+		drawPenColor(vga_graph_pen);
+		drawPixel( x, y);
+		drawPenColor(vga_txt_pen);
+
+}
+void line(int x0, int y0, int x1, int y1) {
+		drawPenColor(vga_graph_pen);
+		drawLine(x0, y0, x1, y1);
+		drawPenColor(vga_txt_pen);
+
+}
+void rect(int x0, int y0, int x1, int y1) { 
+		drawPenColor(vga_graph_pen);
+	    drawRect(x0, y0, x1, y1);
+			drawPenColor(vga_txt_pen);
+
+}
+void frect(int x0, int y0, int x1, int y1) {  
+		Serial.printf("Frect%d %d %d %d\n",x0,y0,x1,y1);
+		drawPenColor(vga_graph_pen);
+	    drawFRect(x0, y0, x1, y1);
+		drawPenColor(vga_txt_pen);
+
+}
+void circle(int x0, int y0, int r) {  
+		drawPenColor(vga_graph_pen);
+	    drawCircle(x0, y0, r);
+		drawPenColor(vga_txt_pen);
+
+}
+void fcircle(int x0, int y0, int r) {  
+		drawPenColor(vga_graph_pen);
+	    drawFCircle(x0, y0, r);
+		drawPenColor(vga_txt_pen);
+}
+void vgawrite(char c){
+	drawPenColor(vga_graph_pen);
+	drawStrokeWidth(1);
+	switch(c) {
+    case 12: /* form feed is clear screen */
+	    drawClearScr();
+      return;
+    case 10: /* this is LF Unix style doing also a CR */
+        // Terminal.write(10); Terminal.write(13);
+			drawChar(0xa);
+			drawChar(0xd);
+    	return;
+  	}
+	drawChar(c);
 }
 #else 
 void vgabegin(){}
@@ -2412,7 +2524,7 @@ const char rootfsprefix[1] = "";
 #endif
 #endif
 #if defined(ESPSPIFFS) || defined(ESPLITTLEFS) /*spuggy0919***/
-const char rootfsprefix[2] = "/";
+const char rootfsprefix[8] = "/basic/"; /*spuggy0919***/
 #ifdef ARDUINO_ARCH_ESP8266 /*spuggy0919***/
 Dir root;
 File file;
@@ -2708,7 +2820,7 @@ void rootopen() {
 	root=SD.open("/");
 #endif
 #ifdef ESPLITTLEFS
-	root=LittleFS.open("/");
+	root=LittleFS.open("/basic/"); /*spuggy0919***/
 	Serial.printf("rootopen[%4x]%s\n",root,root.name());
 
 #endif
