@@ -1,38 +1,47 @@
 // websocket protocol
 var gateway = `ws://${window.location.hostname}/ws`;
 var websocket;
-var pingInterval;
+var pingTimer;
 let replyPromise;
 var charbuf;
 var fifo = new Array("");
 let retries=0;
 let maxRetries=3;
+var restartws=true;
 window.addEventListener('load', onload);
 
 function onload(event) {
+    restart=true;
     initWebSocket();
 
 }
 function initWebSocket() {
     MonitorConsoleLog('Trying to open a WebSocket connection…');
     MonitorConsoleLog(gateway);
-
+    if (!restartws) {
+        websocket=null;
+        restartws=false;
+        MonitorConsoleLog('reentry');
+        return false;
+    }
     websocket = new WebSocket(gateway);
     websocket.onopen = onOpen;
     websocket.onclose = onClose;
     // websocket.onerror = onError;
     websocket.onmessage = onMessage;
     // setInterval(wsGetCharRequest, 200);
-
+    MonitorConsoleLog('done');
+    return true;
 }
 /* websocket reliablity Test Function */
 /* websocket Send function */
 function sendMessage(msg){
     // Wait until the state of the socket is not ready and send the message when it is...
     waitForSocketConnection(websocket, function(){
-        // MonitorConsoleLog("ESP32<---CLIENT:"+msg);
+        let nows = Date.now()
+        MonitorConsoleLog(nows+":ESP32<---CLIENT:"+msg);
         websocket.send(msg);
-
+        if (msg[0]!='P') resetPingTimer();
     });
 }
 
@@ -89,6 +98,19 @@ function wsPingRequest(){
         MonitorConsoleLog(`Reply timeout or error: ${error}`);
     });
 }
+function resetPingTimer() {
+    // Clear the existing timer
+    clearTimeout(pingTimer);
+  
+    // Start a new timer
+    startPingTimer();
+  }
+function startPingTimer() {
+  pingTimer = setTimeout(() => {
+    // Send ping message to the server
+    wsPingRequest()
+  }, 5000); // Set the ping interval to 5 seconds (adjust as needed)
+} 
 function wsSentDelayChar(key){
     if (!websocket) return;
     sendMessage("ACK");
@@ -170,7 +192,7 @@ function wsSentTest(msg){ // send textarea keyin
 function onOpen(event) {
     // console.log('Connection Websocket opened');
     // getValues();
-    sendTime();
+    // sendTime(); change on demand
     uiInit();
     editor.dispatchEvent(eventk); // check editor for IME
     fifo = [];
@@ -179,7 +201,7 @@ function onOpen(event) {
 
     // setInterval(wswsupdateText, 50);
     // Periodically send PING frames (adjust as needed)
-    const pingInterval = setInterval(() => {
+    const pingTimer = setTimeout(() => {
         wsPingRequest();
         // websocket.ping();
     }, 5000); // Adjust the interval as needed
@@ -193,65 +215,112 @@ function onClose(event) {
         replyPromise.reject('WebSocket connection closed');
         replyPromise = null;
     }
-    clearInterval(pingInterval);
+    clearTimeout(pingTimer);
     if (retries < maxRetries) {
+        var oldws = websocket;
         retries++;
         // Reconnect after a delay (e.g., 5 seconds)
-      //  setTimeout(initWebSocket, 5000); bug don't restart
+
+        restartws=true;
+        if (!initWebSocket){//if restart fail keep old for retry
+            websocket = oldws;
+        }
       } else {
         MonitorConsoleLog('Maximum retry attempts reached, closed');
       }
 }
-
-
+const messageQueue = [];
 function onMessage(event) {
-    // console.log(event.data);
-    var msg = event.data;
-    var lines= msg.split(":");
-    let ldata;
-
-
-    if (lines[0]!='2') {
+    var lines= event.data.split(":");
+    let ldata ;
+    if (lines[0]=='1') {
         ldata = atob(lines[1]);
-    }
-    switch(lines[0]){
-        case "0": // command shell
-        updateTextarea(ldata);
-        break;
-        case "1": // Serial Monitor
         // Resolve the reply promise with the received message
         if (ldata=='P:PONG' && replyPromise) { // for pong
-                // MonitorConsoleLog('PONG received');
+            let nowt=Date.now();
+            MonitorConsoleLog(nowt+':PONG received');
 
-                replyPromise.resolve(ldata);
-                replyPromise = null;
-                return;
-            
+            replyPromise.resolve(ldata);
+            replyPromise = null;        
         }else {
             updateConsoleLog(ldata);
         }
-        break;
-        case "2": // Serial Monitor test fro ack 
-            updateConsoleLog(lines[1]);
-            break;
-        case "8": // audio
-        AudioFunc(ldata);
-        break;
-        case "9": // video 
-        VideoFunc(ldata);
-        break;
-        case "T": // test protocol 
-        var line=atob(lines[1]);
-        // VideoFunc(line);
-        break;
-
+        resetPingTimer();
+        return ;
     }
+    // Add the received message to the queue
+    messageQueue.push(event.data);
+    resetPingTimer();
     websocket.send("A:"); // reply ack for avoid reentry so atfer process data
-    // if (lines[0]=="0") {
-        // updateTextarea(lines[1]);
-    // }else{
-    //   updateConsoleLog(lines[1]);
-    // }
+    // Process the message queue asynchronously
+    setTimeout(processMessagesQueue(),0);
+}
+// Asynchronous function to process the message queue
+let processing = false
+function processMessagesQueue() {
+    // Process messages one by one
+    // Check if there is already a background processing task
+    if (!processing) {
+        processing = true;
+    if (messageQueue.length > 0) {
+        // Start processing messages asynchronously
+        const msg = messageQueue.shift();
+        processMessages(msg)
+        setTimeout(processMessagesQueue(),0);
+    }
+        processing = false;
+    }
+}
+
+// Asynchronous function to simulate processing messages  
+function processMessages(msg) {
+        // console.log(event.data);
+        // var msg = event.data;
+        var lines= msg.split(":");
+        let ldata;
+
+
+        if (lines[0]!='2') {
+            ldata = atob(lines[1]);
+        }
+        // MonitorConsoleLog('processMessage:'+lines[0]+ldata);
+        switch(lines[0]){
+            case "0": // command shell
+            updateTextarea(ldata);
+            break;
+            case "1": // Serial Monitor
+            // Resolve the reply promise with the received message
+            if (ldata=='P:PONG' && replyPromise) { // for pong
+                    MonitorConsoleLog('PONG received');
+
+                    replyPromise.resolve(ldata);
+                    replyPromise = null;
+                    return;
+                
+            }else {
+                updateConsoleLog(ldata);
+            }
+            break;
+            case "2": // Serial Monitor test fro ack 
+                updateConsoleLog(lines[1]);
+                break;
+            case "8": // audio
+            AudioFunc(ldata);
+            break;
+            case "9": // video 
+            VideoFunc(ldata);
+            break;
+            case "T": // test protocol 
+            var line=atob(lines[1]);
+            // VideoFunc(line);
+            break;
+
+        }
+        // if (lines[0]=="0") {
+            // updateTextarea(lines[1]);
+        // }else{
+        //   updateConsoleLog(lines[1]);
+        // }
 }
 
 // WS endding -----

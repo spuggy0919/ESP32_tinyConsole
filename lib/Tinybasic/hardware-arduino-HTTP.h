@@ -846,9 +846,11 @@ long freememorysize() {
 void(* callzero)() = 0;
 #endif
 
+int forceexit = 0; /*spuggy0919 for shell mode*/
 void restartsystem() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
-  ESP.restart();
+  //ESP.restart();
+  forceexit = 1;
 #endif
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR) 
   callzero();

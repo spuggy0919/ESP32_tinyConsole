@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <title>ESP WebSocket Console </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="js/scriptws.js"></script>
+    <script src="js/scriptio.js"></script>
   </head>
   <body >
     <div class="topnav" >
@@ -16,18 +17,19 @@
         <!-- Control textarealog .  Begin  rows='15' cols="24"  -->
         <div class="card" id="cardtiles" style = "background-color: eef2c1; ">
           <!-- <div class='card'  id="card-container"></div> -->
-          <canvas id="mycanvas" width="640" height="480"></canvas>
-          <audio id="myaudio" controls>
-            <source src="test.mp3" type="audio/mpeg">
-            Your browser does not support the audio element.
-          </audio>
+
 
 
            <!--   <p class="card-title">Monitor</p> -->
-          <p><textarea  id="terminal" name="review" style="font-size:15px; "  rows='20' cols="40" 
-           onkeypress="textKeypress(event)" onkeydown="textKeydown(event)" onkeyup="textKeyup(event)"></textarea></p>
-          <div>
-            <div class="group">
+           <!-- <p class="card-title">ESP32 tinyConsole</p> -->
+           <textarea  id="terminal" name="review" style="font-size:12px; "  rows='25' cols="80" 
+           onkeypress="textKeypress(event)" onkeydown="textKeydown(event)" onkeyup="textKeyup(event)"></textarea>
+           <canvas id="mycanvas"  ></canvas>
+
+          <!-- </div>
+          <div> width="640" height="480"-->
+
+              <div class="group">
               <!-- <select name="selectio" id="rcselect" onchange = "updateRowCol(this)" style="width:100px">
               <option id="rc5x16">5x16</option>
               <option id="rc10x32">10x32</option>
@@ -38,42 +40,53 @@
               <option id="rc35x102">35x102</option>
               <option id="rc40x118">40x118</option>
               </select>      -->
-              <select name="selectio" id="idselect" onchange = "updateStyle(this)" style="width:100px">
-              <option id="font10">10</option>
+              <p>
+              <audio id="myaudio" controls>
+                <source src="audio/test.mp3" type="audio/mpeg">  Your browser does not support the audio element.
+              </audio> 
+              <select name="selectio" id="idselect" onchange = "updatefontsize(this)" style="width:100px">
+              <!-- <option id="font10">10</option> -->
+              <option id="font15">12</option>
               <option id="font15">15</option>
               <option id="font20">20</option>
               <option id="font25">25</option>
               <option id="font30">30</option>
               <option id="font30">35</option>
               </select>     
+
                <!-- <br> 
               <input type="checkbox" id="canvasck" name="canvasck" onclick='canvaschecked(this);' checked="false" >
-              <label for="canvasck">Canvas</label>
-              <input type="checkbox" id="console" name="console" onclick='consolechecked(this);' checked="true" >
+              <label for="canvasck">Canvas</label>              <input type="checkbox" id="console" name="console" onclick='consolechecked(this);' checked="true" >
               <label for="console">Console</label>
               <input type="checkbox" id="monitor" name="monitor" onclick='monitorchecked(this);' checked="false" >
-              <label for="monitor">Monitor</label> -->
+              <label for="monitor">Monitor</label> 
+
               <input type="checkbox" id="scroll" name="scroll" onclick='scrollchecked(this);' checked='true' >
               <label for="scroll">Scroll</label>
-              <input type="checkbox" id="touch" name="touch" onclick='touchchecked(this);' checked="false"  >
-              <label for="touch">Touch</label>
+              -->
+              <input type="checkbox" id="switchTouch" checked="true"  >
+              <label for="switchTouch">Graphics</label>
+            </p>
 
+              
 
-            </div>
+            <!-- </div> -->
           <!--     <input type="checkbox" id="scales" name="scales" onclick='terminallinemode(this);' checked >
             <label for="scales">linemode</label>-->
-            <div class="group">
-            <button name="ctrlcBtn" value="ctrlcBtn" onclick="CTRLCKey('terminal')" class="button-on">ctrl-c</button>
-            <button name="clearBtn" value="clearBtn" onclick="clearTextarea('terminal');clearTextarea('consolelog')" class="button-on">Clear</button>
+            <!-- <div class="group"> -->
             <!-- upload begin -->
-            </div>
-            <div class="group">
               <form id= "upload-form"  name = "upload-form"  method="POST" action="/upload"  enctype="multipart/form-data" >
-              <input  name="uploadbtn" value="file" type="file"  multiple="true" id= "uploadfiles">
-              <button type="submit" onclick="uploadfile(this)" class="button-on">upload</button>
-              </form>
-            </div>
-            <!-- upload end -->
+                <input  name="uploadbtn" value="file" type="file"  multiple="true" id= "uploadfiles">
+                <button type="submit" onclick="uploadfile(this)" class="button-on">upload</button>
+                </form>
+              <!-- upload end -->
+              <button name="timerBtn" value="timerBtn" onclick="sendTime()" class="button-on">Sync Time</button>
+              <button name="resetBtn" value="resetBtn" onclick="esprestart()" class="button-on">RESET</button>
+              <button name="ctrlcBtn" value="ctrlcBtn" onclick="CTRLCKey('terminal')" class="button-on">ctrl-c</button>
+              <button name="clearBtn" value="clearBtn" onclick="clearTextarea('terminal');clearTextarea('consolelog')" class="button-on">Clear</button>
+
+              </div>
+  
 
             <!-- upload begin
 
@@ -88,15 +101,13 @@
             
               <input type="file" name="data" /><input type="submit" name="upload" value="Upload" title="Upload" >-->
              
-          </div>
+        <!-- </div> -->
          
-        </div>
     
           <!-- Control textarealog .  Begin -->
-          <div class="card" style = "background-color: #eef2c1; width:640px; height:200px">
+        <!-- <div class="card" style = "background-color: #eef2c1; "> -->
             <p class="card-title">Web Serial Monitor</p>
-            <p><textarea  id="consolelog" name="review" style="font-size:10px;"></textarea></p>
-            <div> 
+            <textarea  id="consolelog" name="review" style="font-size:12px;"  rows='25' cols="80" ></textarea>
            <!-- Control textarealog .  end -->
         <!-- Control textarea log .  Endding -->
         <!-- Control textarealog .  Begin 
@@ -119,10 +130,18 @@
         </div> 
                Control textarealog .  Ending -->
 
+        </div>
     </div>
-  <!-- Control textarea log .  Endding -->
-        <script>
 
+  <!-- Control textarea log .  Endding -->
+  <script>
+            function esprestart() { // client set ESP32 timer
+                var xhr = new XMLHttpRequest();
+                //xhr.open("POST", "/"timer?value="+"element.value, true); 
+                // console.log(date);
+                xhr.open("POST", "/reset=0", true); 
+                xhr.send();          
+            }
             function sendTime() { // client set ESP32 timer
                 // console.log("sendTime");
 
@@ -428,9 +447,9 @@
               terminal.style.display = (consolecheck) ? 'block':'mome';
             }    
             function canvaschecked() {
-              var canvas = document.getElementById("mycanvas");
+              var canvaso = document.getElementById("mycanvas");
               canvascheck = ! canvascheck;
-              canvas.style.display = (canvascheck) ? 'block':'mome';
+              canvaso.style.display = (canvascheck) ? 'block':'mome';
             }    
             function monitorchecked() {
               var monitor = document.getElementById("consolelog");
@@ -503,534 +522,38 @@
                     // console.log(rowcols[1]);
                     document.getElementById("terminal").style.height = (parseInt(rowcols[0])*2).toString+"em";
                     document.getElementById("terminal").style.width =  "100%";// "rowcols[1]+"em";            
-                    document.getElementById("consolelog").style.height  =  (parseInt(rowcols[0])*2).toString+"em";                 
+                    document.getElementById("consolelog").style.height  = "75%"; // (parseInt(rowcols[0])*2).toString+"em";                 
                     document.getElementById("consolelog").style.width  =  "100%";//  rowcols[1]+"em";
+                    // document.getElementById("mycanvas").style.width  =  "100%";//  rowcols[1]+"em";
+                    // document.getElementById("mycanvas").style.height  =  "75%";//  rowcols[1]+"em";
             }
-            function updateStyle(element) {
+            var screenwidth;
+            function updatefontsize(element) {
+                    const cardtiles = document.getElementById('cardtiles');
                     var fontsize = document.getElementById("idselect").value;
                     var selectValue = document.getElementById("terminal").value;
-                    document.getElementById("terminal").style = "font-size:" + fontsize + "px;"+ "width:100%";
+                    var textareao =document.getElementById("terminal");
+                    var relativeh = textareao.offsetWidth * 0.75;
+                    textareao.style.fontSize = fontsize + "px";
                     document.getElementById("consolelog").style = "font-size:" + fontsize + "px;"+ "width:100%";
-            }
+                    // mycavas1.style.width  =  textareao.offsetWidth + "px";//  rowcols[1]+"em";
+                    // mycavas1.style.height  =  relativeh + "px";//  rowcols[1]+"em";
+   // Get the element by its ID or any other method
+  //  var mycanvas1 =document.getElementById("mycanvas");
+  // canvasAspectRatio();
+
+
+// // Get the screen width
+// screenWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+// var screenHeight = (screenWidth<640) ? screenWidth*0.75:480;
+
+// // Set the element width based on the screen resolution
+// mycanvas1.style.width = (screenWidth < 640) ? screenWidth + 'px' : '640px';
+// mycanvas1.style.height = screenHeight + 'px';
+                }
             // ---------------- textarea terminal functions end -------------------------------
 
-            // ---------------- display functions begin -------------------------------
-            // VGA size graphics Function to create a dynamic card
-            // display functions 
-            var scalewfactor=1,scalehfactor=1;
-            var canvas;
-            var ctx;
-            var audio;
-            // Function to create a dynamic card
-            function uiInit(){
-              var terminal = document.getElementById("terminal");
-              var monitor = document.getElementById("consolelog");
-
-              // createCard();
-              canvas = document.getElementById("mycanvas");
-              ctx = canvas.getContext('2d');
-              canvascheck = false;
-              canvas.style.display = (consolecheck) ? 'block':'mome'; 
-              consolecheck = true;
-              terminal.style.display = (consolecheck) ? 'block':'mome'; 
-              monitorcheck = false;
-              monitor.style.display = (monitorcheck) ? 'block':'mome';
-              canvascheck = false;
-              canvas.style.display = (canvascheck) ? 'block':'mome';
-              TouchEnable();
-              drawclearTxt()
-              // Audio
-              audio = document.getElementById('myaudio'); // Get the audio element
-
-            }
-            // function createCard() {
-            //   const cardContainer = document.getElementById('card-container');
-            //   const cardtiles = document.getElementById('cardtiles');
-            //   const terminal = document.getElementById('terminal');
-            //     // Calculate the width and height for the card (4:3 aspect ratio)
-            //     const screenWidth = window.innerWidth;
-            //     const scalingFactor = screenWidth / 640;
-            //     // cardtiles.style.transform = `scale(${scalingFactor})`;
-            //     cardtiles.style.transformOrigin = 'top left'; // Optional: Set the transform origin
-
-            //     // Create a card element
-            //     const card = document.createElement('div');
-
-            //     card.width = 640;
-            //     card.height = 480;
-            //     card.border = '10px solid #eef2c1'; // 10px border
-            //     // card.style.transform = `scale(${scalingFactor})`;
-            //     // card.style.transformOrigin = 'top left'; // Optional: Set the transform origin
-            //     cardtiles.appendChild(card);
-
-            //     // Create a canvas element and add it to the card
-            //     canvas = document.createElement('canvas');
-            //     canvas.id = "mycanvas";
-            //     canvas.width = 640;// cardWidth - 10; // Subtract 20 for the border spacing
-            //     canvas.height = 480;//  canvas.width * 3/4; // Subtract 20 for the border spacing
-            //     // canvas.style.transform = `scale(${scalingFactor})`;
-            //     // canvas.style.transformOrigin = 'top left';
-            //     scalewfactor =  canvas.width/640;
-            //     scalehfactor =  canvas.height/480;
-            //     card.appendChild(canvas);
-                
-            //     // Append the card to the container
-            //     cardContainer.appendChild(card);
-            //     ctx = canvas.getContext('2d');
-
-            //     // Define the rectangle parameters
-            //     const x = 0; // X-coordinate of the top-left corner of the rectangle
-            //     const y = 0; // Y-coordinate of the top-left corner of the rectangle
-            //     const width = canvas.width; // Width of the rectangle
-            //     const height = canvas.height ; // Height of the rectangle
-            //     const fillColor = 'yellow'; // Fill color of the rectangle (optional)
-            //     const borderColor = 'red'; // Border color of the rectangle (optional)
-
-            //     // Draw a filled rectangle
-            //     ctx.fillStyle = fillColor; // Set the fill color
-            //     ctx.fillRect(x, y, width, height); // Draw the filled rectangle
-
-            //     // Draw a stroked (bordered) rectangle (optional)
-            //     ctx.strokeStyle = borderColor; // Set the border color (optional)
-            //     ctx.lineWidth = 2; // Set the border line width (optional)
-            //     ctx.strokeRect(x, y, width, height); // Draw the stroked rectangle (optional)
-
-            //     ctx.fillStyle = 'blue'; //int32ToColorStyle(parseInt(color));
-            //     ctx.fillRect(50, 50, 100, 100); // Draw the filled rectangle
-            //     terminal.focus();
-
-            //     TouchEnable();
-
-
-            //     }
-                var touchlisten=false;
-                function TouchEnable(){
-                    const canvas = document.getElementById('mycanvas');
-                    if (canvas) {
-                      if (touchcheck) {
-                          // Add touch event listeners
-
-                          if (touchlisten) return;
-                          touchlisten = true;
-                          canvas.addEventListener('touchstart', handleTouchStart);
-                          canvas.addEventListener('touchmove', handleTouchMove);
-                          canvas.addEventListener('touchend', handleTouchEnd);
-
-                          // Add mouse event listeners
-                          canvas.addEventListener('mousedown', handleMouseDown);
-                          canvas.addEventListener('mousemove', handleMouseMove);
-                          canvas.addEventListener('mouseup', handleMouseUp);
-                      }else{
-                          if (touchlisten){
-                            touchlisten = false;
-
-                            // Add touch event listeners
-                            canvas.removeEventListener('touchstart', handleTouchStart);
-                            canvas.removeEventListener('touchmove', handleTouchMove);
-                            canvas.removeEventListener('touchend', handleTouchEnd);
-
-                            // Add mouse event listeners
-                            canvas.removeEventListener('mousedown', handleMouseDown);
-                            canvas.removeEventListener('mousemove', handleMouseMove);
-                            canvas.removeEventListener('mouseup', handleMouseUp);  
-                          }                   
-                      }
-                    }
-                }
-                // Handle touch start event
-                function handleTouchStart(event) {
-                    event.preventDefault();
-                    const touch = event.touches[0]; // Get the first touch (assuming single touch)
-                    const x = touch.clientX - canvas.getBoundingClientRect().left;
-                    const y = touch.clientY - canvas.getBoundingClientRect().top;
-
-                    wsSentTouch(1,x,y);
-                }
-
-
-                // Handle touch move event
-                function handleTouchMove(event) {
-                    event.preventDefault();
-                    const touch = event.touches[0];
-                    const x = touch.clientX - canvas.getBoundingClientRect().left;
-                    const y = touch.clientY - canvas.getBoundingClientRect().top;
-
-                 // ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    // ctx.drawImage(cursorImage, x, y, 32, 32); // to low Adjust width and height as needed
-
-                    wsSentTouch(2,x,y);
-                }
-
-                // Handle touch end event
-                function handleTouchEnd(event) {
-                    event.preventDefault();
-
-                    const x = touch.clientX - canvas.getBoundingClientRect().left;
-                    const y = touch.clientY - canvas.getBoundingClientRect().top;
-
-                    wsSentTouch(0,x,y);
-                }
-
-                // Handle mouse down event
-                function handleMouseDown(event) {
-                    event.preventDefault();
-                    const x = event.clientX - canvas.getBoundingClientRect().left;
-                    const y = event.clientY - canvas.getBoundingClientRect().top;
-
-                    wsSentMouse(1,x,y);
-                }
-
-                // Handle mouse move event
-                function handleMouseMove(event) {
-                    event.preventDefault();
-                    const x = event.clientX - canvas.getBoundingClientRect().left;
-                    const y = event.clientY - canvas.getBoundingClientRect().top;
-
-                    wsSentMouse(2,x,y);
-                }
-
-                // Handle mouse up event
-                function handleMouseUp(event) {
-                    event.preventDefault();
-                    const x = event.clientX - canvas.getBoundingClientRect().left;
-                    const y = event.clientY - canvas.getBoundingClientRect().top;
-                    wsSentMouse(0,x,y);
-                    // Handle mouse up logic
-                }
-            // Call the createCard function to create the dynamic card
-            // createCard();  
-            // Define an array of functions
-            var PenColor=0;
-            const functionTable = [
-                clearScr,
-                drawFilledRect,
-                drawPixel,
-                drawText,
-                drawHLine,
-                drawVLine,
-                drawLine,
-                drawArc,
-                drawFillArc,
-                drawCircle,
-                drawFillCircle,
-                drawStrokeWidth,
-                drawSetPenColor,
-                drawRect,
-                drawChar,
-            ];
-
-            function VideoFunc(command){
-              // Example command format: "commandIndex arg1 arg2 arg3..."
-              // const command = "3 Hello 100 100"; // Example "drawText" command
-              
-
-              // if (!canvas) {
-              //   createCard();
-              // }
-
-              // Parse the command to get the function index and arguments
-              const commandParts = command.split(' ');
-              const functionIndex = parseInt(commandParts[0]);
-              const args = commandParts.slice(1);
-
-              // Check if the functionIndex is valid
-              if (functionIndex >= 0 && functionIndex < functionTable.length) {
-                  // Call the function indirectly using the function table
-                  const selectedFunction = functionTable[functionIndex];
-                  selectedFunction(...args); // Spread operator to pass arguments as separate parameters
-              } else {
-                  console.log('Invalid function index');
-              }
-            }
-            // Convert a 32-bit integer color to a CSS-style color string
-            function int32ToColorStyle(int32Color) {
-                const red = (int32Color >> 16) & 0xFF; // Extract the red component
-                const green = (int32Color >> 8) & 0xFF; // Extract the green component
-                const blue = int32Color & 0xFF; // Extract the blue component
-
-                // Create and return a CSS-style color string in the format "#RRGGBB"
-                return `#${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}`;
-            }
-            // Define the functions corresponding to the function table
-              function drawFilledRect( x, y, width, height) {
-                // Call the drawFilledRect function to draw a filled rectangle
-                const x1 = (x*scalewfactor); // X-coordinate of the top-left corner
-                const y1 = (y*scalehfactor); // Y-coordinate of the top-left corner
-                const width1 = (width*scalewfactor); // Width of the rectangle
-                const height1 = (height*scalehfactor); // Height of the rectangle
-
-                // ctx.fillStyle = "blue"; //int32ToColorStyle(parseInt(color));
-                // ctx.fillRect(50, 50, 100, 100); // Draw the filled rectangle
-                ctx.fillStyle = PenColor;
-                ctx.fillRect(x1, y1, width1, height1); // Draw the filled rectangle
-                console.log(`Drawing filled rectangle with color ${PenColor}, x=${x1}, y=${y1}, width=${width1}, height=${height1}`);
-            }
-
-            function drawRect( x, y, width, height) {
-                // Call the drawFilledRect function to draw a filled rectangle
-                const x1 = (x*scalewfactor); // X-coordinate of the top-left corner
-                const y1 = (y*scalehfactor); // Y-coordinate of the top-left corner
-                const width1 = (width*scalewfactor); // Width of the rectangle
-                const height1 = (height*scalehfactor); // Height of the rectangle
-
-                // ctx.fillStyle = "blue"; //int32ToColorStyle(parseInt(color));
-                // ctx.fillRect(50, 50, 100, 100); // Draw the filled rectangle
-                ctx.strokeStyle = PenColor; // Stroke color of the circle
-                ctx.strokeRect (x1, y1, width1, height1); // Draw the filled rectangle
-                console.log(`Drawing filled rectangle with color ${PenColor}, x=${x1}, y=${y1}, width=${width1}, height=${height1}`);
-            }           function drawPixel(x, y) {
-                // Implement drawing a pixel with the given color at the specified coordinates
-                drawFilledRect(x, y, 1, 1);
-                console.log(`Drawing pixel with color ${PenColor} at x=${x}, y=${y}`);
-            }
-
-            function drawText( text, x, y, deg) {
-                // Implement drawing text at the specified coordinates
-                // Remove quotation marks if they exist
-                const decodestr = window.atob(text)
-                ctx.fillStyle = PenColor;
-                ctx.font = '15px monospace';
-                ctx.fillText(decodestr,x,y);
-                ctx.stroke();
-                console.log(`Drawing text "${decodestr}" at x=${x}, y=${y}`);
-            }
-            const rows = 25;
-            const cols = 80;
-            var textBuffer=new Array(25*80);
-            var attrBuffer=new Array(25*80);
-            var currentRow = 0;
-            var currentCol = 0;
-            const charWidth = 8; // Adjust this based on your font size and canvas size
-            const charHeight = 19; // Adjust this based on your font size and canvas size
-            function drawclearTxt(){
-              for (let row = 0; row < rows; row++) {
-                for (let col = 0; col < cols; col++) {
-                  textBuffer[row*cols+col]=' ';
-                  attrBuffer[row*cols+col]=0;
-                }
-              }
-            }
-            function drawScrollText() {
-              ctx.fillStyle = "black";
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-              // Draw each character from the text buffer
-              for (let row = 0; row < rows; row++) {
-                for (let col = 0; col < cols; col++) {
-                  drawCharAtPosXY(
-                    textBuffer[row*cols+col],
-                    attrBuffer[row*cols+col],
-                    col*charWidth,
-                    row*charHeight
-                  );
-                }
-              }
-            }
-            function scrollUp() {
-              // Move characters within the text buffer
-              for (let row = 1; row < rows; row++) {
-                for (let col = 0; col < cols; col++) {
-                  textBuffer[(row - 1)*cols+col] = textBuffer[row*cols+col];
-                  attrBuffer[(row - 1)*cols+col] = attrBuffer[row*cols+col];
-                }
-              }
-
-              // Clear the bottom row
-              for (let col = 0; col < cols; col++) {
-                textBuffer[(rows - 1)*cols+col] = ' ';
-                attrBuffer[(rows - 1)*cols+col] = 0;
-              }
-
-              // Redraw the canvas
-              drawScrollText();
-            }
-            function drawChar(cin) {
-              character = String.fromCharCode(cin)[0];
-              if (character === '\n') {
-                // Handle newline (0x0A): Move to the beginning of the next row
-                currentCol = 0;
-                currentRow++;
-              } else if (character === '\r') {
-                // Handle carriage return (0x0D): Move to the beginning of the current row
-                currentCol = 0;
-              } else {
-                // Regular character: Add it to the buffer and move to the next column
-                textBuffer[currentRow*cols+currentCol] = character;
-                attrBuffer[currentRow*cols+currentCol] = PenColor;
-                drawCharAtCuroser(character,PenColor);
-                currentCol++;
-              }
-              // Check for line overflow
-              if (currentCol >= cols) {
-                currentCol = 0;
-                currentRow++;
-              }
-
-              // Check for buffer overflow
-              if (currentRow >= rows) {
-                currentRow--;
-                scrollUp();
-                // setTimeout(scrollUp, 2000); // Scroll up after 2 seconds
-              }
-            }
-            function drawCharAtPosXY(c,attr,x,y) {
-                // Implement drawing text at the specified coordinates
-                // Remove quotation marks if they exist
-                ctx.fillStyle = attr;
-                ctx.font = '18px monospace';
-                ctx.fillText(
-                    c,
-                    x,
-                    y 
-                );
-                ctx.stroke();
-                console.log(`Drawing text "${c}" at x=${currentCol}, y=${currentRow}`);
-            }
-            function drawCharAtCuroser(c,attr) {
-                // Implement drawing text at the specified coordinates
-                // Remove quotation marks if they exist
-                ctx.fillStyle = attr;
-                ctx.font = '15px monospace';
-                ctx.fillText(
-                    c,
-                    currentCol * charWidth,
-                    currentRow * charHeight 
-                );
-                ctx.stroke();
-                console.log(`Drawing text "${c}" at x=${currentCol}, y=${currentRow}`);
-            }
-            function drawHLine(x1, x2, y) { // Hline x1,x2 at y
-                // Implement drawing a horizontal line from (x1, y) to (x2, y)
-                drawFilledRect(x1, y, x2-x1, 1);
-                console.log(`Drawing horizontal line from x=${x1} to x=${x2}, y=${y}`);
-            }
-
-            function drawVLine( y1, y2, x) { // Vline Y1,y2 at x
-            // Plot a line from (x, y) to (x1, y1) with color
-                ctx.beginPath();
-                ctx.moveTo(x*scalehfactor, y*scalehfactor);
-                ctx.lineTo(x1*scalehfactor, y1*scalehfactor);
-                ctx.strokeStyle = PenColor;
-                ctx.stroke();
-                console.log(`Drawing vertical line from x=${x}, y=${y1} to y=${y2}`);
-            }
-
-            function drawLine(x1, y1, x2, y2) {
-                // Implement plotting coordinates from (x1, y1) to (x2, y2)
-                ctx.beginPath();
-                ctx.moveTo(x1*scalehfactor, y1*scalehfactor);
-                ctx.lineTo(x2*scalehfactor, y2*scalehfactor);
-                ctx.strokeStyle = PenColor;
-                ctx.stroke();
-                console.log(`Plotting coordinates from x=${x1}, y=${y1} to x=${x2}, y=${y2}`);
-            }
-            function drawSetPenColor(color)
-            {
-               PenColor =int32ToColorStyle(color);
-            }
-            function drawStrokeWidth(width)
-            {          
-               ctx.lineWidth = width; // Line width (optional)
-            }
-            function drawCircle( x, y, radius)
-            {
-              ctx.beginPath(); // Begin a new path
-              ctx.arc(x, y, radius, 0, 2 * Math.PI); // Define the circle
-              ctx.strokeStyle = PenColor; // Stroke color of the circle
-              // ctx.lineWidth = 2; // Line width (optional)
-              ctx.stroke(); // Stroke the circle outline
-              ctx.closePath(); // Close the path
-            }
-            function drawFillCircle( x, y, radius)
-            {
-              ctx.beginPath(); // Begin a new path
-              ctx.arc(x, y, radius, 0, 2 * Math.PI); // Define the circle
-              ctx.fillStyle = PenColor; // Stroke color of the circle
-              ctx.fill(); // Stroke the circle outline
-              ctx.closePath(); // Close the path
-            }
-            function drawArc( x, y, radius, from, to )
-            {
-              ctx.beginPath(); // Begin a new path
-              ctx.arc(x, y, radius, from, to); // Define the circle
-              ctx.strokeStyle = PenColor; // Stroke color of the circle
-              // ctx.lineWidth = 2; // Line width (optional)
-              ctx.stroke(); // Stroke the circle outline
-              ctx.closePath(); // Close the path
-            }
-            function drawFillArc( x, y, radius, from, to )
-            {
-              ctx.beginPath(); // Begin a new path
-              ctx.arc(x, y, radius, from, to); // Define the circle
-              ctx.fillStyle = PenColor; // Stroke color of the circle
-              // ctx.lineWidth = 2; // Line width (optional)
-              ctx.stroke(); // Stroke the circle outline
-              ctx.closePath(); // Close the path
-            }
-            function clearScr()
-            {
-                  const canvas = document.getElementById('mycanvas');
-                  ctx.fillStyle = PenColor;
-                  ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }            // ---------------- display functions ends -------------------------------
-            // ---------------- Audio  functions Begins -------------------------------
-            const AudiofunctionTable = [
-                playAudio,
-                pauseAudio,
-                stopAudio,
-                seekForward,
-                seekBackward,
-                changeSong, // 5
-            ]; 
-            function AudioFunc(command){
-
-
-              // Parse the command to get the function index and arguments
-              const commandParts = command.split(' ');
-              const functionIndex = parseInt(commandParts[0]);
-              const args = commandParts.slice(1);
-
-              // Check if the functionIndex is valid
-              if (functionIndex >= 0 && functionIndex < functionTable.length) {
-                  // Call the function indirectly using the function table
-                  const selectedFunction = AudiofunctionTable[functionIndex];
-                  selectedFunction(...args); // Spread operator to pass arguments as separate parameters
-              } else {
-                  console.log('Invalid function index');
-              }
-            }
-            // Play the audio
-            function changeSong(filename) {
-              audio.src = filename;
-            }
-            // Play the audio
-            function playAudio() {
-              audio.play();
-            }
-
-            // Pause the audio
-            function pauseAudio() {
-              audio.pause();
-            }
-
-            // Stop the audio (pause and reset to the beginning)
-            function stopAudio() {
-              audio.pause();
-              audio.currentTime = 0;
-            }
-
-            // Seek forward in the audio by a specified number of seconds
-            function seekForward(seconds) {
-              audio.currentTime += seconds;
-            }
-
-            // Seek backward in the audio by a specified number of seconds
-            function seekBackward(seconds) {
-              audio.currentTime -= seconds;
-            }
-            // ---------------- Audio  functions ends -------------------------------
-
-
+ 
 //  Server Sent Event (SSE) Listener Handle      
           if (!!window.EventSource) {
           var source = new EventSource('/events');
@@ -1057,6 +580,7 @@
           }, false);
         }
         // SSE end
-      </script>
+  </script>
+  <script src="js/keymouse.js"></script>
   </body>
 </html>

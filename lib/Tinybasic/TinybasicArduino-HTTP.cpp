@@ -349,6 +349,7 @@ void eload() {
 		error(EEEPROM);
 	}
 }
+bool checkargc0is();
 
 /* autorun something from EEPROM or a filesystem */
 char autorun() {
@@ -362,23 +363,25 @@ char autorun() {
 #endif
 #if defined(FILESYSTEMDRIVER) // || ! defined(ARDUINO) /*spuggy0919*/
 /* on a POSIX or DOS platform, we check the command line first and the autoexec */
-// #ifndef ARDUINO  /*spuggy0919*/
-    if (bargc > 1) { /* bug cmd argc=2 with argv[1]*/
-        if (ifileopen(bargv[1])) {
-          	xload(bargv[1]);
-  		    st=SRUN;
-            ifileclose();
-            bnointafterrun=1;
-            return TRUE;
-        }
-    }
-// #endif /*spuggy0919*/
-	if (ifileopen("autoexec.bas")) {
-  		xload("autoexec.bas");
-  		st=SRUN;
-		ifileclose();
-		return TRUE;
-	}
+// #ifndef ARDUINO  /*spuggy0919 tb command for shell*/
+		if (bargc > 1 ) { /* bug cmd argc=2 with argv[1]*/
+			if (ifileopen(bargv[1])) {
+				xload(bargv[1]);
+				st=SRUN;
+				ifileclose();
+				bnointafterrun=checkargc0is() ? 1:0;
+				return 	checkargc0is();
+			}
+		}
+// #endif /*spuggy0919 tb command for shell*/
+		if (ifileopen("autoexec.bas") ) {
+			xload("autoexec.bas");
+			st=SRUN;
+			ifileclose();
+			bnointafterrun=checkargc0is() ? 1:0;
+			return 	checkargc0is();
+		}
+
 #endif
 	return FALSE;
 }
@@ -4204,7 +4207,6 @@ void assignment() {
  */
 void showprompt() {
 	outsc("? ");
-	// WSTransferBufferFlush(0) ; // output and transfer buffer; spuggy0919
 
 }
 
@@ -4776,9 +4778,9 @@ void xrun(){
 	eflush();
 
 /* if called from command line with file arg - exit after run */
-#ifndef ARDUINO
+//#ifndef ARDUINO /* for argc >1 exit to shell SPUGGY0919*/
     if (bnointafterrun) restartsystem();
-#endif
+//#endif
 }
 
 /*
@@ -6873,7 +6875,7 @@ void statement(){
  *	the setup routine - Arduino style
  */
 void tbsetup() {
-
+	forceexit = 0; /*spuggy0919*/
 /* start measureing time */
 	timeinit();
 
@@ -6927,7 +6929,10 @@ int tbloop() {
 	iodefaults();
 
 /* the prompt and the input request */
-	printmessage(MPROMPT); /*spuggy0919*/
+	if (forceexit==0) {printmessage(MPROMPT); /*spuggy0919*/
+	}else{
+		outsc("%"); return false;
+	}
         //   wsTextPrint("> ");
 
     // WSTransferBufferFlush(0); /*spuggy0919*/
@@ -6937,7 +6942,7 @@ int tbloop() {
 	// for (int i=0;i<=ibuffer[0];i++){
 	// 	Serial.printf("[%2x]%c",ibuffer[i],ibuffer[i]);
 	// }
-	if (ibuffer[ibuffer[0]] == EXITCHAR||ibuffer[ibuffer[0]]  == '\x03') {  // esc or control C*spuggy0919
+	if (ibuffer[ibuffer[0]] == EXITCHAR||ibuffer[ibuffer[0]]  == '\x03') {  // esc or control-C*spuggy0919
 		outsc("[Ctrl-C|ESC] break\n%"); /*spuggy0919*/
 		//Serial.println("Bye TinyBasic!\n");
 		return false; 
@@ -6961,13 +6966,15 @@ int tbloop() {
 /* here, at last, all errors need to be catched and back to interactive input*/
 	if (er) reseterror();
 
-	return true; /*spuggy0919*/
+	return (forceexit==0); /*spuggy0919*/
 }
 
 /* if we are not on an Arduino */
 // #ifdef ARDUINO
 extern int tbmain(int argc, char* argv[]);
-
+bool checkargc0is(){
+	return (String(bargv[0]).equalsIgnoreCase("TB"));
+}
 int tbmain(int argc, char* argv[]){
 
 /* save the arguments if there are any */

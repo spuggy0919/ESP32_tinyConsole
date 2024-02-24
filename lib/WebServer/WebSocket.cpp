@@ -221,6 +221,8 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
       if (!_d_insertrxdata((const char*)(msg.c_str()), msg.length())){
         Serial.printf("ERROR: WS:RECV: buffer full!");
       }
+      wsTextPrintBase64noAck(1,"X:"+msg+"\n");
+
     }
     if (cmd == "A:"){ // ack reply from client
         // wsTextPrintBase64(1,"A:"+msg+"\n");
@@ -294,11 +296,11 @@ void receiveWebSocketData(AsyncWebSocketClient *client, const char *data)
 }
 
 // WebSocket connection callback
-void onWebSocketDisConnect(AsyncWebSocket *server, AsyncWebSocketClient *client) 
-{
-    // Set WebSocket state to CONNECTED when a connection is established
-    webSocketStates[client->id()] = WS_STATE_DISCONNECTED;
-}
+// void onWebSocketDisConnect(AsyncWebSocket *server, AsyncWebSocketClient *client) 
+// {
+//     // Set WebSocket state to CONNECTED when a connection is established
+//     webSocketStates[client->id()] = WS_STATE_DISCONNECTED;
+// }
 
 void wsEventHandle(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
   switch (type) {
@@ -308,7 +310,7 @@ void wsEventHandle(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEven
       ws_connect = true;
    //     WSTransferBufferTaskInit(0); // wi is 0 for textlog task sent message for basic
     // Set WebSocket state to CONNECTED when a connection is established
-    webSocketStates[client->id()] = WS_STATE_DISCONNECTED;  
+    webSocketStates[client->id()] = WS_STATE_CONNECTED;  
 
       break;
     case WS_EVT_DISCONNECT:

@@ -114,7 +114,6 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
     request->redirect("/");
   }
 }
-
 void WebServerPage()
 {
 
@@ -129,6 +128,7 @@ void WebServerPage()
   server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {
         request->send(200);
       }, handleUpload);
+
 
   // Send a GET request to <ESP_IP>/param?value=<inputMessage>
   // ex. <ESP_IP>/param?field1=value1&field2=value2&field3=value3...
@@ -162,6 +162,9 @@ void WebServerPage()
         timerSetEpoch(t);
         value = "timer=" + value;
       }
+    }
+    if (request->hasParam("reset")) {
+            ESP.restart();
     }
 #endif
     if (value == "") {

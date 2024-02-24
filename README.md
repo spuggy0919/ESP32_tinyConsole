@@ -46,25 +46,20 @@ Default(esp32_TinyConsole) folder*
 ### For ESP8266 (maybe, but no timer function, it is not verified)<br>
 
 
-# Modified *WifiSetting.h*。SSID, PASSWORD, 
-
-### suggest STA AUTO Mode.
-
+# *\data\config.json*,Wifi configures。
+if let config empty or file not found, it will setup to AP mode.
+The default AP name, ESPCONSOLE-XXXX, XXXX is mac address.
+if you want STA wifi mode, modified config.json file, and uploadfs.
+You also can set it in console mode, use export command.
 ```
-#define WIFISSID    ("SSIDNAME")        // SSID
-#define PASSWORD    ("12345678")                   // PASSWORD
-#define LOCAL_IP    ("192.168.4.210")     // for static sta
-#define GATEWAY     ("192.168.4.1")       // for static sta or AP
-#define NMASK       ("255.255.255.0")      // for static sta or AP
-#define GATEWAY     ("192.168.4.1")       // for static sta or AP
-#define WIFIAPNAME  ("ESPCONSOLE-")       // for AP will appen four mac chars
-
-/* Select your WIFI MODE*/
-#define  WIFISTAAUTO
-#undef  WIFISTASTATIC
-#undef  WIFIAPMODE
+{"ssid":"","password":""}
 ```
-
+Or later use CONSOLE command "export" to setup to STA mode. For example, below SSID ABCD password 12345678
+```
+%export ssid ABCD           // set SSID
+%export password 12345678   // set password
+%export                     // get settings
+```
 # Build and Upload, need to push EN button.
 
 ![pio Toolbar](png/toolbar.png)

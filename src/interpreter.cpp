@@ -79,9 +79,11 @@ COMMAND_TABLE commandTable[]= {
   "reboot", cmd_reboot,  "reboot",
   "status", cmd_status,  "status",
 
-  "ping",   cmd_ping,  " // ping test",
+  "ping",   cmd_test,  " // ping test",
   "cls",    cmd_cls,  "  // clear screen",
-  "help",   cmd_help,   " //help all command is case sensitive now!",
+ "avtest",  cmd_avtest,       "avtest  [0|1|2]// video graphic testing",
+ "export",  cmd_export,       "export ssid ABC \n export password  12345678 \n export // export all config or set config", 
+ "help",   cmd_help,   " //help all command is case sensitive now!",
   "h",      cmd_help,   "help",
   "?",      cmd_help,   "help",
  //  below internal teing commands
@@ -93,8 +95,7 @@ COMMAND_TABLE commandTable[]= {
  "millis",  cmd_millis,     " // for '-' option check...",
  "mdelay",  cmd_millisdelay,     "delaycnt // for '-' option check...",
  "video",  cmd_video,       "video 0  // video graphics functions",
- "avtest",  cmd_avtest,       "avtest  // video graphic testing",
- "export",  cmd_export,       "export  // export all config or set config",
+
   "-",      cmd_prompt,   "",
    "",      cmd_prompt,   "",
 };
@@ -146,10 +147,10 @@ int InterpreterExcute(String *cmd){
   int i;
   parsercmdline(*cmd);
   Serial.printf("Command:argc=%d, %s found!", argc, argv[0]);
-
+  
   for(i=0;i<CMDNUMBERS;i++){
       if (commandTable[i].funName == "-1" || argc == 0) break;
-      if (String(argv[0])== (commandTable[i].funName)) {
+      if (String(argv[0]).equalsIgnoreCase(commandTable[i].funName)) {
          InterpreterCmdIndex = i;
          wsTextPrint("\n"); // newline for console
          Serial.printf("Command:%s found!",argv[0]);
@@ -461,7 +462,7 @@ int cmd_status(int argc,char * argv[]){
 //     }
 //     return 0;
 // }
-// const functionTable = [
+// const functionTable = [ detail see javascripts
 //     createCard,   "0"
 //     drawFilledRect,    // 1 drawFilledRect(color, x, y, width, height)
 //     drawPixel,         // 2  drawPixel(color, x, y)
@@ -488,7 +489,7 @@ int cmd_avtest(int argc,char * argv[]){
             int color = (r<<16)| (g<<8)|(b);
             drawPenColor(color);  
             drawFRect(x,y,(640-x*2),(480-y*2));
-            delay(30);
+            delay(10);
           }
         }
         for(int y=0; y<480/2; y+=20){
@@ -499,7 +500,7 @@ int cmd_avtest(int argc,char * argv[]){
             int color = (r<<16)| (g<<8)|(b);
             drawPenColor(color);  
             drawFRect(x,y,(640-x*2),(480-y*2));
-            delay(30);
+            delay(10);
           }
         }
     }else{
@@ -507,8 +508,8 @@ int cmd_avtest(int argc,char * argv[]){
       // consoloLog("avtest %d\n",c-'0');
 
       switch(c) {
-        case '0': {// pixel
-          int color = 0xffffff;
+        case '0': {// clear
+          int color = 0xffff00;
           drawPenColor(color);  
 
           String cmd;
@@ -519,6 +520,21 @@ int cmd_avtest(int argc,char * argv[]){
           cmd += String(480);          
           videof(cmd.c_str());
           delay(100);
+          }break;
+        case '1': {// FCIRCLE
+         for (int i=0;i<500;i++){
+            int b = random(255);
+            int g = random(255);
+            int r = random(255);
+            int color = (r<<16)| (g<<8)|(b);
+            drawPenColor(color);  
+
+            int x=random(639);
+            int y=random(480);
+            r=random(50);
+            drawFCircle(x,y,r);
+            // delay(100);       
+          }
           }break;
         case '2': // pixel
         default:
