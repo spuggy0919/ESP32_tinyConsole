@@ -37,7 +37,7 @@
               var ratio;
               canvas=document.getElementById("mycanvas");
               ctx=canvas.getContext('2d');
-              MonitorConsoleLog("getTransform1="+ctx.getTransform() );
+              // MonitorConsoleLog("getTransform1="+ctx.getTransform() );
 
               ctx.setTransform(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
 
@@ -45,9 +45,9 @@
                 ratio = parseFloat(canvas.width/640);
                 ctx.scale(ratio,ratio);
                 ctx.setTransform(ratio, 0.0, 0.0, ratio, 0.0, 0.0);
-                MonitorConsoleLog("aspectRatio="+ratio );
-                MonitorConsoleLog("aspectRatio="+(typeof ratio) );
-                MonitorConsoleLog("getTransform="+ctx.getTransform() );
+                // MonitorConsoleLog("aspectRatio="+ratio );
+                // MonitorConsoleLog("aspectRatio="+(typeof ratio) );
+                // MonitorConsoleLog("getTransform="+ctx.getTransform() );
 
                 canvas.height = (canvas.width*0.75) ;
               
@@ -60,14 +60,14 @@
               // ctx.scale(0.639,0.639);
                 ctx.scale(ratio,ratio);
 
-              MonitorConsoleLog("getTransform="+ctx.getTransform() );
+              // MonitorConsoleLog("getTransform="+ctx.getTransform() );
              
-              MonitorConsoleLog("cards.clientWidth="+cards.clientWidth );
-              MonitorConsoleLog("offsetHeight="+canvas.offsetHeight );
-              MonitorConsoleLog("width="+canvas.width );
-              MonitorConsoleLog("height="+canvas.height );
-              MonitorConsoleLog("terminalwidth="+terminal.offsetWidth );
-              MonitorConsoleLog("terminalheight="+terminal.offsetHeight ); 
+              // MonitorConsoleLog("cards.clientWidth="+cards.clientWidth );
+              // MonitorConsoleLog("offsetHeight="+canvas.offsetHeight );
+              // MonitorConsoleLog("width="+canvas.width );
+              // MonitorConsoleLog("height="+canvas.height );
+              // MonitorConsoleLog("terminalwidth="+terminal.offsetWidth );
+              // MonitorConsoleLog("terminalheight="+terminal.offsetHeight ); 
            }
 
             // function createCard() {

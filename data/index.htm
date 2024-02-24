@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <title>ESP WebSocket Console </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="css/style.css">
-    <script src="js/scriptws.js"></script>
-    <script src="js/scriptio.js"></script>
+    <link rel="stylesheet" type="text/css" href=".css/style.css">
+    <script src=".js/scriptws.js"></script>
+    <script src=".js/scriptio.js"></script>
   </head>
   <body >
     <div class="topnav" >
@@ -42,11 +42,11 @@
               </select>      -->
               <p>
               <audio id="myaudio" controls>
-                <source src="audio/test.mp3" type="audio/mpeg">  Your browser does not support the audio element.
+                <source src=".audio/test.mp3" type="audio/mpeg">  Your browser does not support the audio element.
               </audio> 
               <select name="selectio" id="idselect" onchange = "updatefontsize(this)" style="width:100px">
               <!-- <option id="font10">10</option> -->
-              <option id="font15">12</option>
+              <option id="font12">12</option>
               <option id="font15">15</option>
               <option id="font20">20</option>
               <option id="font25">25</option>
@@ -61,9 +61,10 @@
               <input type="checkbox" id="monitor" name="monitor" onclick='monitorchecked(this);' checked="false" >
               <label for="monitor">Monitor</label> 
 
+
+              -->
               <input type="checkbox" id="scroll" name="scroll" onclick='scrollchecked(this);' checked='true' >
               <label for="scroll">Scroll</label>
-              -->
               <input type="checkbox" id="switchTouch" checked="true"  >
               <label for="switchTouch">Graphics</label>
             </p>
@@ -80,7 +81,7 @@
                 <button type="submit" onclick="uploadfile(this)" class="button-on">upload</button>
                 </form>
               <!-- upload end -->
-              <button name="timerBtn" value="timerBtn" onclick="sendTime()" class="button-on">Sync Time</button>
+              <button name="timerBtn" value="timerBtn" onclick="sendTime()" class="button-on">SyncTime</button>
               <button name="resetBtn" value="resetBtn" onclick="esprestart()" class="button-on">RESET</button>
               <button name="ctrlcBtn" value="ctrlcBtn" onclick="CTRLCKey('terminal')" class="button-on">ctrl-c</button>
               <button name="clearBtn" value="clearBtn" onclick="clearTextarea('terminal');clearTextarea('consolelog')" class="button-on">Clear</button>
@@ -107,7 +108,7 @@
           <!-- Control textarealog .  Begin -->
         <!-- <div class="card" style = "background-color: #eef2c1; "> -->
             <p class="card-title">Web Serial Monitor</p>
-            <textarea  id="consolelog" name="review" style="font-size:12px;"  rows='25' cols="80" ></textarea>
+            <textarea  id="consolelog" name="review" style="font-size:12px; width:100%"  rows='25' cols="80" ></textarea>
            <!-- Control textarealog .  end -->
         <!-- Control textarea log .  Endding -->
         <!-- Control textarealog .  Begin 
@@ -135,11 +136,12 @@
 
   <!-- Control textarea log .  Endding -->
   <script>
+            updatefontsize(null);
             function esprestart() { // client set ESP32 timer
                 var xhr = new XMLHttpRequest();
                 //xhr.open("POST", "/"timer?value="+"element.value, true); 
                 // console.log(date);
-                xhr.open("POST", "/reset=0", true); 
+                xhr.open("POST", "/param?reset=0", true); 
                 xhr.send();          
             }
             function sendTime() { // client set ESP32 timer
@@ -206,7 +208,7 @@
             var terminalLineMode = true;
             var scrollcheck = true;
             var touchcheck = false;
-            var canvascheck = false;
+            var canvascheck = true;
             var consolecheck = false;
             var monitorcheck = false;
             var touchcheck = true;
@@ -422,7 +424,7 @@
 
             //   // Load and draw a custom cursor image
             //   const cursorImage = new Image();
-            //   cursorImage.src = 'cursor64.png';
+            //   cursorImage.src = '.image/cursor64.png';
 
             //   // Track mouse movement and update the custom cursor position
             //   canvas.addEventListener('mousemove', (e) => {
@@ -444,17 +446,17 @@
             function consolechecked() {
               var terminal = document.getElementById("terminal");
               consolecheck = ! consolecheck;
-              terminal.style.display = (consolecheck) ? 'block':'mome';
+              terminal.style.display = (consolecheck) ? 'block':'none';
             }    
             function canvaschecked() {
               var canvaso = document.getElementById("mycanvas");
               canvascheck = ! canvascheck;
-              canvaso.style.display = (canvascheck) ? 'block':'mome';
+              canvaso.style.display = (canvascheck) ? 'block':'none';
             }    
             function monitorchecked() {
               var monitor = document.getElementById("consolelog");
               monitorcheck = ! monitorcheck;
-              monitor.style.display = (monitorcheck) ? 'block':'mome';
+              monitor.style.display = (monitorcheck) ? 'block':'none';
             }    
             function scrollchecked() {
               scrollcheck = ! scrollcheck;
@@ -523,7 +525,7 @@
                     document.getElementById("terminal").style.height = (parseInt(rowcols[0])*2).toString+"em";
                     document.getElementById("terminal").style.width =  "100%";// "rowcols[1]+"em";            
                     document.getElementById("consolelog").style.height  = "75%"; // (parseInt(rowcols[0])*2).toString+"em";                 
-                    document.getElementById("consolelog").style.width  =  "100%";//  rowcols[1]+"em";
+                    document.getElementById("consolelog").style.width  = (parseInt(rowcols[0])*2).toString+"em";
                     // document.getElementById("mycanvas").style.width  =  "100%";//  rowcols[1]+"em";
                     // document.getElementById("mycanvas").style.height  =  "75%";//  rowcols[1]+"em";
             }
@@ -535,7 +537,7 @@
                     var textareao =document.getElementById("terminal");
                     var relativeh = textareao.offsetWidth * 0.75;
                     textareao.style.fontSize = fontsize + "px";
-                    document.getElementById("consolelog").style = "font-size:" + fontsize + "px;"+ "width:100%";
+                    document.getElementById("consolelog").style = "font-size:" + fontsize + "px;"+ "width:100%;";
                     // mycavas1.style.width  =  textareao.offsetWidth + "px";//  rowcols[1]+"em";
                     // mycavas1.style.height  =  relativeh + "px";//  rowcols[1]+"em";
    // Get the element by its ID or any other method
@@ -581,6 +583,6 @@
         }
         // SSE end
   </script>
-  <script src="js/keymouse.js"></script>
+  <script src=".js/keymouse.js"></script>
   </body>
 </html>

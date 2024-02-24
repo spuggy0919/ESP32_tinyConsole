@@ -263,6 +263,7 @@ String printdirentry(File direntry, int32_t levels){
     }else{ // FILE
         retstr += " ";
         retstr += String(direntry.name());
+        if (String(direntry.name()).length()<7) retstr += "\t";
         retstr += "\t";
         retstr += String(direntry.size());
 #ifndef CONFIG_LITTLEFS_FOR_IDF_3_2
@@ -291,7 +292,7 @@ String listDir(fs::FS &fs, const char * dirname, uint8_t levels){
 
     return dirlistContent;
 }
-
+bool hiddenDot = true;
 void listDir1(fs::FS &fs,   const char *  dirname, uint8_t levels){
     // Serial.printf("recursive sub directory: %s \r\n", dirname);    
 #ifdef ESP32
@@ -309,7 +310,8 @@ void listDir1(fs::FS &fs,   const char *  dirname, uint8_t levels){
     }
     File file = root.openNextFile();
     while(file){
-        dirlistContent +=  printdirentry(file, levels);
+        if (file.name()[0]!='.'&& hiddenDot) 
+            dirlistContent +=  printdirentry(file, levels);
         if (file.isDirectory()){
             if(levels <= levellist){
                 char * p = (char*)malloc( strlen( dirname ) + 5 + strlen(file.name()));
@@ -320,7 +322,8 @@ void listDir1(fs::FS &fs,   const char *  dirname, uint8_t levels){
                     p = strcat(p,"/");
                 }
                 p = strcat(p,file.name());
-                listDir1(fs, p, levels + 1 );
+                if (p[1]!='.'&& hiddenDot) 
+                     listDir1(fs, p, levels + 1 );
                // Serial.printf("recursive return from sub directory: %s \r\n", p);    
                 free(p);
             }

@@ -96,6 +96,12 @@ function wsPingRequest(){
         // MonitorConsoleLog(`Reply received: ${reply}`);
     }).catch((error) => {
         MonitorConsoleLog(`Reply timeout or error: ${error}`);
+        // Reconnect after a delay (e.g., 5 seconds)
+
+        restartws=true;
+        if (!initWebSocket){//if restart fail keep old for retry
+            websocket = oldws;
+        }
     });
 }
 function resetPingTimer() {

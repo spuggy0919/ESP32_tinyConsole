@@ -55,39 +55,38 @@ typedef struct COMMAND_TABLE_ITEM{
 } COMMAND_TABLE;
 
 COMMAND_TABLE commandTable[]= {
- "test",   cmd_test,   "      // dummy command",
-  "tb",     cmd_tinybasic,  " // tinyBasic",
-  "TinyBasic",  cmd_tinybasic,  " // tinyBasic",
-  "pwd",    cmd_pwd,    "      // current path",
-  "cd",     cmd_cd,     " dir  //change directory",
-  "fp",     cmd_fp,     " path // full path testing",
+  "tb",     cmd_tinybasic,  "file.bas\t// tinyBasic run file",
+  "TinyBasic",  cmd_tinybasic,  "\t// tinyBasic interactive",
+  "pwd",    cmd_pwd,    "\t\t// current path",
+  "cd",     cmd_cd,     "\t\t// change directory",
+  "fp",     cmd_fp,     "path \t// full path testing",
   // "ls0",    cmd_ls0,    "      // dummy list",
-  "df",     cmd_df,     "      // disk infomation",
-  "ls",     cmd_ls,     "path  // list directory",
-  "mkdir",  cmd_mkdir,  "path  //make directory ",
-  "rmdir",  cmd_rmdir,  "path  // remove directory",
-  "cat",    cmd_cat,    "file  //diplay file content",
-  "rm",     cmd_rm,     "file  // remove file",
-  "echo",   cmd_echo,   "msg   //echo message",
-  "write",  cmd_write,  "file message //" ,
-  "append", cmd_append, "file message //",
-  "cp",     cmd_cp,     "file1 file2 // copy file1 to file2",
-  "mv",     cmd_mv,     "file1 file2. // rename file1 to file2",
-  "time",   cmd_time,   "time",
-  "pio",    cmd_pio,    "set LED pin output value",
-  "dl",     cmd_download,"dl file  // download file to PC",
-  "reboot", cmd_reboot,  "reboot",
-  "status", cmd_status,  "status",
-
-  "ping",   cmd_test,  " // ping test",
-  "cls",    cmd_cls,  "  // clear screen",
- "avtest",  cmd_avtest,       "avtest  [0|1|2]// video graphic testing",
- "export",  cmd_export,       "export ssid ABC \n export password  12345678 \n export // export all config or set config", 
- "help",   cmd_help,   " //help all command is case sensitive now!",
-  "h",      cmd_help,   "help",
-  "?",      cmd_help,   "help",
+  "df",     cmd_df,     "\t\t// disk infomation",
+  "ls",     cmd_ls,     "path  \t// list directory",
+  "mkdir",  cmd_mkdir,  "path  \t// make directory ",
+  "rmdir",  cmd_rmdir,  "path  \t// remove directory",
+  "cat",    cmd_cat,    "file  \t// diplay file content",
+  "rm",     cmd_rm,     "file  \t// remove file",
+  "echo",   cmd_echo,   "msg   \t// echo message",
+  "write",  cmd_write,  "file msg \t// write message" ,
+  "append", cmd_append, "file msg // append message",
+  "cp",     cmd_cp,     "file1 file2 \t// copy file1 to file2",
+  "mv",     cmd_mv,     "file1 file2 \t// rename file1 to file2",
+  "time",   cmd_time,   "\t\t// display currnet time",
+  "pio",    cmd_pio,    "0~255 \t// set LED pin output pwm value",
+  "dl",     cmd_download,"file  \t// download file to PC",
+  "reboot", cmd_reboot,  "\t\t// reboot",
+  "ping",   cmd_test,  "\t\t// ping test, int in monitor",
+  "cls",    cmd_cls,  "\t\t// clear screen",
+ "avtest",  cmd_avtest,       "[0|1|2]\t// video graphic testing",
+ "export",  cmd_export,      "\t\t// export ssid ABC \n \t\t// export password 12345678 \n\t\t// export\n\t\t// export all wifi config or set config", 
+ "help",   cmd_help,   "\t\t// help ",
+  "h",      cmd_help,   "\t\t// help",
+  "?",      cmd_help,   "\t\t// help",
  //  below internal teing commands
- "task",    cmd_task,  "  // tasktest testing...",
+  "status", cmd_status,  "status",
+"test",   cmd_test,    "\t// dummy command",
+"task",    cmd_task,  "  // tasktest testing...",
  "dump",    cmd_dumpHex,   "0xaddr len //  dump Physical memory testing...",
  "call",    cmd_call,     "address argv ...// call cmd function  testing...",
  "tdelay",  cmd_taskdelay,     "delaynum...// for wssockettask idle time...",
@@ -346,11 +345,15 @@ int cmd_pio(int argc,char * argv[]){
 }
 int cmd_help(int argc,char * argv[]){
     for (int i=0;i<CMDNUMBERS;i++){
-       if (commandTable[i].funName[0] == '-') break;
        wsTextPrintln(commandTable[i].funName + " " + commandTable[i].description);
+       if (commandTable[i].funName[0] == '?') break;
     }
-    wsTextPrintln("In TinyBasic, Running break press '#' \n");
-    wsTextPrintln("Exit TinyBasic,  press 'CTRL-C' \n");
+    wsTextPrintln("\nIn TinyBasic, Running break press '#'");
+    wsTextPrintln("Exit TinyBasic,  press 'CTRL-C' button");
+    wsTextPrintln("SyncTime Button set esp32 rtc with client time");
+    wsTextPrintln("Clear Button clear monitor, same as cls");
+    wsTextPrintln("Upload Button upload file to EPS32");
+    wsTextPrintln("Graphics checkbox display canvas or none");
     return 0;
 }
 int cmd_time(int argc,char * argv[]){
@@ -451,6 +454,9 @@ int cmd_mv(int argc,char * argv[]){
   return ret;
 }
 int cmd_reboot(int argc,char * argv[]){
+
+  pwmled(0);
+
   ESP.restart(); return 0;
 }
 int cmd_status(int argc,char * argv[]){

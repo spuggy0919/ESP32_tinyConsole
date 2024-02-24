@@ -161,9 +161,13 @@ void WebServerPage()
         // Serial.println(t);
         timerSetEpoch(t);
         value = "timer=" + value;
+        wsTextPrintln(value);
       }
     }
     if (request->hasParam("reset")) {
+            wsTextPrintln("ESP32 restart");
+            // light up blue led
+            pwmled(0);
             ESP.restart();
     }
 #endif

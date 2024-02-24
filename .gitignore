@@ -23,4 +23,5 @@ lib/HTTPPacket
 lib/Tinybasic/tinybasic.bak
 databak
 data/bas
+data/config.json
 

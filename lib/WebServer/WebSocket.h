@@ -11,6 +11,7 @@ bool WebWSConnect();
 
 void WSSendTXT(String msg);
 bool WSSendTXTAck(String msg);
+bool WSSendTXTnoAck(String msg);
 void WSTransferMessage(int wi,String msg);
 void WSTransferChar(int wi,char c);
 void WSTransferBufferFlush(int wi);
