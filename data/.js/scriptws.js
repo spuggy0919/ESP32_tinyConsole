@@ -49,13 +49,16 @@ function sendMessage(msg){
 function waitForSocketConnection(socket, callback){
     setTimeout(
         function () {
-            if (socket.readyState === 1) {
+            if (socket.readyState === WebSocket.OPEN) {
                 // MonitorConsoleLog("Connection is made")
                 if (callback != null){
                     callback();
                 }
             } else {
                 // **BUG?** MonitorConsoleLog("wait for connection...")
+                if (socket==null || socket.readtState==WebSocket.CLOSED){
+                         initWebSocket();
+                }
                 // waitForSocketConnection(socket, callback);
             }
 

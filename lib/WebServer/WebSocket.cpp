@@ -1,51 +1,32 @@
 #include "WebServer.h"
 // websocket
 AsyncWebSocket ws("/ws");
-// websocket
-
-
-// Define WebSocket states
-enum WebSocketState {
-    WS_STATE_CONNECTED,
-    WS_STATE_READY,
-    WS_STATE_BUSY,
-    WS_STATE_DISCONNECTED
-};
 
 // Define a queue for outgoing WebSocket messages
-QueueHandle_t webSocketQueue;
 SemaphoreHandle_t xackSemaphore;
-QueueHandle_t messageQueue;
-
-// Structure to hold WebSocket data
-struct WebSocketData {
-  String message;
-};
-
-// Function prototypes
-void wsTextTask(void *pvParameters);
-void wsEventTask(void *pvParameters);
-
 
 // Define WebSocket state for each connection
 #define MAX_WEBSOCKET_CONNECTIONS 10
-WebSocketState webSocketStates[MAX_WEBSOCKET_CONNECTIONS];
+
+int ws_clientid;
+AsyncWebSocketClient *clientconnects[MAX_WEBSOCKET_CONNECTIONS];
+AsyncWebSocketClient *CurrntClient=NULL;
+bool isConnect = false;
 
 #define KEY_TERMINAL   0
 #define KEY_CONSOLELOG 1
 
-bool ws_connect=false;
+
 bool WebWSConnect(){
-    return ws_connect;
+    return isConnect;
 }
-int ws_clientid;
-void notifyClients(String sliderValues) {
-  ws.textAll(sliderValues);
-}
+
+
 int sno=0;
 void wsTextPrintBase64(int key,String msg){
   String substr;
   //  Serial.println("wsTextPrintBase64");
+  if (!WebWSConnect()) return;
    while(msg.length() > 0) {
       if (msg.length()>=64) {
         substr =  msg.substring(0,64);
@@ -71,6 +52,7 @@ void wsTextPrintBase64(int key,String msg){
 }
 void wsTextPrintBase64noAck(int key,String msg){
   String substr;
+  if (!WebWSConnect()) return;
   //  Serial.println("wsTextPrintBase64");
    while(msg.length() > 0) {
       if (msg.length()>=64) {
@@ -93,29 +75,29 @@ void wsTextPrintBase64noAck(int key,String msg){
       //  vTaskDelay( 50 / portTICK_PERIOD_MS ); 
     }
     return ; // DEBUG
-
-}
-void wsTextPrintCstr(const char *msg){
-   wsTextPrint(String(msg));
 }
 void wsTextPrint(String msg){
    wsTextPrintBase64(0,msg);
     return ; // DEBUG
 
 }
+void wsTextPrintCstr(const char *msg){
+   wsTextPrint(String(msg));
+}
+
 void wsTextPrintln(String msg){
    wsTextPrintBase64(0,msg+"\n");
   return ; // DEBUG
 
 }
+// msg with base64
+void WSTransferMessage(int wi,String msg){
 
-// void wsPrintf(const char *fmt,...){
-//   char buf[128];
-//   va_list args;
-//   va_start(args, fmt);
-//   vsnprintf(buf, sizeof(buf), fmt, args);
-//   va_end(args);  wsTextPrintBase64(9,buf); // extension 
-// }
+      wsTextPrintBase64(wi,String(msg)); 
+
+
+}
+
 void _wsDevice(const char dev,const char *fmt,...){
   char buf[128];
   va_list args;
@@ -129,7 +111,7 @@ static char obuf[2][BUFFERSIZE];
 static int olen[2]={0,0};
 void WSTransferBufferFlush(int wi){
 
-   if (ws_connect){
+    if (WebWSConnect()){
     
 
       // Serial.printf("WS:TX:\n");
@@ -148,6 +130,7 @@ void WSTransferBufferFlush(int wi){
 
 void WSTransferChar(int wi,char c){
       // taskENTER_CRITICAL();
+      if (!WebWSConnect()) return;
       if (c=='\x0a'||c=='\x0d'||c=='?'||c=='.'||c=='!') {
         obuf[wi][olen[wi]]='\n'; olen[wi]+=1;
         obuf[wi][olen[wi]]=0;
@@ -156,19 +139,13 @@ void WSTransferChar(int wi,char c){
         obuf[wi][olen[wi]]=c; olen[wi]+=1;
       }
       // taskEXIT_CRITICAL();
-
-
 }
 
-// msg with base64
-void WSTransferMessage(int wi,String msg){
 
-      wsTextPrintBase64(wi,String(msg)); 
-
-
-}
 // low evel sent 
 void WSSendTXT(String msg){
+        if (!WebWSConnect()) return;
+
       ws.text(ws_clientid, msg.c_str(),msg.length());
 
 }
@@ -177,6 +154,7 @@ int maxRetries=3;
 bool WSSendTXTAck(String msg){
 int timeout = (300 / portTICK_PERIOD_MS) + 1; // 100ms  Adjust as needed
     // xSemaphoreTake(xackSemaphore, 0); // anyway clear Given *BUG* race occurred
+    if (!WebWSConnect()) return false;
 
     ws.text(ws_clientid, msg.c_str(),msg.length());
 
@@ -249,124 +227,39 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
 }
 
 
-// Function to send WebSocket data
-void sendWebSocketData(AsyncWebSocketClient *client, const char *data) 
-{
-    // Get the WebSocket state
-    WebSocketState state = webSocketStates[client->id()];
-
-    // Check the state and handle accordingly
-    while (state == WS_STATE_BUSY|| state == WS_STATE_DISCONNECTED ) delay(10); // wait for time out
-    if (state == WS_STATE_READY) {
-        // Enqueue the data and change the state to BUSY
-        xQueueSend(webSocketQueue, data, portMAX_DELAY);
-        webSocketStates[client->id()] = WS_STATE_BUSY;
-    } 
-}
-
-// Dequeue and send WebSocket data
-void processWebSocketQueue(AsyncWebSocketClient *client) 
-{
-    while (1) {
-        // Dequeue data from the WebSocket queue
-        char data[256];
-        if (xQueueReceive(webSocketQueue, data, portMAX_DELAY) == pdTRUE) {
-            // Send the data over the WebSocket connection
-
-            // Change the WebSocket state back to READY when the queue is empty
-            if (uxQueueMessagesWaiting(webSocketQueue) == 0) {
-                webSocketStates[client->id()] = WS_STATE_READY;
-            }
-        }
-    }
-}
-
-// Function to receive WebSocket data
-void receiveWebSocketData(AsyncWebSocketClient *client, const char *data) 
-{
-    // Get the WebSocket state
-    WebSocketState state = webSocketStates[client->id()];
-
-    // Check the state and handle accordingly
-    if (state == WS_STATE_READY) {
-        // Enqueue the data and change the state to BUSY
-        xQueueSend(webSocketQueue, data, portMAX_DELAY);
-        webSocketStates[client->id()] = WS_STATE_BUSY;
-    } 
-}
-
-// WebSocket connection callback
-// void onWebSocketDisConnect(AsyncWebSocket *server, AsyncWebSocketClient *client) 
-// {
-//     // Set WebSocket state to CONNECTED when a connection is established
-//     webSocketStates[client->id()] = WS_STATE_DISCONNECTED;
-// }
-
 void wsEventHandle(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
   switch (type) {
     case WS_EVT_CONNECT:
       Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
       ws_clientid = client->id();
-      ws_connect = true;
+      CurrntClient=client;
    //     WSTransferBufferTaskInit(0); // wi is 0 for textlog task sent message for basic
     // Set WebSocket state to CONNECTED when a connection is established
-    webSocketStates[client->id()] = WS_STATE_CONNECTED;  
-
+      // clientconnects[client->id()] = client; 
+      isConnect=true;
       break;
     case WS_EVT_DISCONNECT:
       Serial.printf("WebSocket client #%u disconnected\n", client->id());
-      ws_connect = false;
       // Set WebSocket state to CONNECTED when a connection is established
-      webSocketStates[client->id()] = WS_STATE_DISCONNECTED;
+      isConnect=false;
 
       break;
     case WS_EVT_DATA:
-
-      wsOnMessageReceive(arg, data, len);
+      if (client->status()==WS_CONNECTED) {
+         wsOnMessageReceive(arg, data, len);
+      }
+      isConnect=true;
       break;
     case WS_EVT_PONG:
         WSTransferMessage(1,"WebSocketPongEvent\n");
+      isConnect=true;
         break;
     case WS_EVT_ERROR:
+      isConnect=true;
+
         WSTransferMessage(1,"WebSocketErrorEvent\n");
 
       break;
-  }
-}
-
-
-
-void wsTextTask(void *pvParameters) {
-  while (true) {
-    // Wait for WebSocket text messages
-    WebSocketData webSocketData;
-    if (xQueueReceive(messageQueue, &webSocketData, portMAX_DELAY)) {
-      // Process the WebSocket text message
-      Serial.println("Received WebSocket message: " + webSocketData.message);
-
-      // Simulate acknowledgment or other processing
-      // ...
-
-      // Notify the other task (wsEventTask) that processing is complete
-      xSemaphoreGive(xackSemaphore);
-    }
-  }
-}
-
-void wsEventTask(void *pvParameters) {
-  while (true) {
-    // Wait for acknowledgment with a timeout
-    if (xSemaphoreTake(xackSemaphore, pdMS_TO_TICKS(5000)) == pdTRUE) {
-      Serial.println("Ack received within timeout!");
-    } else {
-      Serial.println("Timeout: Ack not received! Retrying...");
-      
-      // Implement retry mechanism here
-      // ...
-
-      // Notify the other task (wsTextTask) that the retry is done
-      xSemaphoreGive(xackSemaphore);
-    }
   }
 }
 
@@ -377,31 +270,7 @@ void WebSocketStart(AsyncWebServer &server) {
   xackSemaphore = xSemaphoreCreateBinary();
   // Take the semaphore immediately after creation to set its state to "unavailable"
   xSemaphoreTake(xackSemaphore, 0);
-  // Create a FreeRTOS queue for WebSocket messages
-  messageQueue = xQueueCreate(10, sizeof(WebSocketData));
 
-//   // WebSocket text event handler
-//   ws.onText([](AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
-//     String receivedMessage(reinterpret_cast<char*>(data), len);
-
-//     // Enqueue the message for processing
-//     WebSocketData webSocketData;
-//     webSocketData.message = receivedMessage;
-
-//     if (xQueueSendToBack(messageQueue, &webSocketData, 0) != pdPASS) {
-//       Serial.println("Failed to enqueue WebSocket message");
-//     }
-//   });
-
-
-
-  // Start FreeRTOS tasks
-//   xTaskCreate(wsTextTask, "wsTextTask", 4096, NULL, 1, NULL);
-//   xTaskCreate(wsEventTask, "wsEventTask", 4096, NULL, 1, NULL);
-
-//   // WebSocket text event handler
-//   ws.onText(wsTextHandle);
-  // WebSocket event handler callback
   ws.onEvent(wsEventHandle);
   // Attach WebSocket to the server
   server.addHandler(&ws);

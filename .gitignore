@@ -24,4 +24,4 @@ lib/Tinybasic/tinybasic.bak
 databak
 data/bas
 data/config.json
-
+*.cxp

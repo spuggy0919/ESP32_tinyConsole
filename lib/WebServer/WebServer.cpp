@@ -179,6 +179,11 @@ void WebServerPage()
 
     OK200();
   });
+
+  server.on("/", HTTP_GET, handleRoot).onDisconnect([](AsyncWebServerRequest *request){
+    Serial.println("Client disconnected");
+  });
+
   // 4. Set up Server Sent Event
   WebSocketStart(server);
   webEventTask();

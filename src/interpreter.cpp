@@ -361,6 +361,7 @@ int cmd_time(int argc,char * argv[]){
       return 0;
 }
 int cmd_echo(int argc,char * argv[]){
+    
     wsTextPrintln(String(argv[1]));
     return 0;
 }
