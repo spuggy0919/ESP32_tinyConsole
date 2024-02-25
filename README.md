@@ -60,6 +60,7 @@ Or later use CONSOLE command "export" to setup to STA mode. For example, below S
 %export password 12345678   // set password
 %export                     // get settings
 ```
+![Help](png/exports.jpeg)
 # Build and Upload, need to push EN button.
 
 ![pio Toolbar](png/toolbar.png)
@@ -108,10 +109,10 @@ WebServerGPIOControl Starting...
 ```
 ####  Run TinyBasic interpreter, use "TinyBasic" or "tb", then '>' in Tinybasic Interactive mode.
 ```
-%TinyBasic hello.bas [enter]
+%TinyBasic hello.bas [enter] // interactive mode use TinyBasic
 ```
 ```
-%tb hello.bas [enter]
+%tinyBasic hello.bas [enter]
 Hello World
 >list
 10 REM "The inevitable Hello World"
@@ -124,7 +125,7 @@ Hello World
 %
 %avtest [enter]         // internal command for graphics demo
 %cd basic [enter]       // emtering BASIC sub directory
-%tb v.bas [enter]       // BASIC draw circles demo
+%tinyBasic v.bas [enter]// BASIC draw circles demo
 >list [enter]           // emter BASIC interactive mode，list basic source code
 >20 [enter]             // delete line #20
 >RUN [enter]            // run text mode drawing demo
@@ -133,9 +134,14 @@ Hello World
 %cat v1.bas             // list file content
 ```
 ESP32 SSD1306 Pin 21 SDA, Pin 22 SDL, Vcc 3.3V, GND, run
+graphics mode compiler define is HTTPWSVGA，if you want use must change to ARDUINOSSD1306 in
+hardware-arduino-HTTP.h
+```
+#define ARDUINOSSD1306 /*spuggy0919*/
+#undef HTTPWSVGA /*spuggy0919  vga bai http winsocket*/
+```
 ```
 %tb SSD1306.bas  // or in TinyBasic use Load "SSD1306.bas"
->
 ```
 Blink example
 ```
