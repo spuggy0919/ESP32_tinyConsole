@@ -86,7 +86,7 @@ String dumpParams(AsyncWebServerRequest *request){
   }
   return plist;
 }
-String indexPath = "/index.htm";
+
 // handles uploads
 void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
   String logmessage = "Client:" + request->client()->remoteIP().toString() + " " + request->url();
@@ -114,16 +114,19 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
     request->redirect("/");
   }
 }
+String indexPath = "/index.htm";
 void WebServerPage()
 {
 
   server.serveStatic("/", LittleFS, "/");  // for style.css load
   // Route to set GPIO state to LOW
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    wsTextPrintln("HTTP_GET / ");
+    wsTextPrintf("HTTP_GET / \n");
     request->send(LittleFS, indexPath, "text/html", false, processor);
   });
+
  
+
   // run handleUpload function when any file is uploaded
   server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {
         request->send(200);

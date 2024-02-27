@@ -1,3 +1,35 @@
+/*
+ *
+ *	https://github.com/spuggy0919/ESP32_WEB_CONTROL/blob/espcontrol/LICENSE
+ *    GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+ *
+ *	Author: spuggy0919, spuggy0919@gmail.com
+ */
+/*
+websocket for tinyconsole protocol is defined below 
+Server              Client    description
+        heartbeat             
+       <----------- P:PING    heartbeat start after 45sec when idle 
+P:PONG -----------> P:PING
+
+        server TX
+d:MSG  ----------->           d is devive code  0:terminal 1:monitor, 8:canvas, 9:audio
+       <----------- A:        t:test
+
+        client TX 
+       <----------- V:version protocol version
+V:ver  ----------->           echo 
+        client key event
+       <----------- X:msg     keyboard keyin
+X:msg  ----------->           echo 
+        client touch event(TBD)
+       <----------- T:t:x:y   touch event (TBD)
+T:t:x:y----------->           echo 
+        client mouse event(TBD)
+       <----------- M:k:x:y   mouse event
+M:t:x:y----------->           echo 
+       <----------- R:        flush keybuf (TBD)
+*/
 #include "WebServer.h"
 // websocket
 AsyncWebSocket ws("/ws");
@@ -21,11 +53,55 @@ bool WebWSConnect(){
     return isConnect;
 }
 
+// WSSendTXT should be low evel format as sno:dev:base64msg
+#define PACKETSNO
+#ifdef PACKETSNO
+int packetsno=0;
+#endif
+void WSSendTXT(String msg){
+    if (!WebWSConnect()) return;
+    // Serial.println("WSSendTXT: " + msg);
 
-int sno=0;
+    ws.text(ws_clientid, msg.c_str(),msg.length()); 
+
+}
+// WSSendTXTAck should be low evel format as dev:base64msg
+int maxRetries=1;
+bool WSSendTXTAck(String msg){
+int timeout = (300 / portTICK_PERIOD_MS) + 1; // 100ms  Adjust as needed
+    // xSemaphoreTake(xackSemaphore, 0); // anyway clear Given *BUG* race occurred
+    if (!WebWSConnect()) return false;
+
+#ifdef PACKETSNO
+    String packetsnostr=String(packetsno)+":"; packetsno++;
+    msg=packetsnostr+msg;
+#endif
+    Serial.println("WSSendTXTAck: " + msg);
+    WSSendTXT(msg); 
+    
+
+    if (xSemaphoreTake(xackSemaphore, timeout) == pdFALSE) {
+        // No acknowledgment received yet, retry sending the message
+        for (int attempt = 1; attempt <= maxRetries; ++attempt) {
+            Serial.println("WSSendTXTAck:attempt " + String(attempt) + msg);
+
+            // Send the message to the client
+            WSSendTXT(msg);
+
+            // Wait for acknowledgment or retry interval
+            unsigned long startMillis = millis();
+            if (xSemaphoreTake(xackSemaphore, timeout) == pdTRUE)  {
+                break;
+            }
+            if (attempt == maxRetries) return false;
+        }
+    }
+    return true;
+
+}
 void wsTextPrintBase64(int key,String msg){
   String substr;
-  //  Serial.println("wsTextPrintBase64");
+  Serial.println("wsTextPrintBase64:"+String(key));
   if (!WebWSConnect()) return;
    while(msg.length() > 0) {
       if (msg.length()>=64) {
@@ -42,8 +118,7 @@ void wsTextPrintBase64(int key,String msg){
        Base64.encode(encodedString, (char *) substr.c_str(), substr.length());      
       //  Serial.printf("str = %s, len = %d, enstr=%s,enlen=%d\n",substr.c_str(),substr.length(),encodedString,encodedLength);
        String keystr=(key==KEY_TERMINAL)? "0:":String(key)+":";
-       String snostr=String(sno)+":";
-       WSSendTXTAck((keystr+String(encodedString)).c_str());
+       WSSendTXTAck(keystr+String(encodedString));
        //  events.send(encodedString,"textarea",millis());
       //  vTaskDelay( 50 / portTICK_PERIOD_MS ); 
     }
@@ -53,9 +128,9 @@ void wsTextPrintBase64(int key,String msg){
 void wsTextPrintBase64noAck(int key,String msg){
   String substr;
   if (!WebWSConnect()) return;
-  //  Serial.println("wsTextPrintBase64");
+  Serial.println("wsTextPrintBase64noAck: ("+String(key)+")");
    while(msg.length() > 0) {
-      if (msg.length()>=64) {
+     if (msg.length()>=64) {
         substr =  msg.substring(0,64);
         msg = msg.substring(64,msg.length());
       }else{
@@ -69,8 +144,13 @@ void wsTextPrintBase64noAck(int key,String msg){
        Base64.encode(encodedString, (char *) substr.c_str(), substr.length());      
       //  Serial.printf("str = %s, len = %d, enstr=%s,enlen=%d\n",substr.c_str(),substr.length(),encodedString,encodedLength);
        String keystr=(key==KEY_TERMINAL)? "0:":String(key)+":";
-       String snostr=String(sno)+":";
-       WSSendTXT((keystr+String(encodedString)).c_str());
+#ifdef PACKETSNO
+       String packetsnostr=String(packetsno)+":"; packetsno++;
+       String sentmsg=packetsnostr+keystr+String(encodedString);
+#else 
+       String eentmsg=keystr+String(encodedString);
+#endif
+       WSSendTXT(sentmsg); 
        //  events.send(encodedString,"textarea",millis());
       //  vTaskDelay( 50 / portTICK_PERIOD_MS ); 
     }
@@ -90,10 +170,21 @@ void wsTextPrintln(String msg){
   return ; // DEBUG
 
 }
-// msg with base64
-void WSTransferMessage(int wi,String msg){
+void wsTextPrintf(const char *fmt,...){
+  char buf[128];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buf, sizeof(buf), fmt, args);
+  va_end(args);  
+  wsTextPrintBase64(0,buf); // extension 
+}
 
+// wi is dev, 0:terminal 1:monitor, msg with base64
+void WSTransferMessage(int wi,String msg){
+    if (wi==0)
       wsTextPrintBase64(wi,String(msg)); 
+    else
+      wsTextPrintBase64noAck(wi,String(msg)); 
 
 
 }
@@ -103,9 +194,9 @@ void _wsDevice(const char dev,const char *fmt,...){
   va_list args;
   va_start(args, fmt);
   vsnprintf(buf, sizeof(buf), fmt, args);
-  va_end(args);  wsTextPrintBase64(dev,buf); // extension 
+  va_end(args);  
+  wsTextPrintBase64(dev,buf); // extension 
 }
-// void WSSendTXT(String msg);
 
 static char obuf[2][BUFFERSIZE];
 static int olen[2]={0,0};
@@ -142,41 +233,8 @@ void WSTransferChar(int wi,char c){
 }
 
 
-// low evel sent 
-void WSSendTXT(String msg){
-        if (!WebWSConnect()) return;
 
-      ws.text(ws_clientid, msg.c_str(),msg.length());
 
-}
-// low evel sent 
-int maxRetries=3;
-bool WSSendTXTAck(String msg){
-int timeout = (300 / portTICK_PERIOD_MS) + 1; // 100ms  Adjust as needed
-    // xSemaphoreTake(xackSemaphore, 0); // anyway clear Given *BUG* race occurred
-    if (!WebWSConnect()) return false;
-
-    ws.text(ws_clientid, msg.c_str(),msg.length());
-
-    if (xSemaphoreTake(xackSemaphore, timeout) == pdFALSE) {
-        // No acknowledgment received yet, retry sending the message
-        for (int attempt = 1; attempt <= maxRetries; ++attempt) {
-            Serial.println("Retrying message, attempt " + String(attempt) + msg);
-
-            // Send the message to the client
-            ws.text(ws_clientid, msg.c_str(),msg.length());
-
-            // Wait for acknowledgment or retry interval
-            unsigned long startMillis = millis();
-            if (xSemaphoreTake(xackSemaphore, timeout) == pdTRUE)  {
-                break;
-            }
-            if (attempt == maxRetries) return false;
-        }
-    }
-    return true;
-
-}
 /* parser receive who:command:device:msg */
 void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
@@ -203,19 +261,19 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
 
     }
     if (cmd == "A:"){ // ack reply from client
-        // wsTextPrintBase64(1,"A:"+msg+"\n");
-        // if (msg==String(sno)) {
+        // wsTextPrintBase64noAck(1,"E:"+msg+"\n");
+        // if (msg==String(packetsno)) {
             xSemaphoreGive(xackSemaphore);
         // }
     }
     if (cmd == "V:"){ // version
-        wsTextPrintBase64noAck(1,"V:"+msg+":clientID="+String(ws_clientid)+"\n");
+        // wsTextPrintBase64noAck(1,"V:"+msg+":clientID="+String(ws_clientid)+"\n");
     }
     if (cmd == "T:"){ // touch
-        wsTextPrintBase64noAck(1,"T:"+msg+"\n");
+        // wsTextPrintBase64noAck(1,"T:"+msg+"\n");
     }
     if (cmd == "M:"){ // mouse
-        wsTextPrintBase64noAck(1,"M:"+msg+"\n");
+        // wsTextPrintBase64noAck(1,"M:"+msg+"\n");
     }
     if (cmd == "R:"){ // request from client 
         WSTransferBufferFlush(0);

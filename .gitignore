@@ -24,4 +24,7 @@ lib/Tinybasic/tinybasic.bak
 databak
 data/bas
 data/config.json
+data/.apple2js
 *.cxp
+.apple2js.html
+lib/WebServer/output

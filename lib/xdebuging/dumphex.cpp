@@ -30,7 +30,7 @@ unsigned long  toUlong(const char *num){
     return 0;
 }
 
-void wsTextPrintCstr(const char *msg); // from WebServer.h
+void wsTextPrintf(const char *fmt,...);
 // Align memory addess x to an even page
 #define ALIGN_UP(x) ((unsigned char*)(((unsigned long)(x + 1) >> 1) << 1))
 #define ALIGN_DOWN(x) ((unsigned char*)(((unsigned long)x >> 1) << 1))
@@ -50,7 +50,7 @@ int printhexLong(const char *buf, unsigned int len){
         }
         linebuf[9+9+9+9+9+16] = '\n';
         linebuf[9+9+9+9+9+17] = 0;
-        wsTextPrintCstr(linebuf); p+=4; len-=16;
+        wsTextPrintf(linebuf); p+=4; len-=16;
     }
     return 0;
 }

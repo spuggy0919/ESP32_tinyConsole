@@ -39,8 +39,8 @@ function sendMessage(msg){
     // Wait until the state of the socket is not ready and send the message when it is...
     waitForSocketConnection(websocket, function(){
         let nows = Date.now()
-        MonitorConsoleLog(nows+":ESP32<---CLIENT:"+msg);
         websocket.send(msg);
+        MonitorConsoleLog(nows+"<<<"+msg);
         if (msg[0]!='P') resetPingTimer();
     });
 }
@@ -134,9 +134,9 @@ function wsSentChar(key){ // send textarea keyin
     // setTimeout(wsSentDelayChar(key), 2000);
     return;
     }
-    console.log("key");
-    console.log(key.length);
-    console.log("X:"+key);
+    // console.log("key");
+    // console.log(key.length);
+    // console.log("X:"+key);
     sendMessage("X:"+key);
 
 }
@@ -159,8 +159,8 @@ function wsSentTouch(start,x,y){ // send textarea keyin
     // setTimeout(wsSentDelayChar(key), 2000);
     return;
     }
-    console.log("touch");
-    console.log("T:"+x+":"+y);
+    // console.log("touch");
+    // console.log("T:"+x+":"+y);
     sendMessage("T:"+start+":"+x+":"+y);
 
 }
@@ -169,8 +169,8 @@ function wsSentMouse(start,x,y){ // send textarea keyin
     // setTimeout(wsSentDelayChar(key), 2000);
     return;
     }
-    console.log("mouse");
-    console.log("M:"+x+":"+y);
+    // console.log("mouse");
+    // console.log("M:"+x+":"+y);
     sendMessage("M:"+start+":"+x+":"+y);
 
 }
@@ -180,9 +180,9 @@ function wsSentVersion(version){ // send textarea keyin
     // setTimeout(wsSentDelayChar(key), 2000);
     return;
     }
-    console.log("key");
-    console.log(version.length);
-    console.log("V:"+version);
+    // console.log("key");
+    // console.log(version.length);
+    // console.log("V:"+version);
     sendMessage("V:"+version);
 
 }
@@ -192,9 +192,9 @@ function wsSentTest(msg){ // send textarea keyin
     // setTimeout(wsSentDelayChar(key), 2000);
     return;
     }
-    console.log("key");
-    console.log(version.length);
-    console.log("T:"+version);
+    // console.log("key");
+    // console.log(version.length);
+    // console.log("T:"+version);
     sendMessage("T:"+msg);
 
 }
@@ -239,30 +239,51 @@ function onClose(event) {
       }
 }
 const messageQueue = [];
+var sno=-1;
+const SNUMBER=0;
+const DEVCODE=1;
+const MSGTEXT=2;
+
+const devTERMINAL='0';
+const devMONITOR='1';
+const devTEST='2';
+const devVIDEO='8';
+const devAUDIO='9';
+var snumber = -1;
 function onMessage(event) {
     var lines= event.data.split(":");
     let ldata ;
-    if (lines[0]=='1') {
-        ldata = atob(lines[1]);
+    let nowt=Date.now();
+    let comingsno=parseInt(lines[SNUMBER]);
+    var ackrepsone=false;
+    if (snumber==comingsno) { // discard already received
+         return;
+    }
+    snumber = comingsno;
+    if (lines[DEVCODE]==devMONITOR) {
+        ldata = atob(lines[MSGTEXT]);
         // Resolve the reply promise with the received message
+        MonitorConsoleLog(nowt+'>>>:'+ldata);
         if (ldata=='P:PONG' && replyPromise) { // for pong
-            let nowt=Date.now();
-            MonitorConsoleLog(nowt+':PONG received');
-
             replyPromise.resolve(ldata);
             replyPromise = null;        
-        }else {
-            updateConsoleLog(ldata);
         }
         resetPingTimer();
         return ;
+    }else{ //monitor message don't ack
+        websocket.send("A:"); // reply ack for avoid reentry so atfer process data
+        ackrepsone=true;
     }
     // Add the received message to the queue
+
     messageQueue.push(event.data);
+    MonitorConsoleLog(nowt+">>>"+lines[0]+":"+lines[1]+":"+lines[2]+"("+ldata+")");
+    if (ackrepsone) MonitorConsoleLog(nowt+"<<<A:");
+
     resetPingTimer();
-    websocket.send("A:"); // reply ack for avoid reentry so atfer process data
     // Process the message queue asynchronously
     setTimeout(processMessagesQueue(),0);
+
 }
 // Asynchronous function to process the message queue
 let processing = false
@@ -289,11 +310,11 @@ function processMessages(msg) {
         let ldata;
 
 
-        if (lines[0]!='2') {
-            ldata = atob(lines[1]);
+        if (lines[DEVCODE]!=devTEST) {
+            ldata = atob(lines[MSGTEXT]);
         }
         // MonitorConsoleLog('processMessage:'+lines[0]+ldata);
-        switch(lines[0]){
+        switch(lines[DEVCODE]){
             case "0": // command shell
             updateTextarea(ldata);
             break;
@@ -307,11 +328,11 @@ function processMessages(msg) {
                     return;
                 
             }else {
-                updateConsoleLog(ldata);
+                MonitorConsoleLog(ldata);
             }
             break;
-            case "2": // Serial Monitor test fro ack 
-                updateConsoleLog(lines[1]);
+            case "2": // Serial Monitor test for ack 
+                MonitorConsoleLog(ldata);
                 break;
             case "8": // audio
             AudioFunc(ldata);
@@ -320,16 +341,11 @@ function processMessages(msg) {
             VideoFunc(ldata);
             break;
             case "T": // test protocol 
-            var line=atob(lines[1]);
+            var line=atob(lines[MSGTEXT]);
             // VideoFunc(line);
             break;
 
         }
-        // if (lines[0]=="0") {
-            // updateTextarea(lines[1]);
-        // }else{
-        //   updateConsoleLog(lines[1]);
-        // }
 }
 
 // WS endding -----

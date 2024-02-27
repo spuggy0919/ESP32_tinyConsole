@@ -22,7 +22,7 @@
 
            <!--   <p class="card-title">Monitor</p> -->
            <!-- <p class="card-title">ESP32 tinyConsole</p> -->
-           <textarea  id="terminal" name="review" style="font-size:12px; "  rows='25' cols="80" 
+           <textarea  id="terminal" name="review" style="font-size:15px; "  rows='25' cols="80" 
            onkeypress="textKeypress(event)" onkeydown="textKeydown(event)" onkeyup="textKeyup(event)"></textarea>
            <canvas id="mycanvas"  ></canvas>
 
@@ -58,16 +58,16 @@
               <input type="checkbox" id="canvasck" name="canvasck" onclick='canvaschecked(this);' checked="false" >
               <label for="canvasck">Canvas</label>              <input type="checkbox" id="console" name="console" onclick='consolechecked(this);' checked="true" >
               <label for="console">Console</label>
-              <input type="checkbox" id="monitor" name="monitor" onclick='monitorchecked(this);' checked="false" >
-              <label for="monitor">Monitor</label> 
+
 
 
               -->
               <input type="checkbox" id="scroll" name="scroll" onclick='scrollchecked(this);' checked='true' >
               <label for="scroll">Scroll</label>
-              <input type="checkbox" id="switchTouch" checked="true"  >
+              <input type="checkbox" id="switchTouch"  onclick="canvaschecked(this)">
               <label for="switchTouch">Graphics</label>
-            </p>
+              <input type="checkbox" id="monitor" name="monitor" onclick='monitorchecked(this);'  >
+              <label for="monitor">Monitor</label>             </p>
 
               
 
@@ -81,6 +81,7 @@
                 <button type="submit" onclick="uploadfile(this)" class="button-on">upload</button>
                 </form>
               <!-- upload end -->
+              <!-- <button name="apple2js" value="apple2js" onclick="apple2js()" class="button-on">apple2js</button> -->
               <button name="timerBtn" value="timerBtn" onclick="sendTime()" class="button-on">SyncTime</button>
               <button name="resetBtn" value="resetBtn" onclick="esprestart()" class="button-on">RESET</button>
               <button name="ctrlcBtn" value="ctrlcBtn" onclick="CTRLCKey('terminal')" class="button-on">ctrl-c</button>
@@ -107,7 +108,7 @@
     
           <!-- Control textarealog .  Begin -->
         <!-- <div class="card" style = "background-color: #eef2c1; "> -->
-            <p class="card-title">Web Serial Monitor</p>
+            <p class="card-title" id="consolecard">Web Serial Monitor</p>
             <textarea  id="consolelog" name="review" style="font-size:12px; width:100%"  rows='25' cols="80" ></textarea>
            <!-- Control textarealog .  end -->
         <!-- Control textarea log .  Endding -->
@@ -136,7 +137,25 @@
 
   <!-- Control textarea log .  Endding -->
   <script>
-            updatefontsize(null);
+            // function apple2js() {
+            //     window.location.href = 'apple2js.html';
+            // }
+            const monitor= document.getElementById('switchmonitor');
+            function enableCanvas(flag){
+              // if (canvasActive) return;
+              switchCheckbox.checked = flag;
+              if (switchCheckbox.checked) {
+                switchToCanvas();
+                textarea.style.zIndex = 1;
+                mycanvas.style.zIndex = 2;  
+                mycanvas.style.display = "block"
+              } else {
+                switchToTextarea();
+                textarea.style.zIndex = 2;
+                mycanvas.style.zIndex = 1;
+                mycanvas.style.display = "none"
+              }
+            }
             function esprestart() { // client set ESP32 timer
                 var xhr = new XMLHttpRequest();
                 //xhr.open("POST", "/"timer?value="+"element.value, true); 
@@ -208,10 +227,9 @@
             var terminalLineMode = true;
             var scrollcheck = true;
             var touchcheck = false;
-            var canvascheck = true;
+            var canvascheck = false;
             var consolecheck = false;
             var monitorcheck = false;
-            var touchcheck = true;
             var shiftkey = false;
             var controlkey = false;
             var altkey = false;
@@ -493,8 +511,12 @@
                 if (scrollcheck){
                   document.getElementById("terminal").scrollTop = document.getElementById("terminal").scrollHeight;
                 }
+                monitorchecked();
+                monitorchecked(); // sync checked
+                
             }
             function updateConsoleLog(txt) {
+                if (!monitorcheck) return; 
                 var txtValue = document.getElementById("consolelog").value;
                 console.log("consolelog");
                 console.log(txtValue);
@@ -504,6 +526,7 @@
                 }
             }
             function MonitorConsoleLog(txt) {
+              if (!monitorcheck) return; 
                 var txtValue = document.getElementById("consolelog").value;
                 document.getElementById("consolelog").value += txt + "\n";
                 if (scrollcheck){
@@ -538,6 +561,7 @@
                     var relativeh = textareao.offsetWidth * 0.75;
                     textareao.style.fontSize = fontsize + "px";
                     document.getElementById("consolelog").style = "font-size:" + fontsize + "px;"+ "width:100%;";
+
                     // mycavas1.style.width  =  textareao.offsetWidth + "px";//  rowcols[1]+"em";
                     // mycavas1.style.height  =  relativeh + "px";//  rowcols[1]+"em";
    // Get the element by its ID or any other method

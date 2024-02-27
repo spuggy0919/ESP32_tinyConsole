@@ -159,12 +159,12 @@
               // if (!canvas) {
               //   createCard();
               // }
-
+              enableCanvas(true);
               // Parse the command to get the function index and arguments
               const commandParts = command.split(' ');
               const functionIndex = parseInt(commandParts[0]);
               const args = commandParts.slice(1);
-
+              
               // Check if the functionIndex is valid
               if (functionIndex >= 0 && functionIndex < functionTable.length) {
                   // Call the function indirectly using the function table

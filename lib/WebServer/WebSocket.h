@@ -17,9 +17,8 @@ void WSTransferChar(int wi,char c);
 void WSTransferBufferFlush(int wi);
 void wsTextPrint(String msg);
 void wsTextPrintln(String msg);
-void wsTextPrint(String msg);
-void wsTextPrintCstr(const char *msg);
-void wsTextPrintln(String msg);
+//void wsTextPrintCstr(const char *msg); deprecated use wsTextPrintf
+void wsTextPrintf(const char *fmt,...);
 
 void onWebSocketConnect(AsyncWebSocket *server, AsyncWebSocketClient *client);
 void onWebSocketDisConnect(AsyncWebSocket *server, AsyncWebSocketClient *client);

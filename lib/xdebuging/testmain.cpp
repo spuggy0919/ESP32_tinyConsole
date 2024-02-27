@@ -50,3 +50,52 @@ int test_main(int argc,char * argv[])
      return 0;
 
 }
+
+
+#include <memory.h>
+// Size of the buffer
+#define BUFFER_SIZE 1024
+typedef int (*HELLOPTR)(int,int);
+// Allocate memory in IRAM
+IRAM_ATTR void* allocateIRAM(size_t size) {
+  return malloc(size);
+}
+
+int hello(int x,int y){
+   return x+y;
+  endxxxxx:
+  return 0;
+};
+
+// Function to execute the hello function copied to IRAM
+void executeHelloFunction() {
+
+char sbuf[256];
+  HELLOPTR helloAddress = hello;
+  int len =0x60;
+  sprintf(sbuf,"Executing hello function...%x=%d",(unsigned int)(helloAddress),len);
+  wsTextPrintln(sbuf);
+
+  // Allocate memory in IRAM
+  HELLOPTR helloFunction = (HELLOPTR)allocateIRAM(len);
+  if (!helloFunction) {
+    sprintf(sbuf,"Failed to allocate memory");
+    wsTextPrintln(sbuf);
+    return;
+  }
+  memcpy((char *)helloFunction, (char *)(helloAddress), len);
+    sprintf(sbuf,"copy to allocate memory%x",(unsigned int)helloFunction);
+    wsTextPrintln(sbuf);
+  // Execute the hello function
+  int result = helloFunction(2,3);
+    sprintf(sbuf,"2+3=%d",result);
+    wsTextPrintln(sbuf);
+  // Free allocated memory in IRAM
+  free((char *)helloFunction);
+}
+
+
+int cmd_hello(int argc,char * argv[]) {
+    executeHelloFunction();
+    return 0;
+}

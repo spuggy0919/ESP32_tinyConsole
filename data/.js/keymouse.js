@@ -1,6 +1,9 @@
 const mycanvas = document.getElementById('mycanvas');
 const textarea = document.getElementById('terminal');
 let canvasActive = false;
+// Initial setup
+const switchCheckbox = document.getElementById('switchTouch');
+switchToTextarea();
 
 function switchToCanvas() {
   canvasActive = true;
@@ -39,10 +42,8 @@ function switchToTextarea() {
 
 
 
-// Initial setup
-const switchCheckbox = document.getElementById('switchTouch');
-switchToTextarea();
-// Use a checkbox or some other trigger to switch between textarea and canvas
+
+
 document.getElementById('switchTouch').addEventListener('change', function() {
   if (switchCheckbox.checked) {
     switchToCanvas();

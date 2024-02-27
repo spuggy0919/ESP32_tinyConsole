@@ -94,6 +94,7 @@ COMMAND_TABLE commandTable[]= {
  "millis",  cmd_millis,     " // for '-' option check...",
  "mdelay",  cmd_millisdelay,     "delaycnt // for '-' option check...",
  "video",  cmd_video,       "video 0  // video graphics functions",
+ "hello",  cmd_hello,       "jmp hello",
 
   "-",      cmd_prompt,   "",
    "",      cmd_prompt,   "",
@@ -403,16 +404,33 @@ int cmd_ls(int argc,char * argv[]){
   return 0;
 
 }
+
 int cmd_ls0(int argc,char * argv[]){
   String path=currentDir();
   wsTextPrintln(listDir(LittleFS, path.c_str(), 1));
     return 0;
 
 }
+#include <esp_partition.h>
 int cmd_df(int argc,char * argv[]){
-  String freeheap="FreeHeap="+String(ESP.getFreeHeap());
+  char sbuf[256];
+  sprintf(sbuf,"ESP32 ChipIModel=%s\nRevision=%x\nChipCores=%d\nClockFreq==%uMZ ",ESP.getChipModel(),ESP.getChipCores(),ESP.getCpuFreqMHz());
+  wsTextPrintln(sbuf);
+  sprintf(sbuf,"FlashSize=0x%x\nFlashChipSpeed=%u\nFlashChipMode=%x ",ESP.getFlashChipSize(),ESP.getFlashChipSpeed(),ESP.getFlashChipMode());
+  wsTextPrintln(sbuf);
+  sprintf(sbuf,"PsramSize=%u\nFreePsram=%u\nMinFreePsram=%u\nMaxAllocPsram=%u ",ESP.getPsramSize(),ESP.getFreePsram(),ESP.getMinFreePsram(),ESP.getMaxAllocPsram());
+  wsTextPrintln(sbuf);
   wsTextPrintln(reportfs(LittleFS).c_str());
-  wsTextPrintln(freeheap.c_str());
+ // Retrieve the partition table
+  esp_partition_iterator_t iterator = esp_partition_find(ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, NULL);
+  while (iterator) {
+    const esp_partition_t *partition = esp_partition_get(iterator);
+    
+    sprintf(sbuf,"Partition label: %s, Type: %d, Subtype: %d, Size: %x bytes\n",
+                  partition->label, partition->type, partition->subtype, partition->size);
+    wsTextPrint(sbuf);
+    iterator = esp_partition_next(iterator);
+  }
     return 0;
 
 }

@@ -19,6 +19,13 @@ int Config_Init()
         }  
         return 0;
     }
+    const char* runs = jsonDoc["runs"];
+    int runtimes = 1;
+    if (runs) {
+        runtimes=String(runs).toInt();
+        runtimes++;
+    }
+    Config_Set("runs",String(runtimes));
 
     // Access JSON elements
     const char* ssid = jsonDoc["ssid"];
