@@ -38,7 +38,11 @@ void setup(){
   // check LittleFS , it is not necessary 
   // listDir(LittleFS,"/",2);
   // String indexfile = readFile(LittleFS,"/index.html");
-
+  // 2.1 IO create Queue
+  if (!stdioRedirector()) {
+      Serial.println("Error:Websocket Serial not starting...");
+      return;
+  }
 // 1. *** modified your SSID, PASSWORD pair 
 //  modified after config file read from littlefs
 //  use console export comand to setup
@@ -52,14 +56,12 @@ void setup(){
       return ;
   } 
 
-
+  // light up blue led read for connect
+  pwmled(255);
   // 2, start up Web Server and websocket
   WebServerPage(); // HTTP SSE WS
-  // 2.1 IO create Queue
-  if (!stdioRedirector()) {
-      Serial.println("Error:Websocket Serial not starting...");
-      return;
-  }
+
+
   // Interpreter
   // WebserForInterpreterSendCmd = interpreterSendCmd; 
 
@@ -67,13 +69,10 @@ void setup(){
 
   interpreterInit();
 
-  // light up blue led read for connect
-  pwmled(255);
 
 
   // sometimes reboot ????
-
-  vTaskStartScheduler();
+//  vTaskStartScheduler(); BUG is will spinlock 
 }
 int cmd_exec(int argc, char *argv[]);
 

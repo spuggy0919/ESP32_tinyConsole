@@ -33,7 +33,7 @@ IPAddress subnet(255, 255, 255, 0);
 
 // Timer variables
 unsigned long previousMillis = 0;
-const long interval = 60000;  // interval to wait for Wi-Fi connection (milliseconds)
+const long interval = 20000;  // interval to wait for Wi-Fi connection (milliseconds)
 
 #define MACLASTFOUR(mac) (mac.substring(12,14)+mac.substring(15,17))
 #define WIFIAPACTUALNAME(mac) (WIFIAPNAME+mac.substring(12,14)+mac.substring(15,17))
@@ -105,8 +105,8 @@ bool WiFiSTAStaticIP(String ssid,String pass,String ip, String gateway) {
   }else{
     Serial.println("Config as auto IP");
   }
-  String retries = Config_Get("retries");
-  int trycnt = retries.toInt() + 1;
+  String retries = String();
+  int trycnt = (retries.isEmpty()) ? 0:retries.toInt() + 1;
   WiFi.begin(ssid.c_str(), pass.c_str());
   Serial.println("Connecting to WiFi...try"+String(trycnt));
 
@@ -118,7 +118,7 @@ bool WiFiSTAStaticIP(String ssid,String pass,String ip, String gateway) {
     Serial.print(".");
     if (currentMillis - previousMillis >= interval) {
 
-      Config_Set("retries",String(trycnt));
+      Config_Set("retries",String(trycnt++));
       Serial.println("ERROR:Failed to connect. retry"+String(trycnt)+" config, restart");
       if (trycnt > 3) {
           Serial.println("ERROR:Failed to connect. remove config, restart for AP mode");
@@ -126,10 +126,10 @@ bool WiFiSTAStaticIP(String ssid,String pass,String ip, String gateway) {
           // Config_Remove("password");
           return false;
       }
-      ESP.restart();
+      // ESP.restart();
       return false;
     }
-    delay(500);
+      vTaskDelay( 500 / portTICK_PERIOD_MS ); 
   }
   Config_Remove("retries");
   Serial.println(WiFi.localIP());

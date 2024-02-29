@@ -1006,6 +1006,7 @@ void dspprintchar(char c, short col, short row) { char b[] = { 0, 0 }; b[0]=c; u
 void dspclear() { u8g2.clearBuffer(); u8g2.sendBuffer(); }
 void dspupdate() { u8g2.sendBuffer(); }
 void rgbcolor(int r, int g, int b) {}
+void argbcolor(int a,int r, int g, int b) {}
 void vgacolor(short c) { dspfgcolor=c%3; u8g2.setDrawColor(dspfgcolor); }
 void plot(int x, int y) { u8g2.setDrawColor(dspfgcolor); u8g2.drawPixel(x, y); dspgraphupdate(); }
 void line(int x0, int y0, int x1, int y1)   { u8g2.drawLine(x0, y0, x1, y1);  dspgraphupdate(); }
@@ -1289,23 +1290,23 @@ int vga_graph_pen_width=1;
 int vga_graph_brush = 0x000000;
 int vga_txt_pen = 0x00ff00;
 int vga_txt_background = 0x000000;
-int vga_pallete[16]={
-	0x000000,
-	0xFFFFFF,
-	0xFF0000,
-	0x00FF00,
-	0x0000FF,
-	0xFFFF00,
-	0xFF00FF,
-	0x00FFFF,
-	0x800000,
-	0x008000,
-	0x000080,
-	0x808000,
-	0x800080,
-	0x008080,
-	0xc0c0c0,
-	0x808080
+unsigned int vga_pallete[16]={
+	0xFF000000,
+	0xFFFFFFFF,
+	0xFFFF0000,
+	0xFF00FF00,
+	0xFF0000FF,
+	0xFFFFFF00,
+	0xFFFF00FF,
+	0xFF00FFFF,
+	0xFF800000,
+	0xFF008000,
+	0xFF000080,
+	0xFF808000,
+	0xFF800080,
+	0xFF008080,
+	0xFFc0c0c0,
+	0xFF808080
 };
 
 
@@ -1322,7 +1323,10 @@ void vgascale(int* x, int* y) {
 }
 
 void rgbcolor(int r, int g, int b) {
-	vga_graph_pen=(r<<16)|(g<<8)|(b);
+	vga_graph_pen=(0xff<<24)|(r<<16)|(g<<8)|(b);
+}
+void argbcolor(int a, int r, int g, int b) { /*spuggy0919*/
+	vga_graph_pen=(a<<24)|(r<<16)|(g<<8)|(b);
 }
 int setPenColor(int color){
 	vga_graph_pen = color;

@@ -529,10 +529,11 @@ int cmd_avtest(int argc,char * argv[]){
         audiof("0"); // play test.mp3
         for(int x=0; x<640/2; x+=20){
           for(int y=x; y<480/2; y+=20){
-            int b = random(255);
-            int g = random(255);
-            int r = random(255);
-            int color = (r<<16)| (g<<8)|(b);
+            unsigned int a = random(255);
+            unsigned int b = random(255);
+            unsigned int g = random(255);
+            unsigned int r = random(255);
+            unsigned int color = (a<<24)|  (r<<16)| (g<<8)|(b);
             drawPenColor(color);  
             drawFRect(x,y,(640-x*2),(480-y*2));
             delay(10);
@@ -540,10 +541,11 @@ int cmd_avtest(int argc,char * argv[]){
         }
         for(int y=0; y<480/2; y+=20){
           for(int x=y; x<640/2; x+=20){
-            int b = random(255);
-            int g = random(255);
-            int r = random(255);
-            int color = (r<<16)| (g<<8)|(b);
+            unsigned int a = random(255);
+            unsigned int b = random(255);
+            unsigned int g = random(255);
+            unsigned int r = random(255);
+            unsigned int color = (a<<24)|  (r<<16)| (g<<8)|(b);
             drawPenColor(color);  
             drawFRect(x,y,(640-x*2),(480-y*2));
             delay(10);
@@ -569,10 +571,11 @@ int cmd_avtest(int argc,char * argv[]){
           }break;
         case '1': {// FCIRCLE
          for (int i=0;i<500;i++){
-            int b = random(255);
-            int g = random(255);
-            int r = random(255);
-            int color = (r<<16)| (g<<8)|(b);
+            unsigned int a = random(255);
+            unsigned int b = random(255);
+            unsigned int g = random(255);
+            unsigned int r = random(255);
+            unsigned int color = (a<<24)|  (r<<16)| (g<<8)|(b);
             drawPenColor(color);  
 
             int x=random(639);

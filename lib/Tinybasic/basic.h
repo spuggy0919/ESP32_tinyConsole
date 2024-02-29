@@ -272,6 +272,7 @@ typedef unsigned char uint8_t;
 #define ISERIAL 1
 #define IKEYBOARD 2
 #define ISERIAL1 4
+#define ITOUCH   3 /*spuggy0919*/
 #define IWIRE 7
 #define IRADIO 8
 #define IMQTT  9
@@ -876,6 +877,7 @@ char kbdcheckch();
 
 /* graphics functions */
 void rgbcolor(int, int, int);
+void argbcolor(int, int, int, int); /*spuggy0919*/
 void vgacolor(short c);
 void vgascale(int*, int*);
 void plot(int, int);

@@ -5582,10 +5582,10 @@ void xtone(){
 
 #ifdef HASGRAPH
 /*
- *	COLOR setting, accepting one or 3 arguments
+ *	COLOR setting, accepting one or 3 arguments add alpha channel
  */
 void xcolor() {
-	short r, g, b;
+	short r, g, b, a;
 	nexttoken();
 	parsearguments();
 	if (er != 0) return;
@@ -5598,6 +5598,13 @@ void xcolor() {
 			g=pop();
 			r=pop();
 			rgbcolor(r, g, b);
+			break;
+		case 4:    /* rgba spuggy0919*/
+			b=pop();
+			g=pop();
+			r=pop();
+			a=pop();
+			argbcolor(a,r, g, b);
 			break;
 		default:
 			error(EARGS);
