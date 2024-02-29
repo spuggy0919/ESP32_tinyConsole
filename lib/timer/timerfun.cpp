@@ -32,10 +32,10 @@ String timerGetEpoch(){
     return String(rtc.getEpoch());          //  (String) 15:24:38
 }
 void timerSetEpoch(unsigned long epoch){
-    if (ESPHW_powerloss()){
+  //  if (ESPHW_powerloss()){
         rtc.setTime(epoch);
         Serial.println("ESP timer Set");
-    }
+ //   }
 }
 #else
 void timerSetTest(){}

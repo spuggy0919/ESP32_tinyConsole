@@ -8,6 +8,7 @@
 #include "ESP32_8266.h"
 // #include <stdio.h>
 
+
 void dumpArgList(int argc,char * argv[]){
      for(int i=0;i<argc;i++){
        Serial.printf("argv[%d]=%s,len=%d\n",i,String(argv[i]),String(argv[i]).length());
@@ -21,23 +22,39 @@ bool option(int argc,char * argv[],int argcMax){
 }
 int test_main(int argc,char * argv[])
 {
-  char buf[256];
-      sprintf(buf,"2:test main argc=%d\n",argc);
-      WSSendTXT(String(buf));
+  char buf[64];
+
+     wsTextPrintf("argc=%d\n",argc);
      for(int i=0;i<argc;i++){
-
-       sprintf(buf,"2:argv[%d]=%s\n",i,String(argv[i]));
-       WSSendTXT(String(buf));
-
+       wsTextPrintf("argv[%d]=%s\n",i,argv[i]);
      }  
-     for(int i=0;i<1000;i++){
-       sprintf(buf,"2:%d\n",i);
-       if (!WSSendTXTAck(String(buf))) {
-          WSSendTXT(String(buf));
-          break;
-       }
 
-     }      //  FILE *fid=fopen("test.txt","w+");
+     /* test websocket lose or error */
+     g_Loopback_Queue.clear();
+     int sum=0;
+     for(int i=0;i<1000;i++){
+      sprintf(buf,"2:%d",i); sum+=i;
+      WSSendTXTAck(String(buf));
+     }      
+     sum *= -1;
+     sprintf(buf,"2:%d",sum); 
+     WSSendTXTAck(String(buf));
+     unsigned long  lastMillis=millis();
+     wsTextPrintf("Loopback now(%u)\n",lastMillis);
+
+     while(g_Loopback_Queue.empty() &&(millis()-lastMillis)>30000); // waiting 30s for respones
+     if (g_Loopback_Queue.empty()){
+            wsTextPrintf("Loopback Test FAIL(Timeout)\n");
+            return -1;
+     }
+      String checksum = g_Loopback_Queue.front();
+      g_Loopback_Queue.pop_front();
+      if (checksum!="0") {
+          wsTextPrintf("Loopback Test Fail checksum(%d)!\n",checksum.toInt());
+          return -1;
+      }     
+      wsTextPrintf("Loopback Test PASS!(%u)\n",(millis()-lastMillis));
+    //  FILE *fid=fopen("test.txt","w+");
      
     // //  fprintf(fid,"Hello World!");
     //  fclose(fid);

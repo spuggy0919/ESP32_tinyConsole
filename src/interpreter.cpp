@@ -76,11 +76,15 @@ COMMAND_TABLE commandTable[]= {
   "pio",    cmd_pio,    "0~255 \t// set LED pin output pwm value",
   "dl",     cmd_download,"file  \t// download file to PC",
   "reboot", cmd_reboot,  "\t\t// reboot",
-  "ping",   cmd_test,  "\t\t// ping test, int in monitor",
-  "cls",    cmd_cls,  "\t\t// clear screen",
- "avtest",  cmd_avtest,       "[0|1|2]\t// video graphic testing",
- "export",  cmd_export,      "\t\t// export ssid ABC \n \t\t// export password 12345678 \n\t\t// export\n\t\t// export all wifi config or set config", 
- "help",   cmd_help,   "\t\t// help ",
+  "ping",   cmd_test,   "\t\t// ping test, int in monitor",
+  "cls",    cmd_cls,    "\t\t// clear screen",
+ "avtest",  cmd_avtest, "[0|1|2]\t// video graphic testing",
+ "export",  cmd_export, "\t\t// export ssid ABC \n \t\t// export password 12345678 \n\t\t// export\n\t\t// export all wifi config or set config", 
+ "loop",    cmd_test,    "\t\t// loopback test and arglist parser Test",
+  "exec",   cmd_exec,   "\t\t// exec \"cmd argv[]\" for task experiment",
+  "kill",   cmd_kill,   "\t\t// kill process, for task experiment ",
+  "ps",     cmd_ps,     "\t\t// process status, for task experiment",
+"help",     cmd_help,   "\t\t// help ",
   "h",      cmd_help,   "\t\t// help",
   "?",      cmd_help,   "\t\t// help",
  //  below internal teing commands
@@ -123,14 +127,31 @@ int separate (
     char   **p,
     int    size )
 {
-    int  n;
+    int  i,n,dcnt=0,len;
+    char delimiter = 0,c,*p1;
     strcpy (argvline, str.c_str ());
+    wsMonitorPrintf("argv=%s\n",argvline);
+    p1=argvline;
+    for(i=0;*p1!=0;i++,p1++){
+        c=*p1;
+        if (delimiter==0&&(c=='"'))  { dcnt++; delimiter = c; *p1=' '; continue; }// find first string delimiter
+        if (delimiter!=0&&(c==delimiter))  { dcnt++; delimiter = 0; *p1=' '; continue;}// find first string delimiter
+        if (c=='\\')  {  i++; c=*p1++; }// skip escape sequence
+        if ((dcnt%2)&&c==' ') *p1=0xff; // change to esc;
+    }
+    len = i;
     *p++ = strtok (argvline, " \n");
-    for (n = 1; NULL != (*p++ = strtok (NULL, " \n")); n++)
+    for (n = 1; NULL != (*p++ = strtok (NULL, " \n")); n++){
         if (size == n)
             break;
-    // if (size>0 && p[size-1][strlen(p[size-1])-1]=='\n') p[size-1][strlen(p[size-1])-1]= 0;
+    }
+    p1=argvline;
+    for(i=0;i<len;i++){
+        if (p1[i]==0xff) p1[i]=' ';
+    }
+       // if (size>0 && p[size-1][strlen(p[size-1])-1]=='\n') p[size-1][strlen(p[size-1])-1]= 0;
     return n; // trimming space \n  in getline
+
 }
 void parsercmdline(String line){
      argc = 0;
@@ -166,7 +187,7 @@ int InterpreterExcute(String *cmd){
       }
   } 
   *cmd = "";
-  if (argc>0) wsTextPrint("illegal cmd, try help");
+  if (argc>0) wsTextPrint("\nillegal cmd, try help\n%");
   return -1;
 }
 bool interpreterCheckReceiveCmd(String cmd){
@@ -358,7 +379,7 @@ int cmd_help(int argc,char * argv[]){
     return 0;
 }
 int cmd_time(int argc,char * argv[]){
-    wsTextPrintln(timerCurrent());
+    wsTextPrintln(timerCurrent()+"\n%");
       return 0;
 }
 int cmd_echo(int argc,char * argv[]){
@@ -672,9 +693,9 @@ void interpreterInit() {
 }
 int cmd_cls(int argc,char * argv[]){
 
-    wsTextPrint("\x1b[2J");
-    drawPenColor(0);  
-    drawFRect(0,0,(640),(480));
+    wsTextPrintf("\x1b[2J");
+    // drawPenColor(0);  
+    // drawFRect(0,0,(640),(480));
     return 0;
 }
 int cmd_prompt(int argc,char * argv[]){

@@ -19,6 +19,7 @@ void wsTextPrint(String msg);
 void wsTextPrintln(String msg);
 //void wsTextPrintCstr(const char *msg); deprecated use wsTextPrintf
 void wsTextPrintf(const char *fmt,...);
+void wsMonitorPrintf(const char *fmt,...);
 
 void onWebSocketConnect(AsyncWebSocket *server, AsyncWebSocketClient *client);
 void onWebSocketDisConnect(AsyncWebSocket *server, AsyncWebSocketClient *client);
@@ -32,5 +33,7 @@ void WebSocketStart(AsyncWebServer &server);
 
 // bool WebNTPPage();
 // void WebInputServer();
+#include <list>
+extern std::list<String> g_Loopback_Queue;
 
 #endif

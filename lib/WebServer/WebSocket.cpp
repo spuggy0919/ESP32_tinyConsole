@@ -76,14 +76,14 @@ int timeout = (300 / portTICK_PERIOD_MS) + 1; // 100ms  Adjust as needed
     String packetsnostr=String(packetsno)+":"; packetsno++;
     msg=packetsnostr+msg;
 #endif
-    Serial.println("WSSendTXTAck: " + msg);
+    // Serial.println("WSSendTXTAck: " + msg);
     WSSendTXT(msg); 
     
 
     if (xSemaphoreTake(xackSemaphore, timeout) == pdFALSE) {
         // No acknowledgment received yet, retry sending the message
         for (int attempt = 1; attempt <= maxRetries; ++attempt) {
-            Serial.println("WSSendTXTAck:attempt " + String(attempt) + msg);
+            // Serial.println("WSSendTXTAck:attempt " + String(attempt) + msg);
 
             // Send the message to the client
             WSSendTXT(msg);
@@ -101,7 +101,7 @@ int timeout = (300 / portTICK_PERIOD_MS) + 1; // 100ms  Adjust as needed
 }
 void wsTextPrintBase64(int key,String msg){
   String substr;
-  Serial.println("wsTextPrintBase64:"+String(key));
+  // Serial.println("wsTextPrintBase64:"+String(key));
   if (!WebWSConnect()) return;
    while(msg.length() > 0) {
       if (msg.length()>=64) {
@@ -128,7 +128,7 @@ void wsTextPrintBase64(int key,String msg){
 void wsTextPrintBase64noAck(int key,String msg){
   String substr;
   if (!WebWSConnect()) return;
-  Serial.println("wsTextPrintBase64noAck: ("+String(key)+")");
+  // Serial.println("wsTextPrintBase64noAck: ("+String(key)+")");
    while(msg.length() > 0) {
      if (msg.length()>=64) {
         substr =  msg.substring(0,64);
@@ -178,6 +178,14 @@ void wsTextPrintf(const char *fmt,...){
   va_end(args);  
   wsTextPrintBase64(0,buf); // extension 
 }
+void wsMonitorPrintf(const char *fmt,...){
+  char buf[128];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buf, sizeof(buf), fmt, args);
+  va_end(args);  
+  wsTextPrintBase64noAck(1,buf); // extension 
+}
 
 // wi is dev, 0:terminal 1:monitor, msg with base64
 void WSTransferMessage(int wi,String msg){
@@ -210,7 +218,7 @@ void WSTransferBufferFlush(int wi){
         char c;
         for(int i = 0 ;i <olen[wi] ;i++) {
             c=obuf[wi][i];
-              Serial.printf("f[%2x]\n ",c);
+              // Serial.printf("f[%2x]\n ",c);
         } 
           {wsTextPrintBase64(wi,String(obuf[wi])); olen[wi]=0;}
          yield();
@@ -233,7 +241,7 @@ void WSTransferChar(int wi,char c){
 }
 
 
-
+std::list<String> g_Loopback_Queue;
 
 /* parser receive who:command:device:msg */
 void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
@@ -247,7 +255,7 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
     if (cmd == "X:"){ // transfer from client keyboard
       int loc = 0;
       // if (data[2]=='\x0d') loc=3;
-        Serial.printf("WS:RECV:\n");
+        // Serial.printf("WS:RECV:\n");
         char c;
         for(int i = 0 ;i <msg.length() ;i++) {
             c=msg.charAt(i);
@@ -260,12 +268,17 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
       wsTextPrintBase64noAck(1,"X:"+msg+"\n");
 
     }
+
     if (cmd == "A:"){ // ack reply from client
         // wsTextPrintBase64noAck(1,"E:"+msg+"\n");
         // if (msg==String(packetsno)) {
             xSemaphoreGive(xackSemaphore);
         // }
     }
+    if (cmd == "2:"){ // loopback test
+        g_Loopback_Queue.push_back(msg);
+    }
+
     if (cmd == "V:"){ // version
         // wsTextPrintBase64noAck(1,"V:"+msg+":clientID="+String(ws_clientid)+"\n");
     }

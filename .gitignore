@@ -25,6 +25,8 @@ databak
 data/bas
 data/config.json
 data/.apple2js
+testdata
 *.cxp
 .apple2js.html
 lib/WebServer/output
+template

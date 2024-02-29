@@ -28,6 +28,7 @@ void eventDownloadFile(String msg);
 
 
 void interpreterInit();
+int InterpreterExcute(String *cmd);
 
 bool interpreterCheckReceiveCmd(String cmd);
 
@@ -40,5 +41,8 @@ int cmd_echo(int argc, char *argv[]);
 int cmd_pwd(int argc, char *argv[]);
 int cmd_test(int argc, char *argv[]);
 int cmd_task(int argc, char *argv[]);
+int cmd_exec(int argc, char *argv[]);
+int cmd_kill(int argc, char *argv[]);
+int cmd_ps(int argc, char *argv[]);
 
 #endif 

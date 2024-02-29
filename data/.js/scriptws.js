@@ -250,20 +250,38 @@ const devTEST='2';
 const devVIDEO='8';
 const devAUDIO='9';
 var snumber = -1;
+var checksum = 0
 function onMessage(event) {
     var lines= event.data.split(":");
     let ldata ;
     let nowt=Date.now();
     let comingsno=parseInt(lines[SNUMBER]);
     var ackrepsone=false;
+    
     if (snumber==comingsno) { // discard already received
          return;
     }
     snumber = comingsno;
-    if (lines[DEVCODE]==devMONITOR) {
-        ldata = atob(lines[MSGTEXT]);
-        // Resolve the reply promise with the received message
-        MonitorConsoleLog(nowt+'>>>:'+ldata);
+    if (lines[DEVCODE]==devMONITOR||lines[DEVCODE]==devTEST) {
+        if (lines[DEVCODE]==devMONITOR) {
+            ldata = atob(lines[MSGTEXT]);
+            MonitorConsoleLog(nowt+">>>"+lines[0]+":"+lines[1]+":"+lines[2]+"("+ldata+")");
+        }
+        else {  /* test ack protocol */
+            ldata = lines[MSGTEXT];
+            websocket.send("A:"); 
+            // reply ack for avoid reentry so atfer process data
+            MonitorConsoleLog(nowt+">>>"+lines[0]+":"+lines[1]+":"+lines[2]+"("+ldata+")");
+            if (ldata=='0') checksum = 0; 
+            checksum += parseInt(ldata); 
+            if (ldata=='-499500') {
+                websocket.send("2:"+checksum.toString()); 
+                MonitorConsoleLog("\nchecksum="+checksum.toString()+"\n");
+            }
+
+         }
+        // // Resolve the reply promise with the received message
+        // // MonitorConsoleLog(nowt+'>>>:'+ldata);
         if (ldata=='P:PONG' && replyPromise) { // for pong
             replyPromise.resolve(ldata);
             replyPromise = null;        
@@ -277,7 +295,8 @@ function onMessage(event) {
     // Add the received message to the queue
 
     messageQueue.push(event.data);
-    MonitorConsoleLog(nowt+">>>"+lines[0]+":"+lines[1]+":"+lines[2]+"("+ldata+")");
+    if (lines[2])
+        MonitorConsoleLog(nowt+">>>"+lines[0]+":"+lines[1]+":"+lines[2]+"("+atob(lines[MSGTEXT])+")");
     if (ackrepsone) MonitorConsoleLog(nowt+"<<<A:");
 
     resetPingTimer();

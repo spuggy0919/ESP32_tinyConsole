@@ -2,6 +2,9 @@
 #define __ESP32_8266__H__
 // Both ESP32 and ESP8266
 #include <Arduino.h>
+#include <Freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_system.h>
 #include "debuglog.h"
 #include "ledpwm.h"         //pwm led for ESP32
 #include "keyin.h"          // debouce Key in
