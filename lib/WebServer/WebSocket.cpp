@@ -310,21 +310,23 @@ void wsEventHandle(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEven
     // Set WebSocket state to CONNECTED when a connection is established
       // clientconnects[client->id()] = client; 
       isConnect=true;
+      pwmled(255);
       break;
     case WS_EVT_DISCONNECT:
       Serial.printf("WebSocket client #%u disconnected\n", client->id());
       // Set WebSocket state to CONNECTED when a connection is established
       isConnect=false;
-
+      pwmled(0);
       break;
     case WS_EVT_DATA:
-      if (client->status()==WS_CONNECTED) {
+      // if (client->status()==WS_CONNECTED) {
          wsOnMessageReceive(arg, data, len);
-      }
+      // }
       isConnect=true;
       break;
     case WS_EVT_PONG:
-        WSTransferMessage(1,"WebSocketPongEvent\n");
+      Serial.printf("WebSocketPongEvent\n");
+      WSTransferMessage(1,"WebSocketPongEvent\n");
       isConnect=true;
         break;
     case WS_EVT_ERROR:

@@ -27,7 +27,7 @@ function initWebSocket() {
     websocket = new WebSocket(gateway);
     websocket.onopen = onOpen;
     websocket.onclose = onClose;
-    websocket.onerror = onError;
+    // websocket.onerror = onError;
     websocket.onmessage = onMessage;
     // setInterval(wsGetCharRequest, 200);
     MonitorConsoleLog('done');
@@ -56,15 +56,16 @@ function waitForSocketConnection(socket, callback){
                 }
             } else {
                 // **BUG?** MonitorConsoleLog("wait for connection...")
-                // if (socket==null || socket.readtState==WebSocket.CLOSED){
-                if ( socket.readtState==WebSocket.CLOSED){
-                        initWebSocket();
+                if (socket!=null && socket.readtState==WebSocket.CLOSED){
+                        //  initWebSocket();
                 }
                 // waitForSocketConnection(socket, callback);
             }
 
         }, 5); // wait 5 milisecond for the connection...
 }
+var trymaxping=3;
+var tryping = 0;
 function createPromiseWithTimeout(timeoutMillis) {
     let resolveFn, rejectFn;
 
@@ -83,16 +84,22 @@ function createPromiseWithTimeout(timeoutMillis) {
         resolve: (value) => {
             clearTimeout(timeoutId);
             resolveFn(value);
+            tryping=0;
         },
         reject: (reason) => {
             clearTimeout(timeoutId);
             rejectFn(reason);
+            tryping++;
         }
     };
 }
+
 function wsPingRequest(){
     if (!websocket) return;
     // if (websocket.readyState!==1) return;
+    // const binaryData = new Uint8Array([0x01, 0x02, 0x03]).buffer;
+    // // Send the binary data as a ping frame
+    // socket.send(binaryData);
     sendMessage("P:PING");
     // Set up a new promise for the reply with a timeout of 5 seconds
     replyPromise = createPromiseWithTimeout(2000);
@@ -101,12 +108,14 @@ function wsPingRequest(){
     }).catch((error) => {
         MonitorConsoleLog(`Reply timeout or error: ${error}`);
         // Reconnect after a delay (e.g., 5 seconds)
-
-        restartws=true;
-        if (!initWebSocket()){//if restart fail keep old for retry
-            websocket = oldws;
-        }
+        if (tryping >trymaxping) return;
+        setTimeOut(wsPingRequest(),0);
+        // if (!initWebSocket){//if restart fail keep old for retry
+        //     websocket = oldws;
+        // }
+        return;
     });
+    return ;
 }
 function resetPingTimer() {
     // Clear the existing timer
@@ -239,11 +248,6 @@ function onClose(event) {
         MonitorConsoleLog('Maximum retry attempts reached, closed');
       }
 }
-function onError(event) {
-    MonitorConsoleLog('ws error'+error);
-    initWebSocket()//if restart fail keep old for retry
-    
-}
 const messageQueue = [];
 var sno=-1;
 const SNUMBER=0;
@@ -286,11 +290,11 @@ function onMessage(event) {
             }
 
          }
-        // // Resolve the reply promise with the received message
-        // // MonitorConsoleLog(nowt+'>>>:'+ldata);
+        // Resolve the reply promise with the received message
+        // MonitorConsoleLog(nowt+'>>>:'+ldata);
         if (ldata=='P:PONG' && replyPromise) { // for pong
             replyPromise.resolve(ldata);
-            replyPromise = null;        
+            replyPromise = null;  
         }
         resetPingTimer();
         return ;
@@ -307,7 +311,7 @@ function onMessage(event) {
 
     resetPingTimer();
     // Process the message queue asynchronously
-    setTimeout(processMessagesQueue(),0);
+    setTimeout(processMessagesQueue(),100);
 
 }
 // Asynchronous function to process the message queue
