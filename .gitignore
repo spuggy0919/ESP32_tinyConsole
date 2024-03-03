@@ -30,3 +30,6 @@ testdata
 .apple2js.html
 lib/WebServer/output
 template
+*.cxp
+*.hx
+

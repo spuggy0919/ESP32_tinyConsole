@@ -56,7 +56,7 @@ typedef struct COMMAND_TABLE_ITEM{
 
 COMMAND_TABLE commandTable[]= {
   "tb",     cmd_tinybasic,  "file.bas\t// tinyBasic run file",
-  "TinyBasic",  cmd_tinybasic,  "\t// tinyBasic interactive",
+  "tinybasic",  cmd_tinybasic,  "\t// tinyBasic interactive",
   "pwd",    cmd_pwd,    "\t\t// current path",
   "cd",     cmd_cd,     "\t\t// change directory",
   "fp",     cmd_fp,     "path \t// full path testing",
@@ -168,10 +168,12 @@ int InterpreterExcute(String *cmd){
   int i;
   parsercmdline(*cmd);
   Serial.printf("Command:argc=%d, %s found!", argc, argv[0]);
-  
+  String cmdStr = String(argv[0]);
+  cmdStr.toLowerCase();
   for(i=0;i<CMDNUMBERS;i++){
       if (commandTable[i].funName == "-1" || argc == 0) break;
-      if (String(argv[0]).equalsIgnoreCase(commandTable[i].funName)) {
+      // if (String(argv[0]).equalsIgnoreCase(commandTable[i].funName)) {
+      if (commandTable[i].funName.startsWith(cmdStr)) {
          InterpreterCmdIndex = i;
          wsTextPrint("\n"); // newline for console
          Serial.printf("Command:%s found!",argv[0]);
@@ -244,8 +246,9 @@ int interpreter() {
            wsTextPrintln("Buildin TinyBasic with below");
            wsTextPrintln(BannerMessageWithTinyBasicCopyRightNotice);
            _d_GetChar();
-           cmd_cls(argc,argv);
-           wsTextPrintln("ESP32 Websocket TinyConsole (Author:spuggy0919) " +  HTTP_CONSOLE_Version);
+           cmd_cls(argc,argv); 
+           wsTextPrintln("ESP32 Websocket TinyConsole" +  HTTP_CONSOLE_Version);
+           wsTextPrintln("Author:spuggy0919");
           wsTextPrint("\n%");
           interpreterCmdBuf = "";
           interpreterState = INTERPRETER_WAITING;

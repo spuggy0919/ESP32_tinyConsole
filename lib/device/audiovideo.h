@@ -44,6 +44,9 @@ void _wsDevice(const char dev,const char *fmt,...);
 #define DRAW_PENCOLOR 12
 #define DRAW_RECT 13
 #define DRAW_CHAR 14
+#define DRAW_GET_IMAGE 15
+#define DRAW_PUT_IMAGE 16
+#define DRAW_IMAGE_FILE 17 /*TBD*/
 
 #define drawClearScr() { \
     char vbuf[80]; \
@@ -123,6 +126,15 @@ int drawChar(char c);
     sprintf(vbuf,"%d %d ",DRAW_PENCOLOR,c); \
     videof(vbuf); \
     }
-
+#define getImage( x, y, width, height) { \
+    char vbuf[80]; \
+    sprintf(vbuf,"%1d %d %d %d %d",DRAW_GET_IMAGE,x,y,width,height); \
+    videof(vbuf); \
+    }
+#define putImage( x, y) { \
+    char vbuf[80]; \
+    sprintf(vbuf,"%1d %d %d",DRAW_PUT_IMAGE,x,y); \
+    videof(vbuf); \
+    }
     
 #endif // __VIDEO_H__ 

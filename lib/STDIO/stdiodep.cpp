@@ -110,7 +110,7 @@ bool _d_insertrxdata(const char*data, int len){
         }
         _d_frontrxidx++; 
         _d_frontrxidx %= BUFFERSIZE;
-        // Serial.printf("i[%2x]%c\n",*p,*p);
+        Serial.printf("stdio<WS[%2x]%c\n",*p,*p);
         _d_rxbuf[_d_frontrxidx]=(char)*p++; len--;
     }
 
@@ -122,7 +122,7 @@ bool _d_fetchrxdata(char *c){
         _d_endrxidx++; 
         _d_endrxidx %= BUFFERSIZE;
         *c = _d_rxbuf[_d_endrxidx];
-        // Serial.printf("f[%2x]%c\n",*c,*c);
+        Serial.printf("serialREAD<stdio[%2x]%c\n",*c,*c);
         return true;
     }
 

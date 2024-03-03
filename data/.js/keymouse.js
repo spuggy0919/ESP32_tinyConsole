@@ -81,10 +81,11 @@ window.addEventListener('resize', updateCanvasPosition);
 function handleTouchStart(event) {
     event.preventDefault();
     const touch = event.touches[0]; // Get the first touch (assuming single touch)
-    const x = touch.clientX - mycanvas.getBoundingClientRect().left;
-    const y = touch.clientY - mycanvas.getBoundingClientRect().top;
-
-    wsSentTouch(1,x,y);
+    var x = touch.clientX - mycanvas.getBoundingClientRect().left;
+    var y = touch.clientY - mycanvas.getBoundingClientRect().top;
+    x = x/mycanvas.width * 640;
+    y = y/mycanvas.height * 480;
+    wsSentTouch(0x81,x,y);
 }
 
 
@@ -92,48 +93,58 @@ function handleTouchStart(event) {
 function handleTouchMove(event) {
     event.preventDefault();
     const touch = event.touches[0];
-    const x = touch.clientX - mycanvas.getBoundingClientRect().left;
-    const y = touch.clientY - mycanvas.getBoundingClientRect().top;
+    var x = touch.clientX - mycanvas.getBoundingClientRect().left;
+    var y = touch.clientY - mycanvas.getBoundingClientRect().top;
 
  // ctx.clearRect(0, 0, canvas.width, canvas.height);
     // ctx.drawImage(cursorImage, x, y, 32, 32); // to low Adjust width and height as needed
-
-    wsSentTouch(2,x,y);
+    x = x/mycanvas.width *640;
+    y = y/mycanvas.height *480;
+    wsSentTouch(0x82,x,y);
 }
 
 // Handle touch end event
 function handleTouchEnd(event) {
     event.preventDefault();
 
-    const x = touch.clientX - mycanvas.getBoundingClientRect().left;
-    const y = touch.clientY - mycanvas.getBoundingClientRect().top;
-
-    wsSentTouch(0,x,y);
+    var x = touch.clientX - mycanvas.getBoundingClientRect().left;
+    var y = touch.clientY - mycanvas.getBoundingClientRect().top;
+    x = x/mycanvas.width *640;
+    y = y/mycanvas.height *480;
+    wsSentTouch(0x84,x,y);
 }
 
 // Handle mouse down event
+var button = 0x80;
 function handleMouseDown(event) {
     event.preventDefault();
-    const x = event.clientX - mycanvas.getBoundingClientRect().left;
-    const y = event.clientY - mycanvas.getBoundingClientRect().top;
-
-    wsSentMouse(1,x,y);
+    var x = event.clientX - mycanvas.getBoundingClientRect().left;
+    var y = event.clientY - mycanvas.getBoundingClientRect().top;
+    button |= 0x80|(1<<event.button);
+    x = x/mycanvas.width *640;
+    y = y/mycanvas.height *480;
+    wsSentMouse(button,x,y);
 }
 
 // Handle mouse move event
 function handleMouseMove(event) {
     event.preventDefault();
-    const x = event.clientX - mycanvas.getBoundingClientRect().left;
-    const y = event.clientY - mycanvas.getBoundingClientRect().top;
-
-    wsSentMouse(2,x,y);
+    var x = event.clientX - mycanvas.getBoundingClientRect().left;
+    var y = event.clientY - mycanvas.getBoundingClientRect().top;
+    x = x/mycanvas.width *640;
+    y = y/mycanvas.height *480;
+    wsSentMouse(button,x,y);
 }
 
 // Handle mouse up event
 function handleMouseUp(event) {
     event.preventDefault();
-    const x = event.clientX - mycanvas.getBoundingClientRect().left;
-    const y = event.clientY - mycanvas.getBoundingClientRect().top;
-    wsSentMouse(0,x,y);
+    var x = event.clientX - mycanvas.getBoundingClientRect().left;
+    var y = event.clientY - mycanvas.getBoundingClientRect().top;
+    button &= ~(1<<event.button)
+    button |= 0x80;
+    x = x/mycanvas.width *640;
+    y = y/mycanvas.height *480;
+    wsSentMouse(button,x,y);
     // Handle mouse up logic
 }

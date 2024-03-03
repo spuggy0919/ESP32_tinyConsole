@@ -6,6 +6,8 @@
 #include <Freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_system.h>
+#include "devices.h"
+
 
 bool WebWSConnect();
 

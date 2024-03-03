@@ -20,7 +20,10 @@
         "__locale": "cpp",
         "__node_handle": "cpp",
         "istream": "cpp",
-        "locale": "cpp"
+        "locale": "cpp",
+        "list": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp"
     },
     "r.lsp.promptToInstall": false,
     "cmake.configureOnOpen": false

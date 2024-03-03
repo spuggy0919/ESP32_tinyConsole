@@ -151,6 +151,8 @@
                 drawSetPenColor,
                 drawRect,
                 drawChar,
+                getImage,
+                putImage,
             ];
 
             function VideoFunc(command){
@@ -176,12 +178,13 @@
             }
             // Convert a 32-bit integer color to a CSS-style color string
             function int32ToColorStyle(int32Color) {
-                const red = (int32Color >> 16) & 0xFF; // Extract the red component
-                const green = (int32Color >> 8) & 0xFF; // Extract the green component
+               const alpha = (int32Color >> 24) & 0xFF; // Extract the red component
+              const red = (int32Color >> 16) & 0xFF; // Extract the red component
+              const green = (int32Color >> 8) & 0xFF; // Extract the green component
                 const blue = int32Color & 0xFF; // Extract the blue component
 
                 // Create and return a CSS-style color string in the format "#RRGGBB"
-                return `#${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}`;
+                return `#${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}${alpha.toString(16).padStart(2, '0')}`;
             }
             // Define the functions corresponding to the function table
               function drawFilledRect( x, y, width, height) {
@@ -197,7 +200,21 @@
                 ctx.fillRect(x1, y1, width1, height1); // Draw the filled rectangle
                 console.log(`Drawing filled rectangle with color ${PenColor}, x=${x1}, y=${y1}, width=${width1}, height=${height1}`);
             }
-
+            var imageData;
+            function getImage( x, y, width, height) {
+                // Call the drawFilledRect function to draw a filled rectangle
+                const x1 = (x*scalewfactor); // X-coordinate of the top-left corner
+                const y1 = (y*scalehfactor); // Y-coordinate of the top-left corner
+                const width1 = (width*scalewfactor); // Width of the rectangle
+                const height1 = (height*scalehfactor); // Height of the rectangle                // Put the image data onto the destination canvas
+                imageData = ctx.getImageData(x, y, width, height);
+            }
+            function putImage( x, y) {
+                // Get the image data from the source canvas
+                const x1 = (x*scalewfactor); // X-coordinate of the top-left corner
+                const y1 = (y*scalehfactor); // Y-coordinate of the top-left corner
+                ctx.putImageData(imageData, x1, y1);
+            }
             function drawRect( x, y, width, height) {
                 // Call the drawFilledRect function to draw a filled rectangle
                 const x1 = (x*scalewfactor); // X-coordinate of the top-left corner

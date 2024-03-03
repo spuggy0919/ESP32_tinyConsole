@@ -27,7 +27,7 @@ function initWebSocket() {
     websocket = new WebSocket(gateway);
     websocket.onopen = onOpen;
     websocket.onclose = onClose;
-    // websocket.onerror = onError;
+    websocket.onerror = onError;
     websocket.onmessage = onMessage;
     // setInterval(wsGetCharRequest, 200);
     MonitorConsoleLog('done');
@@ -56,8 +56,9 @@ function waitForSocketConnection(socket, callback){
                 }
             } else {
                 // **BUG?** MonitorConsoleLog("wait for connection...")
-                if (socket==null || socket.readtState==WebSocket.CLOSED){
-                         initWebSocket();
+                // if (socket==null || socket.readtState==WebSocket.CLOSED){
+                if ( socket.readtState==WebSocket.CLOSED){
+                        initWebSocket();
                 }
                 // waitForSocketConnection(socket, callback);
             }
@@ -102,7 +103,7 @@ function wsPingRequest(){
         // Reconnect after a delay (e.g., 5 seconds)
 
         restartws=true;
-        if (!initWebSocket){//if restart fail keep old for retry
+        if (!initWebSocket()){//if restart fail keep old for retry
             websocket = oldws;
         }
     });
@@ -231,12 +232,17 @@ function onClose(event) {
         // Reconnect after a delay (e.g., 5 seconds)
 
         restartws=true;
-        if (!initWebSocket){//if restart fail keep old for retry
+        if (!initWebSocket()){//if restart fail keep old for retry
             websocket = oldws;
         }
       } else {
         MonitorConsoleLog('Maximum retry attempts reached, closed');
       }
+}
+function onError(event) {
+    MonitorConsoleLog('ws error'+error);
+    initWebSocket()//if restart fail keep old for retry
+    
 }
 const messageQueue = [];
 var sno=-1;

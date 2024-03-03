@@ -1593,7 +1593,10 @@ void ioinit() {
 	vgabegin();  /* mind this - the fablib code is special here */
 #endif
 #ifdef HTTPWSVGA
-	vgabegin();  /* spuggy0919 mind this - the fablib code is special here */
+	vgabegin();  /* spuggy0919 this for http websocket Canvas*/
+#endif
+#ifdef HTTPWSTOUCH
+	iTouch.open();  /* spuggy0919 this for http websocket Touch */
 #endif
 #ifdef ARDUINOSENSORS
 	sensorbegin();
@@ -1633,7 +1636,7 @@ char inch() {
 #ifdef FILESYSTEMDRIVER
 		case IFILE:
 		    c = fileread();
-		    Serial.printf("IFILEfr%2x",c); /*spuggy0919 BUG EOF char*/
+		    // Serial.printf("IFILEfr%2x",c); /*spuggy0919 BUG EOF char*/
 			return c;
 #endif
 #ifdef ARDUINOWIRE
@@ -1643,11 +1646,16 @@ char inch() {
 			if (sbuffer[0]>0) return sbuffer[1]; 
 			else return 0;
 #endif
+#ifdef HTTPWSTOUCH /*spuggy0919*/
+		case ITOUCH:
+			// Serial.printf("ITOUCH"); /*spuggy0919*/
+			return iTouch.inch(); // input one char 	
+#endif
 #ifdef ARDUINORF24
 /* radio is not character oriented, this is only added to make GET work
 		or single byte payloads, radio, like file is treated nonblocking here */
 		case IRADIO:
-			Serial.printf("IRADIO"); /*spuggy0919*/
+			// Serial.printf("IRADIO"); /*spuggy0919*/
 			radioins(sbuffer, SBUFSIZE-1);
 			if (sbuffer[0]>0) return sbuffer[1]; 
 			else return 0;
@@ -1659,12 +1667,12 @@ char inch() {
 #endif
 #ifdef ARDUINOPRT
 		case ISERIAL1:
-			Serial.printf("ISERIAL11"); /*spuggy0919*/
+			// Serial.printf("ISERIAL11"); /*spuggy0919*/
 			return prtread();
 #endif				
 #if defined(HASKEYBOARD) || defined(HASKEYPAD)				
 		case IKEYBOARD:
-			Serial.printf("IKEYBOARD"); /*spuggy0919*/
+			// Serial.printf("IKEYBOARD"); /*spuggy0919*/
 			return kbdread();
 #endif
 	}
@@ -1679,7 +1687,7 @@ char checkch(){
 			return serialcheckch();
 #ifdef FILESYSTEMDRIVER
 		case IFILE:
-			Serial.printf("checkchIFILE"); /*spuggy0919*/
+			// Serial.printf("checkchIFILE"); /*spuggy0919*/
 			return fileavailable();
 #endif
 #ifdef ARDUINORF24
@@ -1693,6 +1701,10 @@ char checkch(){
 #ifdef ARDUINOWIRE
 			case IWIRE:
 				return 0;
+#endif
+#ifdef HTTPWSTOUCH
+			case ITOUCH:
+				return iTouch.checkch();
 #endif
 #ifdef ARDUINOPRT
 			case ISERIAL1:
@@ -1715,7 +1727,7 @@ short availch(){
       return serialavailable(); 
 #ifdef FILESYSTEMDRIVER
    	case IFILE:
- 	Serial.printf("availchIFILE"); /*spuggy0919*/
+ 	// Serial.printf("availchIFILE"); /*spuggy0919*/
    	return fileavailable();
 #endif
 #ifdef ARDUINORF24
@@ -1729,6 +1741,10 @@ short availch(){
 #ifdef ARDUINOWIRE
     case IWIRE:
     	return wireavailable();
+#endif
+#ifdef HTTPWSTOUCH
+    case ITOUCH:
+    	return iTouch.available();
 #endif
 #ifdef ARDUINOPRT
     case ISERIAL1:
@@ -1805,6 +1821,11 @@ void ins(char *b, address_t nb) {
 			wireins(b, nb);
 			break;
 #endif
+#ifdef HTTPWSTOUCH
+  		case ITOUCH:
+			iTouch.ins(b, nb);
+			break;
+#endif
 #ifdef ARDUINOMQTT
 		case IMQTT:
 			mqttins(b, nb);	
@@ -1839,7 +1860,7 @@ void outch(char c) {
 			break;
 #ifdef FILESYSTEMDRIVER
 		case OFILE:
- 	Serial.printf("outchOFILE[%2x]%c\n",c,c); /*spuggy0919*/
+ 	// Serial.printf("outchOFILE[%2x]%c\n",c,c); /*spuggy0919*/
 			filewrite(c);
 			break;
 #endif
@@ -4245,7 +4266,6 @@ void xinput(){
 			nexttoken();
 	}
 #endif
-
 nextstring:
 	if (token == STRING && id != IFILE) {
 		prompt=FALSE;   
@@ -5986,6 +6006,11 @@ void xopen() {
 #ifdef ARDUINOWIRE
 		case IWIRE:
 			wireopen(filename[0], mode);
+			break;
+#endif
+#ifdef HTTPWStOUCH
+		case ITOUCH:
+				itouch.open();
 			break;
 #endif
 #ifdef ARDUINOMQTT

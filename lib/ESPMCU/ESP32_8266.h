@@ -12,9 +12,9 @@
 #include "littlefsfun.h"    // LittleFS
 #include "wifiinit.h"       // Wifi
 #include "WebServer.h"      // ESPASYNCWEBServer
-#include "audiovideo.h"          // video graphics by winsocket 
 #include "config.h"          // video graphics by winsocket 
 #ifdef ESP32
 #include "timerfun.h"       // for esp32  rtc
+#include "devices.h"          // mouse touch video audio by winsocket 
 #endif 
 #endif  //__ESP32_8266__H__

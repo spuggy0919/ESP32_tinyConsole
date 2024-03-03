@@ -283,10 +283,12 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
         // wsTextPrintBase64noAck(1,"V:"+msg+":clientID="+String(ws_clientid)+"\n");
     }
     if (cmd == "T:"){ // touch
-        // wsTextPrintBase64noAck(1,"T:"+msg+"\n");
+        wsTextPrintBase64noAck(1,"T:"+msg+"\n");
+        gTouchQueue.push(msg);
     }
     if (cmd == "M:"){ // mouse
-        // wsTextPrintBase64noAck(1,"M:"+msg+"\n");
+        wsTextPrintBase64noAck(1,"M:"+msg+"\n");
+        gTouchQueue.push(msg);
     }
     if (cmd == "R:"){ // request from client 
         WSTransferBufferFlush(0);

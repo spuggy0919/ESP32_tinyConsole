@@ -271,8 +271,8 @@ typedef unsigned char uint8_t;
 
 #define ISERIAL 1
 #define IKEYBOARD 2
-#define ISERIAL1 4
 #define ITOUCH   3 /*spuggy0919*/
+#define ISERIAL1 4
 #define IWIRE 7
 #define IRADIO 8
 #define IMQTT  9

@@ -73,6 +73,7 @@
 #undef ARDUINOTFT
 #undef ARDUINOVGA
 #undef HTTPWSVGA /*spuggy0919*/
+#undef HTTPWSTOUCH /*spuggy0919*/
 #undef ARDUINOEEPROM
 #undef ARDUINOEFS
 #undef ARDUINOSD
@@ -412,7 +413,8 @@
 #undef DISPLAYCANSCROLL
 #undef ARDUINOILI9488 /*spuggy0919*/
 #undef ARDUINOSSD1306 /*spuggy0919*/
-#define HTTPWSVGA /*spuggy0919  vga bai http winsocket*/
+#define HTTPWSVGA /*spuggy0919  vga by http winsocket*/
+#define HTTPWSTOUCH /*spuggy0919  touch by  http winsocket*/
 #undef ARDUINOEEPROM 
 #undef  ARDUINOMQTT
 #define ARDUINOWIRE/*spuggy0919*/
@@ -3095,7 +3097,7 @@ char serialread() {
     char c;
     while (!_d_isrxavailable())   yield(); // may be deadlock **WARNING **
     _d_fetchrxdata(&c);
-  	// Serial.printf("src[%2x]%c\n",c,c);  
+  	Serial.printf("basic<WS[%2x]%c\n",c,c);   /*spuggy0919*/
     return c;
 
 #else
@@ -3130,7 +3132,7 @@ int serialstat(char c) {
 void serialwrite(char c) {
 #ifdef HTTPWSSERIAL
 	_d_PutChar(c);
-    // Serial.printf("swc[%2x]%c\n",c,c);  *spuggy0919
+    Serial.printf("basic>>WS[%2x]%c\n",c,c); /*spuggy0919*/
 
 	
 #endif
@@ -3218,7 +3220,7 @@ void consins(char *b, short nb) {
   		if (c == '\n' || c == -1) { 	/* terminal character is either newline or EOF */
     		outch(c);break; //spuggy0919 for new line prompt
   		} else if ( (c == 127 || c == 8) && z.a>1) {
-   			z.a--;
+   			z.a--;  /* TBD for utf8 del spuggy0919*/
   		} else {
    			b[z.a++]=c;
   		} 
@@ -3422,7 +3424,22 @@ void wireins(char *b, uint8_t l) { b[0]=0; z.a=0; }
 void wireouts(char *b, uint8_t l) {}
 short wireavailable() { return 0; }
 #endif
+/* 
+ *	Read from Touch panel, the coordinate is input string number
+ *
+ */
+#ifdef HTTPWSTOUCH
+#include "port/itouch.h"
+//extern TouchQueue gTouchQueue;
 
+#else
+void touchbegin() {}
+int touchstat(char c) {return 0; }
+void touchopen(char s, char m) {}
+void touchins(char *b, uint8_t l) { b[0]=0; z.a=0; }
+void touchouts(char *b, uint8_t l) {}
+short touchavailable() { return 0; }
+#endif
 /* 
  *	Read from the radio interface, radio is always block 
  *	oriented. This function is called from ins for an entire 
