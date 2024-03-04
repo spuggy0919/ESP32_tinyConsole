@@ -44,7 +44,7 @@
 // int addIntegers(int num1, int num2) {
 //     return num1 + num2;
 // }
-#include "ESP32inc.h"
+#include "ESP32INC.h"
 #include "interpreter.h"
 #include "taskExecute.h"
 

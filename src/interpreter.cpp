@@ -64,9 +64,9 @@ COMMAND_TABLE commandTable[]= {
   "df",     cmd_df,     "\t\t// disk infomation",
   "ls",     cmd_ls,     "path  \t// list directory",
   "mkdir",  cmd_mkdir,  "path  \t// make directory ",
+  "rm",     cmd_rm,     "file  \t// remove file",
   "rmdir",  cmd_rmdir,  "path  \t// remove directory",
   "cat",    cmd_cat,    "file  \t// diplay file content",
-  "rm",     cmd_rm,     "file  \t// remove file",
   "echo",   cmd_echo,   "msg   \t// echo message",
   "write",  cmd_write,  "file msg \t// write message" ,
   "append", cmd_append, "file msg // append message",
@@ -75,8 +75,6 @@ COMMAND_TABLE commandTable[]= {
   "time",   cmd_time,   "\t\t// display currnet time",
   "pio",    cmd_pio,    "0~255 \t// set LED pin output pwm value",
   "dl",     cmd_download,"file  \t// download file to PC",
-  "reboot", cmd_reboot,  "\t\t// reboot",
-  "ping",   cmd_test,   "\t\t// ping test, int in monitor",
   "cls",    cmd_cls,    "\t\t// clear screen",
  "avtest",  cmd_avtest, "[0|1|2]\t// video graphic testing",
  "export",  cmd_export, "\t\t// export ssid ABC \n \t\t// export password 12345678 \n\t\t// export\n\t\t// export all wifi config or set config", 
@@ -84,10 +82,12 @@ COMMAND_TABLE commandTable[]= {
   "exec",   cmd_exec,   "\t\t// exec \"cmd argv[]\" for task experiment",
   "kill",   cmd_kill,   "\t\t// kill process, for task experiment ",
   "ps",     cmd_ps,     "\t\t// process status, for task experiment",
-"help",     cmd_help,   "\t\t// help ",
+  "reboot", cmd_reboot,  "\t\t// reboot",
+  "help",   cmd_help,   "\t\t// help ",
   "h",      cmd_help,   "\t\t// help",
   "?",      cmd_help,   "\t\t// help",
  //  below internal teing commands
+  "ping",   cmd_test,   "\t\t// ping test, int in monitor",
   "status", cmd_status,  "status",
 "test",   cmd_test,    "\t// dummy command",
 "task",    cmd_task,  "  // tasktest testing...",
@@ -176,7 +176,7 @@ int InterpreterExcute(String *cmd){
       if (commandTable[i].funName.startsWith(cmdStr)) {
          InterpreterCmdIndex = i;
          wsTextPrint("\n"); // newline for console
-         Serial.printf("Command:%s found!",argv[0]);
+         Serial.printf("Command:%s match!",commandTable[i].funName);
          cmd_option(argc,argv); // check option exist or not
          int ret=(*(commandTable[i].cmdPtr))(argc,argv);
           *cmd = "";
@@ -358,6 +358,7 @@ extern void setup();
 extern void loop();
 extern void pwmled(int dutycycle);
 int cmd_pio(int argc,char * argv[]){
+  if (argc<=1) return -1;
     Serial.printf("setup address %lx\n", setup);
     Serial.printf("loop address %lx\n", loop);
     Serial.printf("pwmled address %lx\n", pwmled);
@@ -386,7 +387,8 @@ int cmd_time(int argc,char * argv[]){
       return 0;
 }
 int cmd_echo(int argc,char * argv[]){
-    
+    if (argc<=1) return -1;
+  
     wsTextPrintln(String(argv[1]));
     return 0;
 }
@@ -396,16 +398,19 @@ int cmd_pwd(int argc,char * argv[]){
 }
 
 int cmd_cd(int argc,char * argv[]){
+  if (argc<=1) return -1;
   wsTextPrintln(changeDir(LittleFS,argv[1]));
   return 0;
 
 }
 int cmd_fp(int argc,char * argv[]){
+  if (argc<=1) return -1;
   wsTextPrintln(getfullpathFileOrDir(LittleFS, argv[1]));
   return 0;
   
 }
 int cmd_append(int argc,char * argv[]){
+  if (argc<=2) return -1;
   appendFile(LittleFS, argv[1], argv[2]);
   String data = readFile(LittleFS, argv[1]);
   wsTextPrintln(data.c_str());
@@ -413,6 +418,7 @@ int cmd_append(int argc,char * argv[]){
  
 }
 int cmd_write(int argc,char * argv[]){
+  if (argc<=2) return -1;
       writeFile(LittleFS, argv[1], argv[2]);
       String data = readFile(LittleFS, argv[1]);
 
@@ -459,38 +465,45 @@ int cmd_df(int argc,char * argv[]){
 
 }
 int cmd_mkdir(int argc,char * argv[]){
+  if (argc<=1) return -1;
   createDir(LittleFS, argv[1]);
     return 0;
 
 }
 int cmd_rmdir(int argc,char * argv[]){
+  if (argc<=1) return -1;
   removeDir(LittleFS, argv[1]);
     return 0;
 
 }
 int cmd_cat(int argc,char * argv[]){
+  if (argc<=1) return -1;
   wsTextPrint(readFile(LittleFS, argv[1]));
   wsTextPrintln("\n");
     return 0;
 
 }
 int cmd_rm(int argc,char * argv[]){
+  if (argc<=1) return -1;
   deleteFile(LittleFS, argv[1]);
     return 0;
 
 }
 int cmd_download(int argc,char * argv[]){
+  if (argc<=1) return -1;
   String paths =  getfullpathFileOrDir(LittleFS, argv[1]);
   eventDownloadFile(paths); 
     return 0;
 
 }
 int cmd_cp(int argc,char * argv[]){
+  if (argc<=2) return -1;
   String data = readFile(LittleFS, argv[1]);
   writeFile(LittleFS, argv[2], data.c_str());
   return 0;
 }
 int cmd_mv(int argc,char * argv[]){
+  if (argc<=2) return -1;
   int ret = cmd_cp(argc,argv);
   if (!ret) return ret;
   ret = cmd_rm(argc,argv);

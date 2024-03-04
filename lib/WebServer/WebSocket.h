@@ -3,7 +3,7 @@
 #define __WEBSOCKET__H__
 #include "WebServer.h"
 #include "Base64.h"
-#include <Freertos/FreeRTOS.h>
+#include "ESP32INC.h"
 #include <freertos/task.h>
 #include <esp_system.h>
 #include "devices.h"

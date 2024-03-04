@@ -2,8 +2,13 @@
 #define __ESP32INC__H__
 // for ESP32 only 
 #include <Arduino.h>
+#ifdef ESP32
 #include <Freertos/FreeRTOS.h>
-#include <freertos/task.h>
+#include <Freertos/task.h>
+#else
+#include <esp8266/Freertos/FreeRTOS.h>
+#include <esp8266/Freertos/task.h>
+#endif
 #include <esp_system.h>
 #include "debuglog.h"
 #include "ledpwm.h"         //pwm led for ESP32
