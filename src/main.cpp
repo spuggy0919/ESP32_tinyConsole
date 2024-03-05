@@ -18,7 +18,7 @@
 // _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| 
 // "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'
 
-#include "ESP32INC.h"
+#include "ESP32inc.h"
 #include "interpreter.h"
 #include "WifiSetting.h"
 

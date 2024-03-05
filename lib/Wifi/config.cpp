@@ -1,10 +1,59 @@
 
+/*
+ * This file is part of ESP32_TinyConsole.
+ *
+ * ESP32_TinyConsole is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * ESP32_TinyConsole is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with ESP32_TinyConsole.  If not, see 
+ *
+ *	https://github.com/spuggy0919/ESP32_WEB_CONTROL/blob/espcontrol/LICENSE
+ *    GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+ *
+ *	Author: spuggy0919, spuggy0919@gmail.com
+ */
+/*
+ * @file config.cpp
+ * @brief Wifi Config read config from file system , get two key ssid and password
+ *          if ssid and password are not defined, then AP mode  ESOCONSOLE-XXXX
+ *          else setup to STA mode and connect to ssid.
+ *          Scan can find mDNS name, let user identify.
+ * @dependennd   WIFI, LITTLEFS ESPmDNS
+ * 
+ * @details
+ * The functions in this file provide examples for documentation.
+ * 
+ * @date February 28, 2024
+ */
+
 
 #include "config.h"
 const size_t bufferSize = 1024;
 DynamicJsonDocument jsonDoc(bufferSize);
 DeserializationError json_error;
 String configData;
+/**
+ * @brief 
+ * @brief Wifi Config read config from file system , get two key ssid and password
+ *          if ssid and password are not defined, then AP mode  ESOCONSOLE-XXXX
+ *          else setup to STA mode and connect to ssid.
+ *          Scan can find mDNS name, let user identify.* 
+ * @details
+ * This function takes two integers as input and returns their sum.
+ * 
+ * @param[in] num1 The first integer to be added.
+ * @param[in] num2 The second integer to be added.
+ * @return 0: for sucessful, -1 -2 (STA Mode fail),,-3 (AP FAIL) fail
+ */
+
 int Config_Init()
 {
     configData = readFile(LittleFS, "config.json");
@@ -51,7 +100,15 @@ int Config_Init()
     }
     return 0;
 }
-
+/**
+ * @brief Json Get Set Remove and read all data
+ * @details
+ * This function maintain the json file content.
+ * 
+ * @param[in] Key
+ * @param[in] value  
+ * @return if result readback
+ */
 String Config_Get(String key)
 {
     String result = (json_error) ? String(): jsonDoc[key];
