@@ -234,44 +234,7 @@
             var controlkey = false;
             var altkey = false;
             // function terminalInit(){
-            editor.addEventListener('compositionend',function(e){
-                // console.log('text compostionend');
-                // console.log(e.data);
-                wsSentChar(e.data);
-            });
-            editor.addEventListener('paste', function (e) {
-                  // Prevent the default paste action (paste into the textarea)
-                  // e.preventDefault();
-                  // Get the pasted text from the clipboard
-                  const pastedText = (e.clipboardData || window.clipboardData).getData('text');
-                  // Iterate through each character in the pasted text
-                  wsSentChar(pastedText);
-                  // wsSentChar('\0xa');
 
-                  // for (let i = 0; i < pastedText.length; i++) {
-                  //     const char = pastedText.charAt(i);
-                      
-                      // // Create a keydown event for the character
-                      // char = 0xa;
-                      // const keydownEvent = new KeyboardEvent('keydown', {
-                      //     key: char,
-                      //     keyCode: char.charCodeAt(0),
-                      // });
-                      
-                      // // Create a keyup event for the character
-                      // const keyupEvent = new KeyboardEvent('keyup', {
-                      //     key: char,
-                      //     keyCode: char.charCodeAt(0),
-                      // });
-
-                      // Dispatch the keydown event
-                      editor.dispatchEvent(keydownEvent);
-
-                  //     // Dispatch the keyup event
-                  //     editor.dispatchEvent(keyupEvent);
-                  // }
-              
-              }); 
             // }
             function  disabledefault(event){
               // event.preventDefault(); // prevent enter behavior for correct prompt cursor
@@ -280,10 +243,80 @@
             var linebuf = "";
             let  cacheLineBuf = new Array("");
             let  cacheIndex = 0;
+            var  copyPaste = false;
+            var  inComposition = false;
+            document.addEventListener('compositionstart', function() {
+                inComposition = true;
+            });
+            document.addEventListener('compositionupdate', function(event) {
+                // Handle composition update may be delete Kanji char
+                console.log('Composition update:', event.data);
+            });
+            editor.addEventListener('compositionend',function(e){
+                // 中文字碼
+                inComposition = false;
+                linebuf +=e.data;
+            });
+            function inCompositionKeyEvent(event){
+              if (inComposition) {
+                  // Handle key events during composition
+                  if (event.key === 'Delete' || event.key === 'Backspace') {
+                      // Handle Delete key during composition
+                      console.log('Delete key pressed during composition');
+                      // Optionally prevent the default behavior
+                      event.preventDefault();
+                  }
+                  return true;
+              }
+              return false;
+            }
+            editor.addEventListener('paste', function (e) {
+                  // Prevent the default paste action (paste into the textarea)
+                  // e.preventDefault();
+                  // Get the pasted text from the clipboard
+                  const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                  // Iterate through each character in the pasted text
+                  linebuf+=pastedText;
+                  // wsSentChar('\0xa');
 
+                  // for (let i = 0; i < pastedText.length; i++) {
+                  //     const char = pastedText.charAt(i);
+
+                    // Create a new keydown event
+                  var keyDownEvent = new KeyboardEvent('keydown', {
+                      key: 'Enter', // specify the key you want to simulate
+                      code: 'Enter', // specify the key code if needed
+                      ctrlKey: false, // specify modifier keys if needed
+                      shiftKey: false,
+                      altKey: false,
+                      metaKey: false,
+                      bubbles: true, // event should bubble
+                      cancelable: true // event should be cancelable
+                  });
+
+                  editor.dispatchEvent(keyDownEvent);
+
+                  //     // Dispatch the keyup event
+                  //     editor.dispatchEvent(keyupEvent);
+                  // }
+              
+              }); 
+              // editor.addEventListener('input',function(e){
+            //     var inputData=editor.value;
+            //     linebuf+=inputData;
+            // });
             function textKeydown(event){
               var key =  event.keyCode;
                 console.log("D:"+key);
+                if (inCompositionKeyEvent(event)) return;
+                if ((event.metakey && event.key=='c')||(event.crtlkey && event.key=='c')){
+                      // copy 
+                }
+                if ((event.metakey && event.key=='v')||(event.crtlkey && event.key=='v')){
+                  copyPaste = true;
+                  return;
+                }                
+                copyPaste = false;
                 switch(key){
                   case 16:// shift
                     shiftkey = true;
@@ -316,6 +349,7 @@
               var key =  event.keyCode;
               var t = document.getElementById("terminal");
                 console.log("u:"+key);
+                if (inCompositionKeyEvent(event)) return;
                 switch(key){
                   case 16:// shift
                     shiftkey = false;
@@ -365,6 +399,9 @@
             function textKeypress(event){
               var key =  event.keyCode;
                 c = String.fromCharCode(key);
+                if (inCompositionKeyEvent(event)) return;
+                if (event.metaKey && (c=='c'|| c=='v')) return;
+                if (event.crtlkey && (c=='c'|| c=='v')) return;
                 // if (isCommandOrCtrlPressed && c=='v') return; // ignore paste key
                 // console.log(key);
                 // console.log(linebuf.length);
@@ -428,6 +465,9 @@
                   // xhr.open("POST", "/param?cmd="+lines[lines.length-1], true); 
                   // xhr.send();
                 }else{
+                  if (copyPaste) {
+                    console.log(c);
+                  }
                   linebuf = linebuf.concat(c);
                 }
           
@@ -504,7 +544,15 @@
                 if (checkEscCommand(inmsg)) { // clear screen
                    document.getElementById("terminal").value = "";
                 }else{
-                   document.getElementById("terminal").value += inmsg ;
+  
+
+                  // BUG 將 UTF-8 編碼的字節序列解碼為UTF16文字
+
+                  var utf8Bytes = convertUtf8.stringToBytes(inmsg);
+                  console.log(utf8Bytes);
+                  var unicodeString=convertUtf8.utf8BytesToUtf16String(utf8Bytes);
+                  console.log(unicodeString);
+                 document.getElementById("terminal").value += unicodeString ;
                 }
                 terminalData = document.getElementById("terminal").value.length; // keep data before keyin
 
@@ -608,5 +656,6 @@
         // SSE end
   </script>
   <script src=".js/keymouse.js"></script>
-  </body>
+  <script src=".js/utf8string.js"></script>
+</body>
 </html>

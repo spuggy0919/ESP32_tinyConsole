@@ -257,6 +257,7 @@ typedef unsigned char uint8_t;
 #define SBYE 3				/*spuggy0919*/
 #define BREAKCHAR '#'
 #define EXITCHAR '\x1b' /*spuggy0919*/
+#define CTRL_CKEY '\x03' /*spuggy0919*/
 
 /* 
  *	Arduino input and output channels

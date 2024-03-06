@@ -1018,7 +1018,7 @@ address_t createstring(char c, char d, address_t i, address_t j) {
 
 void makemyxstring() {
 	int i;
-	const char text[] = "hello world";
+	const char text[] = "hello 中文測試 world";
 	for(i=0; i<SBUFSIZE-1 && text[i]!=0 ; i++) sbuffer[i+1]=text[i];
 	sbuffer[0]=i;
 }
@@ -2135,6 +2135,8 @@ again:
 	while (i < SBUFSIZE) {
 		if (sbuffer[i] == ' ' || sbuffer[i] == '\t') i++;
 		if (sbuffer[i] == BREAKCHAR) return BREAKCHAR;
+		if (sbuffer[i] == EXITCHAR) return BREAKCHAR; // ESC SPUGGY0919
+		if (sbuffer[i] == CTRL_CKEY) return BREAKCHAR; // ESC SPUGGY0919
 		if (sbuffer[i] == 0) { ert=1; return 1; }
 		if (sbuffer[i] == '-') {
 			s=-1;
@@ -6974,7 +6976,7 @@ int tbloop() {
 	// for (int i=0;i<=ibuffer[0];i++){
 	// 	Serial.printf("[%2x]%c",ibuffer[i],ibuffer[i]);
 	// }
-	if (ibuffer[ibuffer[0]] == EXITCHAR||ibuffer[ibuffer[0]]  == '\x03') {  // esc or control-C*spuggy0919
+	if (ibuffer[ibuffer[0]] == EXITCHAR||ibuffer[ibuffer[0]]  == CTRL_CKEY ) {  // esc or control-C*spuggy0919
 		outsc("[Ctrl-C|ESC] break\n%"); /*spuggy0919*/
 		//Serial.println("Bye TinyBasic!\n");
 		return false; 

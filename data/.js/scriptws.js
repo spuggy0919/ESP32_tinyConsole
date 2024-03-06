@@ -109,7 +109,7 @@ function wsPingRequest(){
         MonitorConsoleLog(`Reply timeout or error: ${error}`);
         // Reconnect after a delay (e.g., 5 seconds)
         if (tryping >trymaxping) return;
-        setTimeOut(wsPingRequest(),0);
+        setTimeout(wsPingRequest(),0);
         // if (!initWebSocket){//if restart fail keep old for retry
         //     websocket = oldws;
         // }

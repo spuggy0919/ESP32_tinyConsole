@@ -99,14 +99,15 @@ int timeout = (300 / portTICK_PERIOD_MS) + 1; // 100ms  Adjust as needed
     return true;
 
 }
+#define MESSAGELEN 128
 void wsTextPrintBase64(int key,String msg){
   String substr;
   // Serial.println("wsTextPrintBase64:"+String(key));
   if (!WebWSConnect()) return;
    while(msg.length() > 0) {
-      if (msg.length()>=64) {
-        substr =  msg.substring(0,64);
-        msg = msg.substring(64,msg.length());
+      if (msg.length()>=MESSAGELEN) {
+        substr =  msg.substring(0,MESSAGELEN);
+        msg = msg.substring(MESSAGELEN,msg.length());
       }else{
         substr = msg;
         msg = "";
@@ -130,9 +131,9 @@ void wsTextPrintBase64noAck(int key,String msg){
   if (!WebWSConnect()) return;
   // Serial.println("wsTextPrintBase64noAck: ("+String(key)+")");
    while(msg.length() > 0) {
-     if (msg.length()>=64) {
-        substr =  msg.substring(0,64);
-        msg = msg.substring(64,msg.length());
+     if (msg.length()>=MESSAGELEN) {
+        substr =  msg.substring(0,MESSAGELEN);
+        msg = msg.substring(MESSAGELEN,msg.length());
       }else{
         substr = msg;
         msg = "";
@@ -208,6 +209,7 @@ void _wsDevice(const char dev,const char *fmt,...){
 
 static char obuf[2][BUFFERSIZE];
 static int olen[2]={0,0};
+String sendstr = "";
 void WSTransferBufferFlush(int wi){
 
     if (WebWSConnect()){
@@ -215,12 +217,15 @@ void WSTransferBufferFlush(int wi){
 
       // Serial.printf("WS:TX:\n");
       while (!_d_gettxbuf(obuf[wi],&(olen[wi]))){
-        char c;
+        char c=0xa;
         for(int i = 0 ;i <olen[wi] ;i++) {
             c=obuf[wi][i];
               // Serial.printf("f[%2x]\n ",c);
         } 
-          {wsTextPrintBase64(wi,String(obuf[wi])); olen[wi]=0;}
+        sendstr += String(obuf[wi]);
+        Serial.printf("s%s[%2x]%c\n ",sendstr.c_str(),c,c);
+         if (c<=0x7f) {wsTextPrintBase64(wi,sendstr); sendstr = ""; olen[wi]=0;}
+         else { }
          yield();
       }
    }
