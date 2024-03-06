@@ -43,6 +43,16 @@ Don't be worried, platform.ini will auto download, missing parts.
 ```
 Default(esp32_TinyConsole) folder*
 ```
+# *Platform.ini* change serial port driver
+enter Terminal（mac OS）
+```
+%ls /dev/cu*
+/dev/cu.Bluetooth-Incoming-Port	/dev/cu.usbserial-0001
+```
+change ini statement to your driver number
+```
+upload_port = /dev/cu.usbserial-0001
+```
 ### For ESP8266 (maybe, but no timer function, it is not verified)<br>
 
 
