@@ -211,7 +211,7 @@ function wsSentTest(msg){ // send textarea keyin
 function onOpen(event) {
     // console.log('Connection Websocket opened');
     // getValues();
-    // sendTime(); change on demand
+    sendTime(); //change on demand
     uiInit();
     editor.dispatchEvent(eventk); // check editor for IME
     fifo = [];

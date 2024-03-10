@@ -10,8 +10,10 @@ extern ESP32Time rtc;
 void timerSetTest();
 String timerCurrent();
 String timerGetEpoch();
+String timerDate();
 void timerSetEpoch(unsigned long epoch);
 void getftime(struct timeb *tm);
+
 #else
 void timerSetTest();
 String timerCurrent();

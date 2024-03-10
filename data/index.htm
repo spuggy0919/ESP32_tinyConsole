@@ -245,6 +245,7 @@
             let  cacheIndex = 0;
             var  copyPaste = false;
             var  inComposition = false;
+
             document.addEventListener('compositionstart', function() {
                 inComposition = true;
             });
@@ -423,10 +424,11 @@
                   // console.log(ascii_to_hexa(linebuf));
                   // console.log(linebuf.hexEncode());
                   // console.log(linebuf.convertToHex(" "));
-                  if (c=='\r' || c == '#' || c == '\x1b' ||c == '\x03'){
+                  if (c=='\r' || c == '#' || c == '\x1b' ||c == '\x03'){ 
+                    // q is keyhit sent immediately
                     // if (terminalLineMode ) {
                         if (linebuf.length>1 && linebuf.slice(0,1)=="\0xd"){
-                          console.log("ledaing xd found");
+                          console.log("leading xd found");
                         }
                          wsSentChar(linebuf);
                         if (linebuf.length>=2) { // more than one key 
@@ -532,6 +534,7 @@
                 // console.log(seq.hexEncode());
                 if (eschex == "1b5b324a") {
                   // console.log("ESC Found");
+                  wsSentChar("\r"); // clear screen sent enter
                   return true;
                 }
                 return false;

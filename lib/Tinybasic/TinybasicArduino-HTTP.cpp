@@ -5622,11 +5622,11 @@ void xcolor() {
 			rgbcolor(r, g, b);
 			break;
 		case 4:    /* rgba spuggy0919*/
+			a=pop();
 			b=pop();
 			g=pop();
 			r=pop();
-			a=pop();
-			argbcolor(a,r, g, b);
+			rgbacolor(r, g, b, a);
 			break;
 		default:
 			error(EARGS);
@@ -6264,6 +6264,9 @@ void xcall() {
 		case 32:
 /* your custom code here, always call nexttoken() ! */
 			nexttoken();
+			if (token==STRING){
+				
+			}
 			return;
 		default:
 			error(EORANGE);

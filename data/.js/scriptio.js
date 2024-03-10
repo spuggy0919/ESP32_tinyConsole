@@ -8,6 +8,7 @@
             var scaley;
             var audio;
             // Function to create a dynamic card
+
             function uiInit(){
               var terminal = document.getElementById("terminal");
               var monitor = document.getElementById("consolelog");
@@ -23,6 +24,7 @@
               monitor.style.display = (monitorcheck) ? 'block':'none';
               canvascheck = false;
               canvas.style.display = (canvascheck) ? 'block':'none';
+              canvasAlign();
               // TouchEnable();
               drawclearTxt()
               // Audio
@@ -30,6 +32,30 @@
 
             }
 
+            function canvasAlign(){
+              var terminal = document.getElementById("terminal");
+              const content = document.querySelector('.content');
+              const terminalTop  = terminal.getBoundingClientRect().top;
+              const terminalLeft  = terminal.getBoundingClientRect().left;
+              const terminalRight  = terminal.getBoundingClientRect().right;
+              // Get the current top offset of the .content element
+              const contentTop = content.getBoundingClientRect().top;
+              const canvasTop = (terminalTop < 0||contentTop<0) ? 0:(terminalTop < 0) ?0:terminalTop;//Math.max(terminalTop,contentTop);
+              // Set the top position of the canvas
+              // Set canvas size to match textarea
+              canvas.style.top = canvasTop + 'px';
+              canvas.style.left = terminalLeft + 'px';
+              canvas.style.right = terminalRight + 'px';
+              canvas.style.bottom = (canvasTop+(terminalRight-terminalLeft)*.75) + 'px';
+              canvasAspectRatio();
+              drawPutImage(0,0);
+            }
+            window.addEventListener('scroll', function() {
+              canvasAlign();
+            });
+            window.addEventListener('resize', function() {
+              canvasAlign();
+            });
             function canvasAspectRatio(){
               // createCard();
               var cards = document.getElementById("cardtiles");
@@ -151,10 +177,12 @@
                 drawSetPenColor,
                 drawRect,
                 drawChar,
-                getImage,
-                putImage,
+                drawGetImage,
+                drawPutImage,
+                drawSetFontSize,
+                drawSetFontColor,
             ];
-
+            
             function VideoFunc(command){
               // Example command format: "commandIndex arg1 arg2 arg3..."
               // const command = "3 Hello 100 100"; // Example "drawText" command
@@ -172,16 +200,17 @@
                   // Call the function indirectly using the function table
                   const selectedFunction = functionTable[functionIndex];
                   selectedFunction(...args); // Spread operator to pass arguments as separate parameters
+                  drawGetImage(0,0,640,480);
               } else {
                   console.log('Invalid function index');
               }
             }
             // Convert a 32-bit integer color to a CSS-style color string
-            function int32ToColorStyle(int32Color) {
-               const alpha = (int32Color >> 24) & 0xFF; // Extract the red component
-              const red = (int32Color >> 16) & 0xFF; // Extract the red component
-              const green = (int32Color >> 8) & 0xFF; // Extract the green component
-                const blue = int32Color & 0xFF; // Extract the blue component
+            function int32ToColorStyle(int32Color) { // RGBA
+               const alpha = (int32Color ) & 0xFF; // Extract the red component
+              const red = (int32Color >>>24) & 0xFF; // Extract the red component
+              const green = (int32Color >>> 16) & 0xFF; // Extract the green component
+                const blue = (int32Color >>> 8)& 0xFF; // Extract the blue component
 
                 // Create and return a CSS-style color string in the format "#RRGGBB"
                 return `#${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}${alpha.toString(16).padStart(2, '0')}`;
@@ -200,8 +229,24 @@
                 ctx.fillRect(x1, y1, width1, height1); // Draw the filled rectangle
                 console.log(`Drawing filled rectangle with color ${PenColor}, x=${x1}, y=${y1}, width=${width1}, height=${height1}`);
             }
-            var imageData;
-            function getImage( x, y, width, height) {
+            function drawSetFontSize( sizes) {
+              ctx.font =  sizes + "px Arial Black" ;
+            }
+            function decimalToHexString(number)
+            {
+              if (number < 0)
+              {
+                number = 0xFFFFFFFF + number + 1;
+              }
+
+              return number.toString(16).toUpperCase();
+            }
+            function drawSetFontColor( fgcolor) {
+              var fontcolor = int32ToColorStyle(fgcolor);
+              ctx.fillStyle = fontcolor;
+            } 
+             var imageData;
+            function drawGetImage( x, y, width, height) {
                 // Call the drawFilledRect function to draw a filled rectangle
                 const x1 = (x*scalewfactor); // X-coordinate of the top-left corner
                 const y1 = (y*scalehfactor); // Y-coordinate of the top-left corner
@@ -209,10 +254,11 @@
                 const height1 = (height*scalehfactor); // Height of the rectangle                // Put the image data onto the destination canvas
                 imageData = ctx.getImageData(x, y, width, height);
             }
-            function putImage( x, y) {
+            function drawPutImage( x, y) {
                 // Get the image data from the source canvas
                 const x1 = (x*scalewfactor); // X-coordinate of the top-left corner
                 const y1 = (y*scalehfactor); // Y-coordinate of the top-left corner
+                if (typeof imageData==='undefined') return;
                 ctx.putImageData(imageData, x1, y1);
             }
             function drawRect( x, y, width, height) {
@@ -236,12 +282,16 @@
             function drawText( text, x, y, deg) {
                 // Implement drawing text at the specified coordinates
                 // Remove quotation marks if they exist
-                const decodestr = window.atob(text)
-                ctx.fillStyle = PenColor;
-                ctx.font = '15px monospace';
-                ctx.fillText(decodestr,x,y);
+                const decodestr = window.atob(text); // base64 to plain string 
+                var utf8Bytes = convertUtf8.stringToBytes(decodestr);
+                // console.log(utf8Bytes);
+                var unicodeString=convertUtf8.utf8BytesToUtf16String(utf8Bytes);
+                // console.log(unicodeString);
+                // ctx.fillStyle = PenColor;
+                // ctx.font = '15px monospace';
+                ctx.fillText(unicodeString,x,y);
                 ctx.stroke();
-                console.log(`Drawing text "${decodestr}" at x=${x}, y=${y}`);
+                console.log(`Drawing text "${unicodeString}" at x=${x}, y=${y}`);
             }
             const rows = 25;
             const cols = 80;
@@ -348,19 +398,15 @@
                 ctx.stroke();
                 console.log(`Drawing text "${c}" at x=${currentCol}, y=${currentRow}`);
             }
-            function drawHLine(x1, x2, y) { // Hline x1,x2 at y
+            function drawHLine(y, x1, x2) { // Hline x1,x2 at y
                 // Implement drawing a horizontal line from (x1, y) to (x2, y)
                 drawLine(x1, y, x2, y);
                 console.log(`Drawing horizontal line from x=${x1} to x=${x2}, y=${y}`);
             }
 
-            function drawVLine( y1, y2, x) { // Vline Y1,y2 at x
+            function drawVLine(x, y1, y2) { // Vline Y1,y2 at x
             // Plot a line from (x, y) to (x1, y1) with color
-                ctx.beginPath();
-                ctx.moveTo(x*scalehfactor, y*scalehfactor);
-                ctx.lineTo(x1*scalehfactor, y1*scalehfactor);
-                ctx.strokeStyle = PenColor;
-                ctx.stroke();
+                drawLine(x, y1, x, y2);
                 console.log(`Drawing vertical line from x=${x}, y=${y1} to y=${y2}`);
             }
 

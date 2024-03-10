@@ -878,7 +878,7 @@ char kbdcheckch();
 
 /* graphics functions */
 void rgbcolor(int, int, int);
-void argbcolor(int, int, int, int); /*spuggy0919*/
+void rgbacolor(int, int, int, int); /*spuggy0919*/
 void vgacolor(short c);
 void vgascale(int*, int*);
 void plot(int, int);

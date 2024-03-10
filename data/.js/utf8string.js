@@ -4,7 +4,11 @@
  * they copy from website no copyright notice, if any problem, pls inform me to remove
  */
 var convertUtf8 = (function() {
-    /* 
+    function utf8ToUtf16(inputString) {
+        var utf8Bytes = stringToBytes(inputString);
+        return utf8BytesToUtf16String(utf8Bytes)
+    }    
+        /* 
         //usage:
         var inputString = "Hello, World!";
         var resultBytes = stringToBytes(inputString);
@@ -177,6 +181,7 @@ var convertUtf8 = (function() {
         throw new Error('unsupported array-like object');
     }
     return {
+        utf8ToUtf16 : utf8ToUtf16,
         stringToBytes: stringToBytes,
         utf8BytesToUtf16String: utf8BytesToUtf16String,
         toBytes: toURIBytes,

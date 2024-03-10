@@ -15,7 +15,7 @@
  *
  *
  */
-#include <Arduino.h>
+#include "ESP32inc.h"
 
 #include <stdio.h>
 #include <ctype.h>
@@ -31,9 +31,10 @@ unsigned long  toUlong(const char *num){
 }
 
 void wsTextPrintf(const char *fmt,...);
+#define ALIGNBIT 4
 // Align memory addess x to an even page
-#define ALIGN_UP(x) ((unsigned char*)(((unsigned long)(x + 1) >> 1) << 1))
-#define ALIGN_DOWN(x) ((unsigned char*)(((unsigned long)x >> 1) << 1))
+#define ALIGN_UP(x) ((unsigned char*)(((unsigned long)(x + 3) >> 2) << 2))
+#define ALIGN_DOWN(x) ((unsigned char*)(((unsigned long)x >> 2) << 2))
 int printhexLong(const char *buf, unsigned int len){
     char linebuf[64];
     unsigned long *p=(unsigned long *)ALIGN_DOWN(buf);
@@ -54,15 +55,15 @@ int printhexLong(const char *buf, unsigned int len){
     }
     return 0;
 }
+
 int cmd_dumpHex(int argc,char * argv[]){
  
     const char * address = (const char *)toUlong(argv[1]);
     unsigned long length = toUlong(argv[2]);
-    Serial.printf("addr=%08x, len=%08x\n",address,length);
-    while(length>0) {
-        printhexLong(address,length); length-=16;
-    }
-    
+    wsTextPrintf("addr=%08x, len=%08x\n",address,length);
+
+    writeBlock(LittleFS, "/dump.bin",(const unsigned char *)address, (unsigned int)length);
+
 
     return 0;
 }

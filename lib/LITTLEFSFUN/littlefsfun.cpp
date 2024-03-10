@@ -513,6 +513,19 @@ void deleteFile2(fs::FS &fs, const char * path){
 #else
 #define TESTBLOCK 1024
 #endif
+void writeBlock(fs::FS &fs, const char * path,const unsigned char *buf, unsigned int len){
+        File file = fs.open(path, FILE_WRITE);
+    if(!file){
+        Serial.println("- failed to open file for writing");
+        return;
+    }    
+        while(len>0) {
+            file.write(buf, 2048);
+            len-=2048;
+        }
+            file.close();
+        return;
+}
 void testFileIO(fs::FS &fs, const char * path){
     Serial.printf("Testing file I/O with %s\r\n", path);
 

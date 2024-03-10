@@ -112,7 +112,7 @@ char sbuf[256];
 }
 
 
-int cmd_hello(int argc,char * argv[]) {
+int cmd_exehello(int argc,char * argv[]) {
     executeHelloFunction();
     return 0;
 }

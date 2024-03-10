@@ -27,7 +27,9 @@
 #define FILE_APPEND "a"
 // #define FORMAT_LITTLEFS_IF_FAILED 
 #endif
+#ifndef LittleFS
 #define SPIFFS LittleFS
+#endif
 bool initLittleFS();
 String reportfs(fs::FS &fs);
 String  getFullPath_File(const char *pname, const char *fname);
@@ -50,6 +52,7 @@ void writeFile2(fs::FS &fs, const char * path, const char * message);
 void deleteFile2(fs::FS &fs, const char * path);
 
 void testFileIO(fs::FS &fs, const char * path);
+void writeBlock(fs::FS &fs, const char * path,const unsigned char * buf, unsigned int len);
 
 
 #define DIRTYPE  1

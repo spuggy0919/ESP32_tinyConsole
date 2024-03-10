@@ -46,7 +46,9 @@ void _wsDevice(const char dev,const char *fmt,...);
 #define DRAW_CHAR 14
 #define DRAW_GET_IMAGE 15
 #define DRAW_PUT_IMAGE 16
-#define DRAW_IMAGE_FILE 17 /*TBD*/
+#define DRAW_SET_FONTSIZE 17 
+#define DRAW_SET_FONTCOLOR 18
+#define DRAW_IMAGE_FILE 19 /*TBD*/
 
 #define drawClearScr() { \
     char vbuf[80]; \
@@ -55,17 +57,17 @@ void _wsDevice(const char dev,const char *fmt,...);
     }
 #define drawRect( x, y, width, height) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%1d %d %d %d %d",DRAW_RECT,x,y,width,height); \
+    sprintf(vbuf,"%1d %d %d %d %d",DRAW_RECT,(x),(y),(width),(height)); \
     videof(vbuf); \
     }
 #define drawFRect( x, y, width, height) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%1d %d %d %d %d",DRAW_FRECT,x,y,width,height); \
+    sprintf(vbuf,"%1d %d %d %d %d",DRAW_FRECT,(x),(y),(width),(height)); \
     videof(vbuf); \
     }
 #define drawPixel( x, y) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%1d %d %d",DRAW_PIXEL,x,y); \
+    sprintf(vbuf,"%1d %d %d",DRAW_PIXEL,(x),(y)); \
     videof(vbuf); \
     }
 // function drawText(text, x, y, deg) {
@@ -80,61 +82,77 @@ int drawChar(char c);
 //     sprintf(vbuf,"%1d %s %d %d %d",DRAW_TEXT,encodedString,x,y,deg); \
 //     videof(vbuf); \
 //     }
-#define drawHline( x, y, x1, y1) { \
+#define drawHLine(y, x1, x2) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%d %d %d %d %d",DRAW_HLINE,x,y,x1,y1); \
+    sprintf(vbuf,"%d %d %d %d",DRAW_HLINE,(y),(x1),(x2)); \
     videof(vbuf); \
     }
-#define drawVline( x, y, x1, y1) { \
+#define drawVLine( x, y1, y2) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%d %d %d %d %d",DRAW_VLINE,x,y,x1,y1); \
+    sprintf(vbuf,"%d %d %d %d %d",DRAW_VLINE,(x),(y1),(y2)); \
     videof(vbuf); \
     }
 #define drawLine( x, y, x1, y1) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%d %d %d %d %d",DRAW_LINE,x,y,x1,y1); \
+    sprintf(vbuf,"%d %d %d %d %d",DRAW_LINE,(x),(y),(x1),(y1)); \
     videof(vbuf); \
     }            
 // function drawArc( x, y, radius, from, to )
 #define drawArc( x, y, r, frm, tod) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%d %d %d %d %d %d",DRAW_ARC,x,y,r,frm,tod); \
+    sprintf(vbuf,"%d %d %d %d %d %d",DRAW_ARC,(x),(y),(r),(frm),(tod)); \
     videof(vbuf); \
     }
 #define drawFArc( x, y, r, frm, tod) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%d %d %d %d %d %d",DRAW_FARC,x,y,r,frm,tod); \
+    sprintf(vbuf,"%d %d %d %d %d %d",DRAW_FARC,(x),(y),(r),(frm),(tod)); \
     videof(kbuf); \
     }
 #define drawCircle( x, y, r) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%d %d %d %d",DRAW_CIRCLE,x,y,r); \
+    sprintf(vbuf,"%d %d %d %d",DRAW_CIRCLE,(x),(y),(r)); \
     videof(vbuf); \
     }
 #define drawFCircle( x, y, r) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%d %d %d %d",DRAW_FCIRCLE,x,y,r); \
+    sprintf(vbuf,"%d %d %d %d",DRAW_FCIRCLE,(x),(y),(r)); \
     videof(vbuf); \
     }
 #define drawStrokeWidth( w ) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%d %d",DRAW_STROKEWIDTH,w); \
+    sprintf(vbuf,"%d %d",DRAW_STROKEWIDTH,(w)); \
     videof(vbuf); \
     }
 #define drawPenColor( c ) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%d %d ",DRAW_PENCOLOR,c); \
+    sprintf(vbuf,"%d %d ",DRAW_PENCOLOR,(c)); \
     videof(vbuf); \
     }
 #define getImage( x, y, width, height) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%1d %d %d %d %d",DRAW_GET_IMAGE,x,y,width,height); \
+    sprintf(vbuf,"%1d %d %d %d %d",DRAW_GET_IMAGE,(x),(y),(width),(height)); \
     videof(vbuf); \
     }
 #define putImage( x, y) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%1d %d %d",DRAW_PUT_IMAGE,x,y); \
+    sprintf(vbuf,"%1d %d %d",DRAW_PUT_IMAGE,(x),(y)); \
     videof(vbuf); \
     }
     
+#define drawSetFontSize( s) { \
+    char vbuf[80]; \
+    sprintf(vbuf,"%1d %d",DRAW_SET_FONTSIZE,(s)); \
+    videof(vbuf); \
+    }
+#define drawSetFontColor( c) { \
+    char vbuf[80]; \
+    sprintf(vbuf,"%1d %d",DRAW_SET_FONTCOLOR,(c)); \
+    videof(vbuf); \
+    }
+
+typedef unsigned long  COLOR;
+#define DISP_W 640.0
+#define DISP_H 480.0
+#define PERCENTW(xf) ((int)(DISP_W*(xf)))
+#define PERCENTH(yf) ((int)(DISP_H*(yf)))
 #endif // __VIDEO_H__ 

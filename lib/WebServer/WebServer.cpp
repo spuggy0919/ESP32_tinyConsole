@@ -164,7 +164,7 @@ void WebServerPage()
         // Serial.println(t);
         timerSetEpoch(t);
         value = "timer=" + value;
-        wsTextPrintln(value);
+        // wsTextPrintln(value);
       }
     }
     if (request->hasParam("reset")) {

@@ -22,6 +22,6 @@
 640 B=INT(RND(1)*255)
 650 COLOR R,G,B
 660 RETURN
-1000 color 1
+1000 color 15
 1010 frect 0,0,639,479
 1020 return

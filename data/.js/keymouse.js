@@ -65,7 +65,7 @@ function updateCanvasPosition() {
     mycanvas.height = textarea.clientWidth*0.75;
 
     // Set canvas position to match textarea
-    mycanvas.style.top = textarea.offsetTop + 'px';
+    mycanvas.style.top = (textarea.offsetTop >0) ? textarea.offsetTop + 'px': '0 px';
     mycanvas.style.left = textarea.offsetLeft + 'px';
 
     // 
@@ -75,7 +75,7 @@ function updateCanvasPosition() {
 updateCanvasPosition();
 
 // Add event listener for window resize
-window.addEventListener('resize', updateCanvasPosition);
+// window.addEventListener('resize', updateCanvasPosition);
 
 // Handle touch start event
 function handleTouchStart(event) {

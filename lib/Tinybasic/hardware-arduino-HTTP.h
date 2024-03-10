@@ -86,7 +86,7 @@
 #undef ARDUINORF24
 #undef ARDUINOETH
 #undef ARDUINOMQTT
-#undef ARDUINOSENSORS
+#define ARDUINOSENSORS /*spuggy0919*/
 #undef ARDUINOSPIRAM 
 #undef STANDALONE
 
@@ -185,9 +185,7 @@
  * Sensor library code - experimental
  */
 #ifdef ARDUINOSENSORS
-#undef ARDUINODHT
-#define DHTTYPE DHT22
-#define DHTPIN 3
+#define ARDUINODHT
 #undef ARDUINOSHT
 #ifdef ARDUINOSHT
 #define ARDUINOWIRE
@@ -1008,7 +1006,7 @@ void dspprintchar(char c, short col, short row) { char b[] = { 0, 0 }; b[0]=c; u
 void dspclear() { u8g2.clearBuffer(); u8g2.sendBuffer(); }
 void dspupdate() { u8g2.sendBuffer(); }
 void rgbcolor(int r, int g, int b) {}
-void argbcolor(int a,int r, int g, int b) {}
+void rgbacolor(int r, int g, int b,int a) {}
 void vgacolor(short c) { dspfgcolor=c%3; u8g2.setDrawColor(dspfgcolor); }
 void plot(int x, int y) { u8g2.setDrawColor(dspfgcolor); u8g2.drawPixel(x, y); dspgraphupdate(); }
 void line(int x0, int y0, int x1, int y1)   { u8g2.drawLine(x0, y0, x1, y1);  dspgraphupdate(); }
@@ -1244,7 +1242,7 @@ void frect(int x0, int y0, int x1, int y1) {
 	vgascale(&x1, &y1);
 	cv.setBrushColor(vga_graph_pen);
 	cv.fillRectangle(x0, y0, x1, y1);
-	cv.setBrushColor(vga_txt_background);
+	cv.setBrushColor(vga_txt_pen);
 }
 void circle(int x0, int y0, int r) {  
 	int rx = r;
@@ -1263,7 +1261,7 @@ void fcircle(int x0, int y0, int r) {
 	vgascale(&rx, &ry);
 	cv.setBrushColor(vga_graph_pen);
 	cv.fillEllipse(x0, y0, rx, ry);
-	cv.setBrushColor(vga_txt_background);	
+	cv.setBrushColor(vga_txt_pen);	
 }
 void vgawrite(char c){
 	switch(c) {
@@ -1293,22 +1291,22 @@ int vga_graph_brush = 0x000000;
 int vga_txt_pen = 0x00ff00;
 int vga_txt_background = 0x000000;
 unsigned int vga_pallete[16]={
-	0xFF000000,
-	0xFFFFFFFF,
-	0xFFFF0000,
-	0xFF00FF00,
-	0xFF0000FF,
-	0xFFFFFF00,
-	0xFFFF00FF,
-	0xFF00FFFF,
-	0xFF800000,
-	0xFF008000,
-	0xFF000080,
-	0xFF808000,
-	0xFF800080,
-	0xFF008080,
-	0xFFc0c0c0,
-	0xFF808080
+	0x000000,
+	0x800000,
+	0x008000,
+	0x808000,
+	0x000080,
+	0x800080,
+	0x008080,
+	0xc0c0c0,
+	0x808080,
+	0xFF0000,
+	0x00ff00,
+	0xFFff00,
+	0x0000ff,
+	0xFf00ff,
+	0x00ffff,
+	0xFFffff
 };
 
 
@@ -1325,10 +1323,10 @@ void vgascale(int* x, int* y) {
 }
 
 void rgbcolor(int r, int g, int b) {
-	vga_graph_pen=(0xff<<24)|(r<<16)|(g<<8)|(b);
+	vga_graph_pen=(r<<24)|(g<<16)|(b<<8)|0xFF;
 }
-void argbcolor(int a, int r, int g, int b) { /*spuggy0919*/
-	vga_graph_pen=(a<<24)|(r<<16)|(g<<8)|(b);
+void rgbacolor( int r, int g, int b, int a) { /*spuggy0919*/
+	vga_graph_pen=(r<<24)|(g<<16)|(b<<8)|(a);
 }
 int setPenColor(int color){
 	vga_graph_pen = color;
@@ -1338,7 +1336,7 @@ int setPenWidth(int w){
 	vga_graph_pen_width = w;
 	return 0;
 }
-void vgacolor(short c) { vga_graph_pen = vga_pallete[c%16];}
+void vgacolor(short c) { vga_graph_pen = (vga_pallete[c%16]<<8)|0xff;}
 void plot(int x, int y) { 
 		drawPenColor(vga_graph_pen);
 		drawPixel( x, y);
@@ -3562,8 +3560,10 @@ void radioset(int s) {
  */
 #ifdef ARDUINOSENSORS
 #ifdef ARDUINODHT
-#include "DHT.h"
-DHT dht(DHTPIN, DHTTYPE);
+#include "DHTesp.h"  /*spuggy0919 Pio BUG can not find in path copy to local*/
+#define DHTTYPE DHT22
+#define DHTPIN 17
+extern DHTesp dht; /* i alread define in C DHT_example.cpp*/
 #endif
 #ifdef ARDUINOSHT
 #include <SHT3x.h>
@@ -3593,7 +3593,7 @@ Adafruit_BME280 bme;
 
 void sensorbegin(){
 #ifdef ARDUINODHT
-dht.begin();
+      dht.setup(DHTPIN,DHTesp::AM2302); // io pin 
 #endif
 #ifdef ARDUINOSHT
   SHT.Begin();
@@ -3623,14 +3623,17 @@ number_t sensorread(short s, short v) {
       return analogRead(A0+v);
     case 1:
 #ifdef ARDUINODHT
+    {
+		TempAndHumidity data = dht.getTempAndHumidity();
 			switch (v) {
 				case 0:
-					return 1;
+					return DHTPIN;
 				case 1:
-					return dht.readHumidity();
+					return data.humidity;
 				case 2:
-					return dht.readTemperature();
-			}     	
+					return data.temperature;
+			}     
+	}	
 #endif
       return 0;
     case 2:

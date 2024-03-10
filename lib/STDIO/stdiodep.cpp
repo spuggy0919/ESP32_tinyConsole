@@ -241,7 +241,7 @@ int _d_GetPeek(){
 int _d_GetChar(){
     char c;
     while (!_d_isrxavailable())   yield(); // may be deadlock **WARNING **
-    while (_d_fetchrxdata(&c)) yield();
+    _d_fetchrxdata(&c); 
     return c;
 }
 int _d_PutChar(char c)
@@ -340,5 +340,13 @@ bool stdioRedirector(){
  
 }
 
-
+bool keyNotHit(){
+    if (KEYHIT()!=0) { // keyboarinput check
+            char c=KEYGET();
+            if (c==KEY_CRTL_C) return false;
+            if (c=='\x1b') return false;
+            if (c=='q'||c=='Q') return false; // force quit
+    }
+    return true;
+}
 
