@@ -293,7 +293,7 @@ int cmd_pio(int argc,char * argv[]){
     return 0;
 }
 int cmd_help(int argc,char * argv[]){
-    for (int i=0;i<CMDNUMBERS;i++){
+    for (int i=1;i<CMDNUMBERS;i++){
        wsTextPrintln(String(commandTable[i].funName) + " " + String(commandTable[i].description));
        if (commandTable[i].funName[0] == '?') break;
     }
@@ -642,7 +642,7 @@ int cmd_call(int argc,char * argv[]){
     int ret=-1;
     argc--;
     unsigned long idx =  strtoul(argv[1], 0, 16);
-    if (idx < CMDNUMBERS ) {
+    if (idx < CMDNUMBERS && idx!=0 ) {
        ret = (*(commandTable[(int)idx].cmdPtr)) (argc, &argv[1]);
     }else{
       MAINPTR cmdptr = (MAINPTR) idx;

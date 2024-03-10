@@ -158,7 +158,10 @@ Blink example
 ```
 %tb blinkwod.bas
 ```
-# Demo
+# Demo & graphics
+![graphics](png/graphics.jpeg)
+![graphics](png/circle.jpeg)
+![HELLO](png/hello.jpeg)
 [Demo](https://youtu.be/75JKm-M19pE)
 
 ### TinyConsole built in TinyBasic, I have not run all examples yet!
