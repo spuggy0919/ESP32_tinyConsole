@@ -546,6 +546,8 @@
                 // console.log(inmsg);
                 if (checkEscCommand(inmsg)) { // clear screen
                    document.getElementById("terminal").value = "";
+                   drawSetPenColor(0x0000C0FF)
+                   clearScr();
                 }else{
   
 

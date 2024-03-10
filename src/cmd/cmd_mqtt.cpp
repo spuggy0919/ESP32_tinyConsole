@@ -64,7 +64,7 @@ void cmd_mqtt_setup(){
 }
 int cmd_mqtt(int argc,char *argv[]){
     cmd_mqtt_setup();
-    while(keyNotHit){ // loop
+    while(keyNotHit()){ // loop
         if (!client.connected()) {
             reconnect();
         }

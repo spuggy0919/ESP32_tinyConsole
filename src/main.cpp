@@ -46,6 +46,7 @@ int triggerCnt = 10;
 
 int cmd_task(int argc, char *argv[]);
 bool autoexec_bas();
+void eof_main();
 
 void setup(){
   Serial.begin(115200);
@@ -97,7 +98,8 @@ void setup(){
   char buf[10];
   sprintf(buf,"%8lx",(unsigned int)(&commandTable[0]));
   Serial.println("Command Table loc = "+String(buf));
-
+  sprintf(buf,"%8lx",(unsigned int)(eof_main));
+  Serial.println("eof_main = "+String(buf));
 
   // sometimes reboot ????
 //  vTaskStartScheduler(); BUG is will spinlock 
@@ -152,4 +154,7 @@ void loop(){
 
 
  
+}
+void eof_main(){
+
 }

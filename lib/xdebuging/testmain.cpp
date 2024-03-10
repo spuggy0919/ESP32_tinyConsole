@@ -74,7 +74,7 @@ int test_main(int argc,char * argv[])
 #define BUFFER_SIZE 1024
 typedef int (*HELLOPTR)(int,int);
 // Allocate memory in IRAM
-IRAM_ATTR void* allocateIRAM(size_t size) {
+RTC_IRAM_ATTR void* allocateIRAM(size_t size) {
   return malloc(size);
 }
 
