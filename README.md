@@ -13,7 +13,8 @@ ESP32 Web Server (tinyConsole) use me-no-dev/ESPAsyncWebServer, bases on WebSock
 6. simple and tiny shell commands, ls, cat, cd, cp, append, rm, mkdir, help. But it is simple and no option operation, no wildcard filter.
 7. add VGA graphics mode。
 8. Wifi Config.json file setting, if delete config.json, then use AP mode, add mDNSfunction, use network utility scan to find ESP32 IP.
-9. play (MP3)，Touch，Mouse Event is demo only。
+9. User define command in console, readme in CMD folder.
+10. play (MP3)，Touch，Mouse Event is demo only。
 TinyBasic is ported from slviajero/tinybasic. 
 Currently, tinyConsole only supports DigitIO, Timer, FileIO, and WebSocket Serial IO.
 
