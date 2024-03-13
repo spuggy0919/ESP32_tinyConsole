@@ -10,10 +10,8 @@ void cmd_hello_setup(){
 
 }
 bool cmd_hello_loop(){
-    if (KEYHIT()!=0) {
-        c=KEYGET();
-        if (c==KEY_CRTL_C) return false;
-    }
+    if (wsSerial.escape()) return false; //escape key, crtl-c, q [enter]
+
     wsTextPrintf("Hello World\n"); // websocket print to console
     delay(1000);
     return true;

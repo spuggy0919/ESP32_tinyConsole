@@ -13,7 +13,7 @@
 #include "debuglog.h"
 #include "ledpwm.h"         //pwm led for ESP32
 #include "keyin.h"          // debouce Key in
-#include "stdiodep.h"       // stdio dependent on Hardware
+#include "wsSerial.h"       // stdio dependent on Hardware
 #include "littlefsfun.h"    // LittleFS
 #include "wifiinit.h"       // Wifi
 #include "WebServer.h"      // ESPASYNCWEBServer

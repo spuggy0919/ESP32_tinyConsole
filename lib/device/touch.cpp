@@ -40,34 +40,28 @@
 TouchQueue gTouchQueue;
 
 TouchQueue::TouchQueue() {
-    mutex = xSemaphoreCreateMutex();
-    xSemaphoreGive(mutex);
+
 }
 
 TouchQueue::~TouchQueue() {
-    vSemaphoreDelete(mutex);
 }
 
 bool  TouchQueue::flush() {
-    if (xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE) {
+        touchMutex.lock();
         touchList.clear();
-        xSemaphoreGive(mutex);
+        touchMutex.unlock();
         return true;
-    }
-    return false;
 }
 
 size_t TouchQueue::available() {
-    if (xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE) {
+        touchMutex.lock();
         size_t result = touchList.size();
-        xSemaphoreGive(mutex);
+        touchMutex.unlock();
         return result;
-    }
-    return 0;
 }
 
 void TouchQueue::push(String msg) {  //T:X:Y
-    if (xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE) {
+        touchMutex.lock();
 
         if (touchList.size()>TOUCHQUEUESIZE) touchList.pop_front();
         // Use indexOf to find the positions of colons
@@ -89,30 +83,29 @@ void TouchQueue::push(String msg) {  //T:X:Y
         touchList.push_back(std::make_tuple(event, x, y));
     // Serial.printf("TouchQueue::push(%d,%d,%d)\n",event,x,y);
 
-        xSemaphoreGive(mutex);
-    }
+        touchMutex.unlock();
 }
 void TouchQueue::push(int event, int x, int y) {
-    if (xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE) {
+        touchMutex.lock();
         if (touchList.size()>TOUCHQUEUESIZE) touchList.pop_front();
         touchList.push_back(std::make_tuple(event, x, y));
-        xSemaphoreGive(mutex);
-    }
+        touchMutex.unlock();
+
 }
 
 bool TouchQueue::pop(int &event, int &x, int &y) {
-    if (xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE) {
+        touchMutex.lock();
         if (!touchList.empty()) {
             std::tuple<int, int, int> front = touchList.front();
             event = std::get<0>(front);
             x = std::get<1>(front);
             y = std::get<2>(front);
             touchList.pop_front();
-            xSemaphoreGive(mutex);
             // Serial.printf("TouchQueue::pop(%d,%d,%d)\n",event,x,y);
+            touchMutex.unlock();
             return true;
         }
-        xSemaphoreGive(mutex);
-    }
+        touchMutex.unlock();
+
     return false;
 }

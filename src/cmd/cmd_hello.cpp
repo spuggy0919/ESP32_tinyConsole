@@ -35,12 +35,8 @@ void cmd_hello_setup(){
 float _x =0.04;
 bool cmd_hello_loop(){
 
-    if (KEYHIT()!=0) { // keyboarinput check
-        char c=KEYGET();
-        if (c==KEY_CRTL_C) return false;
-        if (c=='\x1b') return false;
-        if (c=='q'||c=='Q') return false; // force quit
-    }
+    if (wsSerial.escape()) return false;
+
     /* loop do somthing*/
     _x-=0.05; if (_x<-0.8) _x=1.0;
     HelloLabel.at(_x,0.6);     // whole screen from (0,0) to (1.0,1.0) 

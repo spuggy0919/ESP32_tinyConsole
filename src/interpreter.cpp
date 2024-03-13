@@ -136,10 +136,11 @@ const char *statemsg[]={
 "INTERPRETER_RUNNING",
 "INTERPRETER_DONE",
 };
+#define LINE_LIMIT 256
 char buf[LINE_LIMIT];
 int len = 0;
 String BannerTinyConsoleCopyRightNotice =" \
-ESP32 Websocket TinyConsole(%s) 2022/10/19 \n \
+ESP32 Websocket TinyConsole("+HTTP_CONSOLE_Version+") 2022/10/19 \n \
 https://github.com/spuggy0919/ESP32_tinyConsole.git \n \
 (GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007) \n \
 Author:spuggy0919 \n  \
@@ -164,25 +165,26 @@ int interpreter() {
     switch(interpreterState) {
       case INTERPRETER_STARTUP:
            if (!WebWSConnect()) break;
-           sprintf(buf, BannerTinyConsoleCopyRightNotice.c_str() , HTTP_CONSOLE_Version);
-           wsTextPrintln(String(buf));
+           wsTextPrintln(BannerTinyConsoleCopyRightNotice);
            wsTextPrintln("Buildin TinyBasic with below");
            wsTextPrintln(BannerMessageWithTinyBasicCopyRightNotice);
-           _d_GetChar();
+            wsSerial.getChar();
            cmd_cls(argc,argv); 
            wsTextPrintln("ESP32 Websocket TinyConsole" +  HTTP_CONSOLE_Version);
            wsTextPrintln("Author:spuggy0919");
-          wsTextPrint("\n%");
+          wsSerial.write('\n');
+          wsSerial.write('%');
           interpreterCmdBuf = "";
           interpreterState = INTERPRETER_WAITING;
           break;
        case INTERPRETER_READY:
-          wsTextPrint("\n%");
+          wsSerial.write('\n');
+          wsSerial.write('%');
           interpreterCmdBuf = "";
           interpreterState = INTERPRETER_WAITING;
           break;
        case INTERPRETER_WAITING:
-          if (_d_getrxline(buf, &len)){
+           if (wsSerial.readLine(buf, &len)){
               // printhexLong(buf, len);
               if (buf[0]=='\n') {
                 Serial.printf("%d\n",len);
@@ -626,8 +628,13 @@ void interpreterInit() {
 int cmd_cls(int argc,char * argv[]){
 
     wsTextPrintf("\x1b[2J");
-    // drawPenColor(0);  
-    // drawFRect(0,0,(640),(480));
+    if (argc>1){
+          int fg =  strtoul(argv[1], NULL, 16);
+          // drawPenColor(0xff);  // black;
+          // drawFRect(0,0,(640),(480));
+          drawPenColor(fg);  // ;
+          drawFRect(0,0,(640),(480));    }
+
     return 0;
 }
 int cmd_prompt(int argc,char * argv[]){

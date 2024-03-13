@@ -14,8 +14,6 @@ src/.DS_Store
 test/README
 test
 bas
-data/test
-data/level1
 entry.txt
 platformio.Copy.ini
 src/test
@@ -34,4 +32,6 @@ template
 *.hx
 esp-open-rtos-master
 custom_linker_script.ld___
-
+data/.audio
+*.h__
+*.c__

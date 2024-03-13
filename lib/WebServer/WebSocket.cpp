@@ -42,7 +42,7 @@ SemaphoreHandle_t xackSemaphore;
 
 int ws_clientid;
 AsyncWebSocketClient *clientconnects[MAX_WEBSOCKET_CONNECTIONS];
-AsyncWebSocketClient *CurrntClient=NULL;
+String CurrntClientIP="";
 bool isConnect = false;
 
 #define KEY_TERMINAL   0
@@ -210,13 +210,14 @@ void _wsDevice(const char dev,const char *fmt,...){
 static char obuf[2][BUFFERSIZE];
 static int olen[2]={0,0};
 String sendstr = "";
+std::queue<String> queueStr;
 void WSTransferBufferFlush(int wi){
 
     if (WebWSConnect()){
     
 
       // Serial.printf("WS:TX:\n");
-      while (!_d_gettxbuf(obuf[wi],&(olen[wi]))){
+      while (!wsSerial.popLine(obuf[wi],&(olen[wi]))){
         char c=0xa;
         for(int i = 0 ;i <olen[wi] ;i++) {
             c=obuf[wi][i];
@@ -224,8 +225,18 @@ void WSTransferBufferFlush(int wi){
         } 
         sendstr += String(obuf[wi]);
         Serial.printf("s%s[%2x]%c\n ",sendstr.c_str(),c,c);
-         if (c<=0x7f) {wsTextPrintBase64(wi,sendstr); sendstr = ""; olen[wi]=0;}
-         else { }
+         if (c<=0x7f) {
+           String wholeStr="";
+           while (queueStr.size()>0) {
+                wholeStr+=queueStr.front();
+                queueStr.pop();
+           }
+           wholeStr+=sendstr;
+           wsTextPrintBase64(wi,wholeStr); sendstr = ""; olen[wi]=0;
+         }
+         else { // push sendstr wait for coming
+            queueStr.push(sendstr); sendstr="";
+         }
          yield();
       }
    }
@@ -267,7 +278,7 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
               Serial.printf("R[%2x]\n ",c);
         }
 
-      if (!_d_insertrxdata((const char*)(msg.c_str()), msg.length())){
+      if (!wsSerial.push((const char*)(msg.c_str()), msg.length())){
         Serial.printf("ERROR: WS:RECV: buffer full!");
       }
       wsTextPrintBase64noAck(1,"X:"+msg+"\n");
@@ -296,7 +307,7 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
         gTouchQueue.push(msg);
     }
     if (cmd == "R:"){ // request from client 
-        WSTransferBufferFlush(0);
+        // WSTransferBufferFlush(0);
     }
     if (cmd == "P:"){ // request from client  PING PONG
         wsTextPrintBase64noAck(1,"P:PONG");
@@ -306,11 +317,12 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
 
 
 void wsEventHandle(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
+  if (CurrntClientIP!=""&&CurrntClientIP!=client->remoteIP().toString()) return; // open and only same ip
   switch (type) {
     case WS_EVT_CONNECT:
       Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
       ws_clientid = client->id();
-      CurrntClient=client;
+      CurrntClientIP=client->remoteIP().toString();
    //     WSTransferBufferTaskInit(0); // wi is 0 for textlog task sent message for basic
     // Set WebSocket state to CONNECTED when a connection is established
       // clientconnects[client->id()] = client; 
@@ -321,6 +333,7 @@ void wsEventHandle(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEven
       Serial.printf("WebSocket client #%u disconnected\n", client->id());
       // Set WebSocket state to CONNECTED when a connection is established
       isConnect=false;
+      CurrntClientIP="";
       pwmled(0);
       break;
     case WS_EVT_DATA:

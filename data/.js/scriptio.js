@@ -63,6 +63,7 @@
               var ratio;
               canvas=document.getElementById("mycanvas");
               ctx=canvas.getContext('2d');
+              ctx.globalCompositeOpertation = 'source-over';
               // MonitorConsoleLog("getTransform1="+ctx.getTransform() );
 
               ctx.setTransform(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);

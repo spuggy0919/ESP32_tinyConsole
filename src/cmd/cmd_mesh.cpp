@@ -84,13 +84,8 @@ int  len=0;
         //     uiState = 1;
         //     break;
         case 1: // ask key 
-            if (KEYHIT()!=0) { // keyboarinput check
-                key=KEYGET();
-                if (key==KEY_CRTL_C) return 0;
-                if (key=='\x1b') return 0;
-                if (key=='q'||key=='Q') return 0;
-                KEYGET(); // skip enter
-            }else key=0;
+           if (wsSerial.escape()) return false;
+
             // if ((key-'0')>=0 && (key-'0')<total_node){
             //     select_node = key-'0';
             //     uiState = 1;

@@ -66,10 +66,11 @@ void setup(){
   // listDir(LittleFS,"/",2);
   // String indexfile = readFile(LittleFS,"/index.html");
   // 2.1 IO create Queue
-  if (!stdioRedirector()) {
+  if (!wsSerial.begin()) {
       Serial.println("Error:Websocket Serial not starting...");
       return;
   }
+  WSTransferBufferTaskInit(0);
 // 1. *** modified your SSID, PASSWORD pair 
 //  modified after config file read from littlefs
 //  use console export comand to setup

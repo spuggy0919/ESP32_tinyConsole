@@ -12,7 +12,7 @@
 #include <esp_system.h>
 #include "debuglog.h"
 #include "ledpwm.h"         //pwm led for ESP32
-#include "stdiodep.h"       // stdio dependent on Hardware
+#include "wsSerial.h"       // stdio dependent on Hardware
 #include "keyin.h"          // debouce Key in
 #include "timerfun.h"       // for esp32  rtc
 #include "littlefsfun.h"    // LittleFS

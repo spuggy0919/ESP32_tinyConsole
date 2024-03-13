@@ -27,7 +27,7 @@ void cmd_example_setup() {
 }
 int cmd_example(int argc,char *argv[]){
     cmd_example_setup();
-    while(keyNotHit()){ // loop
+    while(!wsSerial.escape()){ // loop
         wsTextPrintf("cmd_loop here\n"); // websocket print to console
         delay(100);
     }

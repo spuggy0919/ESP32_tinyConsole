@@ -32,12 +32,7 @@ void cmd_dht_setup(){
       dht.setup(DHTPIN,DHTesp::AM2302); // io pin 
 }
 bool cmd_dht_loop(){
-    if (KEYHIT()!=0) { // keyboarinput check
-        char c=KEYGET();
-        if (c==KEY_CRTL_C) return false;
-        if (c=='\x1b') return false;
-        if (c=='q'||c=='Q') return false;
-    }
+    if (wsSerial.escape()) return false;
     TempAndHumidity data = dht.getTempAndHumidity();
 
     if (dht.getStatus() != 0) {

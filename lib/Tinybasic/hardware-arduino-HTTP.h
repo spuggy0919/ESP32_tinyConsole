@@ -3077,7 +3077,7 @@ void picogetchar(int c){
 }
 #endif
 #ifdef HTTPWSSERIAL  /*spuggy0919*/
-#include "stdiodep.h"
+#include "wsSerial.h"
 #include "WebServer.h"
 #endif 
 /* 
@@ -3093,9 +3093,11 @@ char serialread() {
 	return c;	
 #elif defined(HTTPWSSERIAL) /*spuggy0919*/
     char c;
-    while (!_d_isrxavailable())   yield(); // may be deadlock **WARNING **
-    _d_fetchrxdata(&c);
-  	Serial.printf("basic<WS[%2x]%c\n",c,c);   /*spuggy0919*/
+    // while (!_d_isrxavailable())   yield(); // may be deadlock **WARNING **
+    // _d_fetchrxdata(&c);
+    while (!wsSerial.available())   byield(); // may be deadlock **WARNING **
+	c = wsSerial.read();  	
+	// Serial.printf("basic<WS[%2x]%c\n",c,c);   /*spuggy0919*/
     return c;
 
 #else
@@ -3112,7 +3114,8 @@ void serialbegin() {
 #ifdef USESPICOSERIAL
 	(void) PicoSerial.begin(serial_baudrate, picogetchar); 
 #elif defined(HTTPWSSERIAL)
-	stdioRedirector(); //alreaedy start on main setup
+	// stdioRedirector(); //alreaedy start on main setup
+		wsSerial.begin();
 	///Serial.begin(115200);
   //while(!Serial) byield();
 #endif
@@ -3129,10 +3132,12 @@ int serialstat(char c) {
 /* write to a serial stream */
 void serialwrite(char c) {
 #ifdef HTTPWSSERIAL
-	_d_PutChar(c);
-    Serial.printf("basic>>WS[%2x]%c\n",c,c); /*spuggy0919*/
-
-	
+	// _d_PutChar(c);
+    // Serial.printf("basic>>WS[%2x]%c\n",c,c); /*spuggy0919*/
+	// _d_PutChar(c); stdiolib spuggy0919
+ 	// Serial.printf("basic>>WS[%2x]%c\n",c,c); /*spuggy0919*/
+  	wsSerial.write(c);
+	if (c=='\n') {yield();}
 #endif
 #ifdef HASMSTAB
   if (c > 31) charcount+=1;
@@ -3153,10 +3158,17 @@ short serialcheckch() {
 #ifdef HTTPWSSERIAL
 	// Serial.printf("sck");  
 	
-	if (_d_isrxavailable()) {
-		char c =  _d_GetPeek();
-		//   Serial.printf("peek[%2x]%c\n",c,c);  
+	// if (_d_isrxavailable()) {
+	// 	char c =  _d_GetPeek();
+	// 	//   Serial.printf("peek[%2x]%c\n",c,c);  
 
+	// 	return c;
+	// }
+	// Serial.printf("sck");  
+  	if (wsSerial.available()) {
+  		// char c =  _d_GetPeek();
+ 		char c = wsSerial.peek();
+  		//   Serial.printf("peek[%2x]%c\n",c,c);  
 		return c;
 	}
 #elif defined(USESPICOSERIAL)
@@ -3174,7 +3186,8 @@ short serialavailable() {
 #ifdef USESPICOSERIAL
 	return picoi;
 #elif defined(HTTPWSSERIAL)
-	short i = _d_isrxavailable();
+	// short i = _d_isrxavailable();
+	short i = wsSerial.available();
 	//   Serial.printf("ava[%2x]%c\n",i,i);  
 	  return i;
 #else

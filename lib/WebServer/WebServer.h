@@ -8,7 +8,7 @@
 #include "littlefsfun.h"
 #include "timerfun.h"
 #include "ledpwm.h"
-#include "stdiodep.h"
+#include "wsSerial.h"
 
 
 #ifdef ESP32

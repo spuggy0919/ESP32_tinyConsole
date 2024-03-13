@@ -28,7 +28,7 @@ plotLabel timer,date;
 
 
 int cmd_time(int argc,char *argv[]){
-    COLOR bk=0x40404080,fg=0xFF0000FF;
+    COLOR bk=0x404040FF,fg=0xFF0000FF;
     // for time HH:MM
     float atX=0.044,atY=0.7;
     int fSize=200;
@@ -68,13 +68,7 @@ int cmd_time(int argc,char *argv[]){
         date.plot(); 
      }
 
-    while(1) {
-        if (KEYHIT()!=0) { // keyboarinput check
-            char c=KEYGET();
-            if (c==KEY_CRTL_C) return 0;
-            if (c=='\x1b') return 0;
-            if (c=='q'||c=='Q') return 0;
-        }
+    while(!wsSerial.escape()) {
         if (argc==2 && String(argv[1])=="0") {
             String td = timerCurrent()+" "+timerDate();
             wsTextPrintln(td+"\n");

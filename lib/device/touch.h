@@ -2,8 +2,8 @@
 #define _TOUCH_H_
 
 #include <Arduino.h>
-#include <Freertos/FreeRTOS.h>
 #include <list>
+#include <mutex>
 
 class TouchQueue {
 public:
@@ -17,7 +17,7 @@ public:
     bool pop(int &event, int &x, int &y);
 
 private:
-    SemaphoreHandle_t mutex;
+    std::mutex touchMutex;
     std::list<std::tuple<int, int, int>> touchList;
 };
 #define TOUCHQUEUESIZE 16
