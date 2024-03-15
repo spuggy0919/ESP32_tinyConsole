@@ -227,7 +227,7 @@ char WebSocketSerial::pop() {
 }
 size_t WebSocketSerial::push(char c) {
         wsRxMutex.lock();
-        if (wsRxBuf.size()<WSSERIALQUEUESIZE) {
+        if (1) {//wsRxBuf.size()<WSSERIALQUEUESIZE) {
             wsRxBuf.push(c);
             wsRxMutex.unlock();
             return 1;
@@ -242,12 +242,12 @@ size_t WebSocketSerial::push(const char* buf,int len){
     int l=0;
 
         wsRxMutex.lock();
-                    Serial.print(wsRxBuf.size());
+        Serial.print(wsRxBuf.size());
         for(int i=0;i<len;i++){
-            if (wsRxBuf.size()>WSSERIALQUEUESIZE) return i;
+            // if (wsRxBuf.size()>WSSERIALQUEUESIZE) return i;
             wsRxBuf.push(buf[i]);  
             Serial.printf("push[%2x]\n ",buf[i]);
-          
+            yield();
         }
         wsRxMutex.unlock();
     return len;

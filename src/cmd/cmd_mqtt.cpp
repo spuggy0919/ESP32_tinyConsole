@@ -3,7 +3,7 @@
 /* ref:https://github.com/knolleary/pubsubclient/blob/master/examples/mqtt_esp8266/mqtt_esp8266.ino*/
 /* include your librar and add to ini library depe*/
 
-const char* mqtt_server = "broker.mqtt-dashboard.com";
+const char* _mqtt_server = "broker.mqtt-dashboard.com";
 WiFiClient espClient;
 PubSubClient client(espClient);
 unsigned long lastMsg = 0;
@@ -59,7 +59,7 @@ void cmd_mqtt_setup(){
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   // mqtt client
    randomSeed(micros());
-  client.setServer(mqtt_server, 1883);
+  client.setServer(_mqtt_server, 1883);
   client.setCallback(callback);
 }
 int cmd_mqtt(int argc,char *argv[]){

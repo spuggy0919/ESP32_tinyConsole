@@ -5,9 +5,6 @@
 #ifdef ESP32
 #include <Freertos/FreeRTOS.h>
 #include <Freertos/task.h>
-#else
-#include <esp8266/Freertos/FreeRTOS.h>
-#include <esp8266/Freertos/task.h>
 #endif
 #include <esp_system.h>
 #include "debuglog.h"
@@ -15,7 +12,7 @@
 #include "wsSerial.h"       // stdio dependent on Hardware
 #include "keyin.h"          // debouce Key in
 #include "timerfun.h"       // for esp32  rtc
-#include "littlefsfun.h"    // LittleFS
+#include "fileio.h"    // LittleFS
 #include "wifiinit.h"       // Wifi
 #include "WebServer.h"      // ESPASYNCWEBServer
 #include "devices.h"          // mouse touch video audio

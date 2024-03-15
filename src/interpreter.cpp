@@ -165,10 +165,12 @@ int interpreter() {
     switch(interpreterState) {
       case INTERPRETER_STARTUP:
            if (!WebWSConnect()) break;
+#ifdef TINYBASIC
            wsTextPrintln(BannerTinyConsoleCopyRightNotice);
            wsTextPrintln("Buildin TinyBasic with below");
            wsTextPrintln(BannerMessageWithTinyBasicCopyRightNotice);
             wsSerial.getChar();
+#endif
            cmd_cls(argc,argv); 
            wsTextPrintln("ESP32 Websocket TinyConsole" +  HTTP_CONSOLE_Version);
            wsTextPrintln("Author:spuggy0919");
@@ -299,8 +301,10 @@ int cmd_help(int argc,char * argv[]){
        wsTextPrintln(String(commandTable[i].funName) + " " + String(commandTable[i].description));
        if (commandTable[i].funName[0] == '?') break;
     }
+#ifdef TINYBASIC
     wsTextPrintln("\nIn TinyBasic, Running break press '#'");
     wsTextPrintln("Exit TinyBasic,  press 'CTRL-C' button");
+#endif
     wsTextPrintln("SyncTime Button set esp32 rtc with client time");
     wsTextPrintln("Clear Button clear monitor, same as cls");
     wsTextPrintln("Upload Button upload file to EPS32");
@@ -313,100 +317,12 @@ int cmd_echo(int argc,char * argv[]){
     wsTextPrintln(String(argv[1]));
     return 0;
 }
-int cmd_pwd(int argc,char * argv[]){
-    wsTextPrintln(currentDir());
-    return 0;
-}
-
-int cmd_cd(int argc,char * argv[]){
-  if (argc<=1) return -1;
-  wsTextPrintln(changeDir(LittleFS,argv[1]));
-  return 0;
-
-}
-int cmd_fp(int argc,char * argv[]){
-  if (argc<=1) return -1;
-  wsTextPrintln(getfullpathFileOrDir(LittleFS, argv[1]));
-  return 0;
-  
-}
-int cmd_append(int argc,char * argv[]){
-  if (argc<=2) return -1;
-  appendFile(LittleFS, argv[1], argv[2]);
-  String data = readFile(LittleFS, argv[1]);
-  wsTextPrintln(data.c_str());
-   return 0;
- 
-}
-int cmd_write(int argc,char * argv[]){
-  if (argc<=2) return -1;
-      writeFile(LittleFS, argv[1], argv[2]);
-      String data = readFile(LittleFS, argv[1]);
-
-   wsTextPrintln(data.c_str());
-   return 0;
- 
-}
-int cmd_ls(int argc,char * argv[]){
-  String path=String(argv[1]);
-  int level=1;
-  if (argc>=3 && atoi(argv[2])>level) level =atoi(argv[2]);
-  wsTextPrintln(listDir(LittleFS, argv[1], level));
-  return 0;
-
-}
-
-int cmd_ls0(int argc,char * argv[]){
-  String path=currentDir();
-  wsTextPrintln(listDir(LittleFS, path.c_str(), 1));
-    return 0;
-
-}
-
-int cmd_mkdir(int argc,char * argv[]){
-  if (argc<=1) return -1;
-  createDir(LittleFS, argv[1]);
-    return 0;
-
-}
-int cmd_rmdir(int argc,char * argv[]){
-  if (argc<=1) return -1;
-  removeDir(LittleFS, argv[1]);
-    return 0;
-
-}
-int cmd_cat(int argc,char * argv[]){
-  if (argc<=1) return -1;
-  wsTextPrint(readFile(LittleFS, argv[1]));
-  wsTextPrintln("\n");
-    return 0;
-
-}
-int cmd_rm(int argc,char * argv[]){
-  if (argc<=1) return -1;
-  deleteFile(LittleFS, argv[1]);
-    return 0;
-
-}
 int cmd_download(int argc,char * argv[]){
   if (argc<=1) return -1;
   String paths =  getfullpathFileOrDir(LittleFS, argv[1]);
   eventDownloadFile(paths); 
     return 0;
 
-}
-int cmd_cp(int argc,char * argv[]){
-  if (argc<=2) return -1;
-  String data = readFile(LittleFS, argv[1]);
-  writeFile(LittleFS, argv[2], data.c_str());
-  return 0;
-}
-int cmd_mv(int argc,char * argv[]){
-  if (argc<=2) return -1;
-  int ret = cmd_cp(argc,argv);
-  if (!ret) return ret;
-  ret = cmd_rm(argc,argv);
-  return ret;
 }
 int cmd_reboot(int argc,char * argv[]){
 

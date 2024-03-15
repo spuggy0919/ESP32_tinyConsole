@@ -18,8 +18,8 @@
 #include "config.h"
 
 //Variables to save values from HTML form
-extern String ssidname;
-extern String password;
+// extern String _ssidname;
+// extern String _password;
 extern String ip;
 extern String gateway;
 

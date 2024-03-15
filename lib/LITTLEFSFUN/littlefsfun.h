@@ -6,7 +6,7 @@
 /* fail to both def , the dependency isnot same as comment this block! */
 
 // #ifdef ESP32
-
+// #define LITTLEFSFUN
 #include <FS.h>
 #include <LittleFS.h>
 

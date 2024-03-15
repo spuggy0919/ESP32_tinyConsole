@@ -29,6 +29,9 @@ int cmd_df(int argc,char * argv[]){
   wsTextPrintln(sbuf);
   sprintf(sbuf,"PsramSize=%u\nFreePsram=%u\nMinFreePsram=%u\nMaxAllocPsram=%u ",ESP.getPsramSize(),ESP.getFreePsram(),ESP.getMinFreePsram(),ESP.getMaxAllocPsram());
   wsTextPrintln(sbuf);
+  wsTextPrintf("HeapSize=%u\nFreeHeap=%u\nMinFreeHeap=%u\nMaxAllocHeap=%u \n",ESP.getHeapSize(),ESP.getFreeHeap(),ESP.getMinFreeHeap(),ESP.getMaxAllocHeap());
+  wsTextPrintf("SketchSize=%u\nFreeSketchSpace=%u\nSketchMD5=%s \n",ESP.getSketchSize(),ESP.getFreeSketchSpace(),ESP.getSketchMD5().c_str());
+ 
   wsTextPrintln(reportfs(LittleFS).c_str());
  // Retrieve the partition table
   esp_partition_iterator_t iterator = esp_partition_find(ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, NULL);

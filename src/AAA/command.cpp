@@ -29,8 +29,10 @@ extern const int  CMDTBLSIZE ;
 // COMMAND_TABLE commandTable[] __attribute__((section(".tinyconsole_cmdtbl_section"))) = {
 COMMAND_TABLE commandTable[] = {
   (const char*)0xaa551234, (MAINPTR)CMDTBLSIZE,(const char*)CMDNUMBERS,
+  #ifdef TINYBASIC
   "tb",     cmd_tinybasic,  "file.bas\t// tinyBasic run file",
   "tinybasic",  cmd_tinybasic,  "\t// tinyBasic interactive",
+  #endif
   "pwd",    cmd_pwd,    "\t\t// current path",
   "cd",     cmd_cd,     "\t\t// change directory",
   "fp",     cmd_fp,     "path \t// full path testing",

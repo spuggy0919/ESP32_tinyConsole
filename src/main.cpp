@@ -50,18 +50,24 @@ void eof_main();
 
 void setup(){
   Serial.begin(115200);
-  Serial.println("Web Control");
+  Serial.println("TinyConsole "+HTTP_CONSOLE_Version);
   pwminit();
   pwmled(0); // turn off until wifi done
   
   
   // 2, mount and initalize littlefs for reading page locates in file system
-
+#ifdef LITTLEFSFUN
   if(!initLittleFS()){
       Serial.println("Error:LittleFS init fail...");
       return ;
   }  
-
+#else
+  if(!g_fsio.init()){
+      Serial.println("Error:g_fsio init fail...");
+      return ;
+  }      
+  Serial.println("g_fsio init Done");
+#endif
   // check LittleFS , it is not necessary 
   // listDir(LittleFS,"/",2);
   // String indexfile = readFile(LittleFS,"/index.html");

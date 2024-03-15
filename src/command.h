@@ -22,6 +22,13 @@
 #ifndef __COMMAND_H__
 #define __COMMAND_H__
 #include <Arduino.h> // String used
+
+
+#define TINYBASIC
+#ifdef TINYBASIC
+int cmd_tinybasic(int argc,char * argv[]);
+#endif
+
 int cmd_help(int argc,char * argv[]);
 int cmd_echo(int argc,char * argv[]);
 int cmd_pwd(int argc,char * argv[]);
@@ -41,7 +48,6 @@ int cmd_download(int argc,char * argv[]);
 int cmd_cp(int argc,char * argv[]);
 int cmd_mv(int argc,char * argv[]);
 int cmd_status(int argc,char * argv[]);
-int cmd_tinybasic(int argc,char * argv[]);
 int cmd_ping(int argc,char * argv[]);
 int cmd_prompt(int argc,char * argv[]);
 int cmd_call(int argc,char * argv[]);

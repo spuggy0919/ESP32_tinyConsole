@@ -6911,7 +6911,7 @@ void statement(){
 /*
  *	the setup routine - Arduino style
  */
-void tbsetup() {
+void tbsetup_14a() {
 	forceexit = 0; /*spuggy0919*/
 /* start measureing time */
 	timeinit();
@@ -6945,7 +6945,7 @@ void tbsetup() {
 /* 
  *	the loop routine for interactive input 
  */
-int tbloop() {
+int tbloop_14a() {
 
 /*
  *	autorun state was found in setup, autorun now but only once
@@ -7008,19 +7008,19 @@ int tbloop() {
 
 /* if we are not on an Arduino */
 // #ifdef ARDUINO
-extern int tbmain(int argc, char* argv[]);
+extern int tbmain_14a(int argc, char* argv[]);
 bool checkargc0is(){
 	return (String(bargv[0]).equalsIgnoreCase("TB"));
 }
-int tbmain(int argc, char* argv[]){
+int tbmain_14a(int argc, char* argv[]){
 
 /* save the arguments if there are any */
     bargc=argc;
 	bargv=argv; 
  
 /* do what an Arduino would do, this loops for every interactive input */
-	tbsetup();
-	 while (tbloop());
+	tbsetup_14a();
+	 while (tbloop_14a());
 	 return 0;	
 }
 // #endif

@@ -20,8 +20,8 @@
  */
 
 //Variables to save values from HTML form
-String ssidname = WIFISSID;   // modfied for STA mode
-String password = PASSWORD; // modfied for STA mode
+String _ssidname = WIFISSID;   // modfied for STA mode
+String _password = PASSWORD; // modfied for STA mode
 String ip = LOCAL_IP; // modfied for STA static ip mode
 String gateway = GATEWAY; // modfied for STA static ip mode
 
@@ -51,16 +51,16 @@ bool WiFiInit(int mode,...)
       r = WiFiAP();
       break;
     case WIFI_STA_AUTO_MODE:
-        ssidname = String (va_arg ( arguments, const char* ));
-        password = String (va_arg ( arguments, const char* ));
+        _ssidname = String (va_arg ( arguments, const char* ));
+        _password = String (va_arg ( arguments, const char* ));
         r = WiFiSTAAutoIP();
       break;
     case WIFI_STA_STATIC_MODE:
-        ssidname = String (va_arg ( arguments, const char* ));
-        password = String (va_arg ( arguments, const char* ));
+        _ssidname = String (va_arg ( arguments, const char* ));
+        _password = String (va_arg ( arguments, const char* ));
         ip = String (va_arg ( arguments, const char* ));
         gateway = String (va_arg ( arguments, const char* ));
-        r = WiFiSTAStaticIP(ssidname, password, ip, gateway);
+        r = WiFiSTAStaticIP(_ssidname, _password, ip, gateway);
       break;
     default: r=false;
           break;
@@ -78,7 +78,7 @@ bool WiFiInit(int mode,...)
 bool WiFiSTAAutoIP() 
 {
      Serial.println("WiFiSTA() AutoMode ");
-     return WiFiSTAStaticIP(ssidname, password, "", "");
+     return WiFiSTAStaticIP(_ssidname, _password, "", "");
 }
 bool WiFiSTAStaticIP(String ssid,String pass,String ip, String gateway) {
   Serial.println("WiFiSTAStatic(ssid "+ ssid +",pwd "+ pass +",ip"+ ip +", gw "+ gateway +") ");
@@ -123,7 +123,7 @@ bool WiFiSTAStaticIP(String ssid,String pass,String ip, String gateway) {
       if (trycnt > 3) {
           Serial.println("ERROR:Failed to connect. remove config, restart for AP mode");
           // Config_Remove("ssid");
-          // Config_Remove("password");
+          // Config_Remove("_password");
           return false;
       }
       // ESP.restart();
@@ -145,7 +145,7 @@ bool WiFiAP() {
   // WiFi.disconnect();
   if (!WiFi.softAPConfig(local_Gateway, local_Gateway, subnet)) return false;
 
-  if (!WiFi.softAP((WIFIAPACTUALNAME(mac)).c_str(), PASSWORD)) return false;
+  if (!WiFi.softAP((WIFIAPACTUALNAME(mac)).c_str(), _password)) return false;
 
   IPAddress IP = WiFi.softAPIP();
   Serial.println("AP:"+WIFIAPACTUALNAME(mac));

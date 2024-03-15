@@ -48,7 +48,7 @@ String reportfs(fs::FS &fs){
     String ret="";
 #ifdef ESP32
     char buf [128];
-    sprintf(buf,"totalBytes.  =%8d\nusedBytes    =%8d\nfreeBytes    =%8d\n",\
+    sprintf(buf,"LittleFS diskinfo\n\ttotalBytes   =%8d\n\tusedBytes    =%8d\n\tfreeBytes    =%8d\n",\
     LittleFS.totalBytes(),LittleFS.usedBytes(),LittleFS.totalBytes()-LittleFS.usedBytes());
     ret = String(buf);
     Serial.printf("---allocStrleng  =%d\n",ret.length());

@@ -2636,9 +2636,9 @@ void fsbegin(char v) {
  	//if (LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED) && v) {
 		Serial.printf("success %d,%d\n",LittleFS.totalBytes(),LittleFS.usedBytes());
 	
-		outsc("LittleFS ok \n");
-		outsc("File system size "); outnumber(LittleFS.totalBytes()); outcr();
-		outsc("File system used "); outnumber(LittleFS.usedBytes()); outcr();
+		// outsc("LittleFS ok \n");
+		// outsc("File system size "); outnumber(LittleFS.totalBytes()); outcr();
+		// outsc("File system used "); outnumber(LittleFS.usedBytes()); outcr();
  	//}
 
 #endif
@@ -3131,31 +3131,18 @@ int serialstat(char c) {
 
 /* write to a serial stream */
 void serialwrite(char c) {
-#ifdef HTTPWSSERIAL
-	// _d_PutChar(c);
-    // Serial.printf("basic>>WS[%2x]%c\n",c,c); /*spuggy0919*/
-	// _d_PutChar(c); stdiolib spuggy0919
- 	// Serial.printf("basic>>WS[%2x]%c\n",c,c); /*spuggy0919*/
+
   	wsSerial.write(c);
 	if (c=='\n') {yield();}
-#endif
+
 #ifdef HASMSTAB
   if (c > 31) charcount+=1;
   if (c == 10) charcount=0;
-#endif
-#ifdef USESPICOSERIAL
-	PicoSerial.print(c);
-#else
-/* write never blocks. discard any bytes we can't get rid of */
-//   Serial.write(c);  /*spuggy0919*/
-//   Serial.printf("[%2x]%c",c,c);  /*spuggy0919*/
-/* if (Serial.availableForWrite()>0) Serial.write(c);	*/
 #endif
 }
 
 /* check on a character, needed for breaking */
 short serialcheckch() {
-#ifdef HTTPWSSERIAL
 	// Serial.printf("sck");  
 	
 	// if (_d_isrxavailable()) {
@@ -3171,28 +3158,18 @@ short serialcheckch() {
   		//   Serial.printf("peek[%2x]%c\n",c,c);  
 		return c;
 	}
-#elif defined(USESPICOSERIAL)
-	return picochar;
 
-#else
-	// if (Serial.available()) return Serial.peek(); else return 0;
-#endif	
 	return 0;
 
 }
 
 /* avail method, needed for AVAIL() */ 
 short serialavailable() {
-#ifdef USESPICOSERIAL
-	return picoi;
-#elif defined(HTTPWSSERIAL)
 	// short i = _d_isrxavailable();
 	short i = wsSerial.available();
 	//   Serial.printf("ava[%2x]%c\n",i,i);  
 	  return i;
-#else
-	return Serial.available();
-#endif	
+
 }
 
 /*
@@ -3240,7 +3217,6 @@ void consins(char *b, short nb) {
 	z.a--;
   b[0]=(unsigned char)z.a; 
 }
-
 /* 
  * Start a secondary serial port for printing and/or networking 
  * This is either Serial1 on a MEGA or DUE or Nano Every or a SoftwareSerial 
