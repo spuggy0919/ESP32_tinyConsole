@@ -1,25 +1,22 @@
 #### Portting driver layer of tinyConsole
-tinybasic port on tinyconsole is 
-base on my driver layers for tinyconsole
-1.  **wsSerial.cpp** serial driver communicate with basic and websocket
-    extern WebSocketSerial wsSerial. it also respone for 
-    **Keybard** input and **console out** text out, use 
-2. **Itouch.cpp** **touch** event queue driver , stream come from websocket client side
-3. display **graphics** functions in one include
-   **include "audiovideo.h"**
-4. **File system** is littlefs, the tinybasic use old littlefsfun.h library, my new interface is 
-    **fileio.h** class object, global name is **g_fsio**	
+tinybasic port bases on tinyconsole driver layer 
+
+1.  **wsSerial.cpp** serial driver communicate between basic and websocket client, wsSerial also respones for client **Keyboard** input and **console out**.
+2. **Itouch.cpp** **touch** event queuing driver , streams come from websocket client the console cmd app or basic filter the event queuq, to get coordinate.
+3. display **graphics** functions are in one include **#include "audiovideo.h"**
+4. **File system** is littlefs, the tinybasic uses old littlefsfun.h library, my new interface is **fileio.h** class object, global name is **g_fsio**.
+   	
 #### TinyConsole Library functions
-1. **ESPMCU** define ESP reset wdt check.
+1. **ESPMCU** defines ESP reset and wdt clear.
 2. **GPIO** for button and Led pwm setting.
-3. **LITTLEFSFUN** a LITTLEFS library, define in littlefsfun.h, this will be deprecaded, fileio.cpp will maintain the file system api.
+3. **LITTLEFSFUN** a LITTLEFS library, defined in littlefsfun.h.In future, fileio.cpp will maintain the file system api. 
 4. **timer**, esp32 rtc
 5. **Tinybasic** ver 1.4a
-6. **Wifi**, config.json is checked at power on, then decide AP, STA auto , STA statis
+6. **Wifi**, config.json is checked at power on, then decides AP, STA auto , or STA mode
 7. **Webserver** , HTTPD Webserver and Websocket functions.
    
 #### TinyBasic v2 port pending:
-This port is buggy, I need more time to reach goal, i decide to pending the Basic 2 port. Then will transfer to JerryScript porting first.
+It needs more time to complete, I decide to pending the Basic 2 port temporarily. 
 
 #### Port TinyBasic v2 current status
 **runtime.cpp runtime.h**
@@ -51,3 +48,5 @@ void vgawrite(char c){}
 copy from my original  port tinybasic 1.4a
 put last line of runtime.cpp
 
+### how to use
+copy into and replace the tinyBasic directory of my tinyconsole project, then build tinyconsole.
