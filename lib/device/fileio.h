@@ -44,7 +44,7 @@ typedef union
         bool init();
         int fclose(FILE *stream);
         FILE *fopen(const char *filename, const char *mode);
-        size_t fread(const char *ptr, size_t size, size_t nmemb, FILE *stream);
+        size_t fread(char *ptr, size_t size, size_t nmemb, FILE *stream);
         size_t fwrite(const char *ptr, size_t size, size_t nobj, FILE *stream);
         int fseek(FILE *stream, long int offset, int whence);
         long int ftell(FILE *stream);

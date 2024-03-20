@@ -20,14 +20,18 @@
  *	Author: spuggy0919, spuggy0919@gmail.com
  */
 #include "ESP32inc.h"
+
+
+#include "cmdconfig.h"
+#ifdef CMD_TIME
 #include "plotLabel.h"
 #include <string.h>
 
-plotLabel timer,date;
 /* change cmd_example as your cmd name */
 
 
 int cmd_time(int argc,char *argv[]){
+    plotLabel timer,date; // I prefer use main function, use stack dont occupy FreeHeap
     COLOR bk=0x404040FF,fg=0xFF0000FF;
     // for time HH:MM
     float atX=0.044,atY=0.7;
@@ -88,3 +92,4 @@ int cmd_time(int argc,char *argv[]){
     }
     return 0; // true for continue
 }
+#endif //CMD_TIME

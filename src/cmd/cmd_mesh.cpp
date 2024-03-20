@@ -2,8 +2,11 @@
   Terry Lee
   完整說明請參閱 http://honeststore.com.tw/esp8266-esp-mesh/
 */
-#include "painlessMesh.h"
 #include "ESP32inc.h"
+
+#include "cmdconfig.h"
+#ifdef CMD_MESH
+#include "painlessMesh.h"
 
 #define   MESH_PREFIX     "TinyMesh"
 #define   MESH_PASSWORD   "1234"
@@ -111,3 +114,4 @@ int  len=0;
     }
     return 0;
 }
+#endif //CMD_MESH

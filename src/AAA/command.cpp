@@ -29,10 +29,15 @@ extern const int  CMDTBLSIZE ;
 // COMMAND_TABLE commandTable[] __attribute__((section(".tinyconsole_cmdtbl_section"))) = {
 COMMAND_TABLE commandTable[] = {
   (const char*)0xaa551234, (MAINPTR)CMDTBLSIZE,(const char*)CMDNUMBERS,
-  #ifdef TINYBASIC
+#ifdef TINYBASIC
   "tb",     cmd_tinybasic,  "file.bas\t// tinyBasic run file",
   "tinybasic",  cmd_tinybasic,  "\t// tinyBasic interactive",
-  #endif
+#endif
+#ifdef JERRYSCRIPT
+  "jb",   cmd_JerryScript_Basic,   "\t\t// JerryScript Basic ",
+  "js",   cmd_JerryScript_RunFile,   "\t\t// JerryScript runfile",
+  "jerryscript",   cmd_JerryScript_Repl,   "\t// JerryScript Repl",
+#endif 
   "pwd",    cmd_pwd,    "\t\t// current path",
   "cd",     cmd_cd,     "\t\t// change directory",
   "fp",     cmd_fp,     "path \t// full path testing",
@@ -48,16 +53,24 @@ COMMAND_TABLE commandTable[] = {
   "append", cmd_append, "file msg // append message",
   "cp",     cmd_cp,     "file1 file2 \t// copy file1 to file2",
   "mv",     cmd_mv,     "file1 file2 \t// rename file1 to file2",
+#ifdef CMD_TIME
   "time",   cmd_time,   "\t\t// display currnet time",
+#endif
   "pio",    cmd_pio,    "0~255 \t// set LED pin output pwm value",
   "dl",     cmd_download,"file  \t// download file to PC",
   "cls",    cmd_cls,    "\t\t// clear screen",
  "avtest",  cmd_avtest, "[0|1|2]\t// video graphic testing",
  "export",  cmd_export, "\t\t// export ssid ABC \n \t\t// export password 12345678 \n\t\t// export\n\t\t// export all wifi config or set config", 
   "loop",   cmd_test,  "\t\t// loopback test and arglist parser Test",
+#ifdef CMD_DHT
   "dht",    cmd_dht,    "\t\t// dht example",
+#endif
+#ifdef CMD_MQTT
   "mqtt",   cmd_mqtt,   "\t\t// mqtt example",
-  "mesh",   cmd_mesh,   "\t\t// mesh experiment",
+#endif
+#ifdef CMD_MESH
+  "mesh",   cmd_mesh,   "\t\t// mesh experiment", //not ready
+#endif
   "exec",   cmd_exec,   "\t\t// exec \"cmd argv[]\" for task experiment",
   "kill",   cmd_kill,   "\t\t// kill process, for task experiment ",
   "ps",     cmd_ps,     "\t\t// process status, for task experiment",
@@ -68,8 +81,8 @@ COMMAND_TABLE commandTable[] = {
   "hello",   cmd_hello,   "\t\t// hello world  example",
  //  below internal teing commands and help qill not show 
  /*2. plug in your cmd into shell interpreter cmd table */
-
   "ping",   cmd_test,   "\t\t// ping test, int in monitor",
+
   "status", cmd_status,  "status",
 "test",   cmd_test,    "\t// dummy command",
 "task",    cmd_task,  "  // tasktest testing...",

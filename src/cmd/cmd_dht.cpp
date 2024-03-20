@@ -21,6 +21,9 @@
  */
 #include "ESP32inc.h"
 /* include your librar and add to ini library depe*/
+
+#include "cmdconfig.h"
+#ifdef CMD_DHT
 #include "DHTesp.h"
 #include "plotLineChart.h"
 #include <math.h>
@@ -69,3 +72,5 @@ int state = 0;
     while(cmd_dht_loop()); 
     return 0;
 }
+
+#endif //CMD_DHT

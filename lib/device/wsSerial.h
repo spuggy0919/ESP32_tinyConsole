@@ -1,5 +1,6 @@
 /*
  * This file is part of ESP32_TinyConsole.
+ *   Copyright (c) 2022 Spuggy0919, spuggy0919@gmail.com
  *
  * ESP32_TinyConsole is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

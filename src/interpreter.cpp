@@ -516,27 +516,7 @@ int cmd_ping(int argc,char * argv[]){
 }
 
 
-int cmd_tinybasic(int argc,char * argv[]){
-  int i=0;
-  char fbuf[32];
- //WSTransferBuffer(&i); // taskIO
-      // WSTransferBufferTaskInit(0);
-      // tbsetup();
-      if (argc>1) {
-          // check externsion exist or not 
-          String fname = argv[1];
-          String dot =".";
-          if (fname.indexOf(dot) == -1) {
-              fname+=".bas";
-              strcpy(fbuf,fname.c_str());
-              argv[1]=fbuf;
-          }
-      }
-      int ret = tbmain(argc,argv);
-      
-      // WSTransferBufferTaskDestroy();
-      return ret;
-}
+
 void interpreterInit() {
   
 

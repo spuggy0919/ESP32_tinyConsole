@@ -35,3 +35,5 @@ custom_linker_script.ld___
 data/.audio
 *.h__
 *.c__
+lib/JerryScript
+data/js

@@ -22,12 +22,8 @@
 #ifndef __COMMAND_H__
 #define __COMMAND_H__
 #include <Arduino.h> // String used
+#include "cmdconfig.h"
 
-
-#define TINYBASIC
-#ifdef TINYBASIC
-int cmd_tinybasic(int argc,char * argv[]);
-#endif
 
 int cmd_help(int argc,char * argv[]);
 int cmd_echo(int argc,char * argv[]);
@@ -62,7 +58,6 @@ int cmd_avtest(int argc, char *argv[]);
 int cmd_export(int argc, char *argv[]);
 int cmd_reboot(int argc,char * argv[]);
 // main_cmd list
-int cmd_mesh(int argc,char *argv[]);
 int cmd_test(int argc, char *argv[]);
 int cmd_dumpHex(int argc,char * argv[]);
 int cmd_task(int argc, char *argv[]);
@@ -71,8 +66,15 @@ int cmd_kill(int argc, char *argv[]);
 int cmd_ps(int argc, char *argv[]);/*How to pluginto your command */
 int cmd_exehello(int argc,char * argv[]); // experiment
 int test_main(int argc,char * argv[]);
+#ifdef CMD_DHT
 int cmd_dht(int argc,char *argv[]);
+#endif
+#ifdef CMD_MQTT
 int cmd_mqtt(int argc,char *argv[]);
+#endif
+#ifdef CMD_MESH
+// int cmd_mesh(int argc,char *argv[]); // not ready
+#endif
 /*1. cmd_example declare your command prototype here */
 int cmd_hello(int argc,char *argv[]);
 

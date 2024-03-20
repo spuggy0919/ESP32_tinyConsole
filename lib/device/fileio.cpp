@@ -97,7 +97,7 @@
 #endif      
         
         }
-        size_t pstd::fread(const char *ptr, size_t size, size_t nmemb, FILE *stream){
+        size_t pstd::fread(char *ptr, size_t size, size_t nmemb, FILE *stream){
               File fref=getFile(stream);
               Serial.printf("fileread%x\n",fref);
               return fref.read((uint8_t *)ptr, size*nmemb);   

@@ -1,4 +1,7 @@
 #include "ESP32inc.h"
+
+#include "cmdconfig.h"
+#ifdef CMD_MQTT
 #include "PubSubClient.h"
 /* ref:https://github.com/knolleary/pubsubclient/blob/master/examples/mqtt_esp8266/mqtt_esp8266.ino*/
 /* include your librar and add to ini library depe*/
@@ -83,3 +86,4 @@ int cmd_mqtt(int argc,char *argv[]){
     }; 
     return 0;
 }
+#endif

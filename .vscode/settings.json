@@ -23,7 +23,9 @@
         "locale": "cpp",
         "list": "cpp",
         "tuple": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "jerryscript.h": "c",
+        "pins_arduino.h": "c"
     },
     "r.lsp.promptToInstall": false,
     "cmake.configureOnOpen": false
