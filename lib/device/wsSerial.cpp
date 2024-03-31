@@ -37,6 +37,7 @@
  * 
  */
 #include "wsSerial.h"
+#include "debuglog.h"
 #include <Ticker.h>
 
 
@@ -50,7 +51,7 @@ WebSocketSerial::~WebSocketSerial() {
 }
 bool WebSocketSerial::begin() {
     //    bool stdioRedirector();
-        Serial.printf("begin\n");
+        DEBUGDRVCHK("[wsSerial]:begin\n");
         // flush();
         return true;
 }
@@ -64,7 +65,7 @@ bool  WebSocketSerial::flush()  {
     wsTxMutex.lock();
     while(wsTxBuf.size()&& (millis()-currentMillis)<timeoutDuration){
         wsRxBuf.pop();
-        delay(10);
+        delay(2);
     }
     wsTxMutex.unlock();
     return (wsTxBuf.size()==0);
@@ -76,6 +77,7 @@ size_t WebSocketSerial::available() {
         wsRxMutex.lock();
         size_t result = wsRxBuf.size();
         wsRxMutex.unlock();
+        yield();
         return result;
 }
 size_t WebSocketSerial::availableForWrite() {
@@ -86,19 +88,21 @@ size_t WebSocketSerial::availableForWrite() {
 }
 
 char WebSocketSerial::read() {
+    if (available()!=0) {
         wsRxMutex.lock();
-        if (wsRxBuf.size()) {
-            char c = wsRxBuf.front();
-            wsRxBuf.pop();
-            wsRxMutex.unlock();
-            return c;
-        }
+        char c = wsRxBuf.front();
+        Serial.printf("[wsSerial]:read[%2x]%c\n",c,c);
+        wsRxBuf.pop();
         wsRxMutex.unlock();
+        return c;
+    }
     return 0;
 }
 bool WebSocketSerial::escape(){
     if (available()!=0) { // keyboarinput check
             char c=read();
+            if (peek()==0xa) read(); // ahead 0xa give up for jerrycript
+            Serial.printf("[wsSerial]:escape[%2x]%c\n",c,c);
             if (c=='\x03') return true;
             if (c=='\x1b') return true;
             if (c=='q'||c=='Q') return true; // force quit
@@ -106,14 +110,16 @@ bool WebSocketSerial::escape(){
     return false;
 }
 char WebSocketSerial::getChar(){
-    while (!available()) yield(); // keyboarinput check
+    while (available()==0) ;// keyboarinput check need client to sent immediate ? BUG
             char c=read();
     return c;
 }
 bool WebSocketSerial::readLine(char *buf, int *len){
     int idx = 0;
+    int bufsize = *len;
     char c;
       while(1){
+        // if (idx==len) return false; check length or not in Jerryscript
         c=read();
         if (c){
             if (idx==BUFFERSIZE-1) {buf[idx] = 0; *len = idx+1; return true;}
@@ -122,7 +128,7 @@ bool WebSocketSerial::readLine(char *buf, int *len){
                 buf[idx] = '\n'; idx++; // but argc will wrong BUG
                 buf[idx] = 0; 
                 *len=idx;
-                Serial.printf("\nline complete %s idx=%d\n",buf,idx);
+                DEBUGDRVCHK("[wsSerial]:\nline complete %s idx=%d\n",buf,idx);
                 return true;
             }else if ( (c == '\xff' || c == '\x08') && (idx)>1) {
    			    (idx)--;
@@ -138,6 +144,7 @@ bool WebSocketSerial::readLine(char *buf, int *len){
 size_t WebSocketSerial::write(const char* buf,int len){
     int l=0;
         for(int i=0;i<len;i++){
+            if (buf[i]==0) break;
             write(buf[i]);
             // if (wsTxBuf.size()<WSSERIALQUEUESIZE) {
             //             wsTxBuf.push(buf[i]);
@@ -149,27 +156,27 @@ size_t WebSocketSerial::write(const char* buf,int len){
 }
 
 size_t WebSocketSerial::write(uint8_t c) {
-        wsTxMutex.lock();
         // if (wsTxBuf.size()<WSSERIALQUEUESIZE) {
         if (1) {
-            Serial.print(wsTxBuf.size());
 
+            wsTxMutex.lock();
+            DEBUGDRVCHK("[wsSerial]:write[%2x]%c\n",c,c);
             wsTxBuf.push(c);
             wsTxMutex.unlock();
             if (c=='\n') yield();
             return 1;
         }else{
-        unsigned long currentMillis = millis();
+            unsigned long currentMillis = millis();
             while( millis()-currentMillis<5000 ){
                 if (wsTxBuf.size()<WSSERIALQUEUESIZE) {
+                    wsTxMutex.lock();
                     wsTxBuf.push(c);
                     wsTxMutex.unlock();
                  }
-                 delay(10);
+                 delay(1);
             }
          
         }
-        wsTxMutex.unlock();
     return 0;
 }
 char WebSocketSerial::peek() {
@@ -192,26 +199,28 @@ bool WebSocketSerial::popLine(char *buf, int *len){
     while (wsTxBuf.size()>0){
         c=wsTxBuf.front(); wsTxBuf.pop();
         buf[idx]=c; idx++; 
-        Serial.printf("f[%2x]%c\n",c,c);
+        DEBUGDRVCHK("[wsSerial]:f[%2x]%c\n",c,c);
 
         if (idx==BUFFERSIZE-1) { 
             *len = idx; buf[idx]=0;
             wsTxMutex.unlock();
-            Serial.printf("buff-1");
+            DEBUGDRVCHK("[wsSerial]:ERROR:buff-1");
             return false;
         }
         if (c=='\n' ) {
             *len = idx; buf[idx]=0;
             wsTxMutex.unlock();
-            Serial.printf("line complete %s\n",buf);
+            //DEBUGDRVCHK("[wsSerial]:line complete %s\n",buf);
             return false;
         }
     //    vTaskDelay( 10 / portTICK_PERIOD_MS );  output will slow down
+        wsTxMutex.unlock();
         yield();
+        wsTxMutex.lock();
     }
     wsTxMutex.unlock();
     buf[idx]=0;  
-    if (idx!=0) Serial.printf("idx=%d\n",idx);
+     if (idx!=0)  DEBUGDRVCHK("[wsSerial]:idx=%d\n",idx);
     return (idx==0); // empty
 }
 char WebSocketSerial::pop() {
@@ -232,7 +241,7 @@ size_t WebSocketSerial::push(char c) {
             wsRxMutex.unlock();
             return 1;
         }else{
-            Serial.print("ERROR:RX Buffer Full\n");
+           Serial.printf("[wsSerial]:ERROR:RX Buffer Full\n");
         }
         wsRxMutex.unlock();
     return 0;
@@ -240,15 +249,12 @@ size_t WebSocketSerial::push(char c) {
 
 size_t WebSocketSerial::push(const char* buf,int len){
     int l=0;
-
-        wsRxMutex.lock();
-        Serial.print(wsRxBuf.size());
+        // Serial.print(wsRxBuf.size());
         for(int i=0;i<len;i++){
             // if (wsRxBuf.size()>WSSERIALQUEUESIZE) return i;
             wsRxBuf.push(buf[i]);  
-            Serial.printf("push[%2x]\n ",buf[i]);
+            DEBUGDRVCHK("[wsSerial]:push[%2x]\n ",buf[i]);
             yield();
         }
-        wsRxMutex.unlock();
     return len;
 }

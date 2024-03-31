@@ -36,4 +36,4 @@ data/.audio
 *.h__
 *.c__
 lib/JerryScript
-data/js
+data/basic

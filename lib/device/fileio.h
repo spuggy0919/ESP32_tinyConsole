@@ -48,6 +48,7 @@ typedef union
         size_t fwrite(const char *ptr, size_t size, size_t nobj, FILE *stream);
         int fseek(FILE *stream, long int offset, int whence);
         long int ftell(FILE *stream);
+        bool fexist(const char *path);
         int remove(const char *filename);
         int rename(const char *old_filename, const char *new_filename);
         bool mkdir(const char *path);

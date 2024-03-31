@@ -27,22 +27,27 @@
 
 int cmd_help(int argc,char * argv[]);
 int cmd_echo(int argc,char * argv[]);
-int cmd_pwd(int argc,char * argv[]);
 int cmd_time(int argc,char * argv[]);
+
 int cmd_cd(int argc,char * argv[]);
+int cmd_ls(int argc,char * argv[]);
+int cmd_cat(int argc,char * argv[]);
+int cmd_rm(int argc,char * argv[]);
+int cmd_mv(int argc,char * argv[]);
+
+#ifdef CMD_FILE_EXT
+int cmd_pwd(int argc,char * argv[]);
 int cmd_fp(int argc,char * argv[]);
 int cmd_append(int argc,char * argv[]);
 int cmd_write(int argc,char * argv[]);
-int cmd_ls(int argc,char * argv[]);
 int cmd_ls0(int argc,char * argv[]);
-int cmd_df(int argc,char * argv[]);
 int cmd_mkdir(int argc,char * argv[]);
 int cmd_rmdir(int argc,char * argv[]);
-int cmd_cat(int argc,char * argv[]);
-int cmd_rm(int argc,char * argv[]);
-int cmd_download(int argc,char * argv[]);
 int cmd_cp(int argc,char * argv[]);
-int cmd_mv(int argc,char * argv[]);
+#endif 
+
+int cmd_df(int argc,char * argv[]);
+int cmd_download(int argc,char * argv[]);
 int cmd_status(int argc,char * argv[]);
 int cmd_ping(int argc,char * argv[]);
 int cmd_prompt(int argc,char * argv[]);

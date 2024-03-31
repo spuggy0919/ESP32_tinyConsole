@@ -1,4 +1,5 @@
 #include "littlefsfun.h"
+#include "timerfun.h"
 #include <string.h>
 
 
@@ -124,8 +125,14 @@ bool checkFileOrPAth(const char *path, int *filedirorNone){
 bool checkDir(fs::FS &fs, const char *path,int *filedirorNone){
     String tempPath = currentPath;
     String actualPath= "/";
+    if (String(path) == "/") {
+        checkPath = "/";
+        *filedirorNone = DIRTYPE;
+        return true; 
+    }
     if (String(path) == "") {
         checkPath = currentPath;
+        *filedirorNone = DIRTYPE;
         return true; 
     }
     if  (relativePath(String(path))) { // // relative Path
@@ -140,8 +147,8 @@ bool checkDir(fs::FS &fs, const char *path,int *filedirorNone){
     }
 
     while(tempPath.length()>0){
-        Serial.print("fsfun:tempPath"+tempPath);
-        Serial.print("fsfun:actualPath"+actualPath);
+        // Serial.print("fsfun:tempPath"+tempPath);
+        // Serial.print("fsfun:actualPath"+actualPath);
         String prefix=getPrefix(tempPath);
         tempPath = trimPrefix(tempPath);
         if (prefix == "") continue; 
@@ -169,9 +176,9 @@ bool checkDir(fs::FS &fs, const char *path,int *filedirorNone){
             }
     }   
     checkPath  =  actualPath;
-    Serial.print("fsfun:tempPath"+tempPath);
-    Serial.print("fsfun:actualPath"+actualPath);
-    Serial.print("fsfun:checkPath"+checkPath);
+    // Serial.print("fsfun:tempPath"+tempPath);
+    // Serial.print("fsfun:actualPath"+actualPath);
+    // Serial.print("fsfun:checkPath"+checkPath);
     return true; 
 
 }
@@ -181,7 +188,7 @@ String changeDir(fs::FS &fs, const char *path){
        if (checktype == DIRTYPE){
             currentPath = checkPath;
        }
-    Serial.print("fsfun:currentPath"+currentPath);
+    // Serial.print("fsfun:currentPath"+currentPath);
        return currentPath;
 }
 
@@ -268,6 +275,9 @@ String printdirentry(File direntry, int32_t levels){
         retstr += String(direntry.size());
 #ifndef CONFIG_LITTLEFS_FOR_IDF_3_2
         time_t t= direntry.getLastWrite();
+#ifdef ESP32
+        t += rtc.offset; // add timezone
+#endif
         struct tm * tmstruct = localtime(&t);
         char buffer[40];
         sprintf(buffer,"\t%d-%02d-%02d %02d:%02d:%02d",(tmstruct->tm_year)+1900,( tmstruct->tm_mon)+1, tmstruct->tm_mday,tmstruct->tm_hour , tmstruct->tm_min, tmstruct->tm_sec);

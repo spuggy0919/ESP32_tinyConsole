@@ -100,13 +100,13 @@ int drawChar(char c);
 // function drawArc( x, y, radius, from, to )
 #define drawArc( x, y, r, frm, tod) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%d %d %d %d %d %d",DRAW_ARC,(x),(y),(r),(frm),(tod)); \
+    sprintf(vbuf,"%d %d %d %d %f %f",DRAW_ARC,(x),(y),(r),(frm),(tod)); \
     videof(vbuf); \
     }
 #define drawFArc( x, y, r, frm, tod) { \
     char vbuf[80]; \
-    sprintf(vbuf,"%d %d %d %d %d %d",DRAW_FARC,(x),(y),(r),(frm),(tod)); \
-    videof(kbuf); \
+    sprintf(vbuf,"%d %d %d %d %f %f",DRAW_FARC,(x),(y),(r),(frm),(tod)); \
+    videof(vbuf); \
     }
 #define drawCircle( x, y, r) { \
     char vbuf[80]; \

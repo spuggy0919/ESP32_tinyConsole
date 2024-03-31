@@ -412,19 +412,19 @@
                   console.log(linebuf);
                   return ; 
                 }
-                if (c == '\r' || c == '\n'|| c == ' ' || c == -1 || c=='#' || c=='\x1b' || c=='\x03'){
+                if (c == '\r' || c == '\n'|| c == ' ' || c == -1 || c=='#' ||c=='q' ||c=='Q'|| c=='\x1b' || c=='\x03'){
                   if ( c == '\r') {
                      event.preventDefault();
                      // linebuf = linebuf.concat('\n');
                   }
                   if (c == '\r' || c == '\n') linebuf = linebuf.concat('\n');
-                  if (c == '#' || c == '\x1b' ||c == '\x03' || c == ' ' ) linebuf = linebuf.concat(c);
+                  if (c == '#' || c == '\x1b' ||c == '\x03' || c == ' ' ||c == 'q'|| c=='Q'  ) linebuf = linebuf.concat(c);
 
                   // console.log(linebuf);
                   // console.log(ascii_to_hexa(linebuf));
                   // console.log(linebuf.hexEncode());
                   // console.log(linebuf.convertToHex(" "));
-                  if (c=='\r' || c == '#' || c == '\x1b' ||c == '\x03'){ 
+                  if (c=='\r' || c == '#' || c == '\x1b' ||c == '\x03' ||c == 'q'|| c=='Q'  ){ 
                     // q is keyhit sent immediately
                     // if (terminalLineMode ) {
                         if (linebuf.length>1 && linebuf.slice(0,1)=="\0xd"){

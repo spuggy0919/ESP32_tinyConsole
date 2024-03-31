@@ -16,12 +16,12 @@ function onload(event) {
 
 }
 function initWebSocket() {
-    MonitorConsoleLog('Trying to open a WebSocket connection…');
-    MonitorConsoleLog(gateway);
+    // MonitorConsoleLog('Trying to open a WebSocket connection…');
+    // MonitorConsoleLog(gateway);
     if (!restartws) {
         websocket=null;
         restartws=false;
-        MonitorConsoleLog('reentry');
+        MonitorConsoleLog('Error:reentry');
         return false;
     }
     websocket = new WebSocket(gateway);
@@ -30,7 +30,7 @@ function initWebSocket() {
     // websocket.onerror = onError;
     websocket.onmessage = onMessage;
     // setInterval(wsGetCharRequest, 200);
-    MonitorConsoleLog('done');
+    // MonitorConsoleLog('done');
     return true;
 }
 /* websocket reliablity Test Function */
@@ -40,7 +40,7 @@ function sendMessage(msg){
     waitForSocketConnection(websocket, function(){
         let nows = Date.now()
         websocket.send(msg);
-        MonitorConsoleLog(nows+"<<<"+msg);
+        // MonitorConsoleLog(nows+"<<<"+msg);
         if (msg[0]!='P') resetPingTimer();
     });
 }
@@ -106,7 +106,7 @@ function wsPingRequest(){
     replyPromise.promise.then((reply) => {
         // MonitorConsoleLog(`Reply received: ${reply}`);
     }).catch((error) => {
-        MonitorConsoleLog(`Reply timeout or error: ${error}`);
+        MonitorConsoleLog(`Error:Reply timeout or error: ${error}`);
         // Reconnect after a delay (e.g., 5 seconds)
         if (tryping >trymaxping) return;
         setTimeout(wsPingRequest(),0);
@@ -245,7 +245,7 @@ function onClose(event) {
             websocket = oldws;
         }
       } else {
-        MonitorConsoleLog('Maximum retry attempts reached, closed');
+        MonitorConsoleLog('Error:Maximum retry attempts reached, closed');
       }
 }
 const messageQueue = [];
@@ -275,18 +275,18 @@ function onMessage(event) {
     if (lines[DEVCODE]==devMONITOR||lines[DEVCODE]==devTEST) {
         if (lines[DEVCODE]==devMONITOR) {
             ldata = atob(lines[MSGTEXT]);
-            MonitorConsoleLog(nowt+">>>"+lines[0]+":"+lines[1]+":"+lines[2]+"("+ldata+")");
+            // MonitorConsoleLog(nowt+">>>"+lines[0]+":"+lines[1]+":"+lines[2]+"("+ldata+")");
         }
         else {  /* test ack protocol */
             ldata = lines[MSGTEXT];
             websocket.send("A:"); 
             // reply ack for avoid reentry so atfer process data
-            MonitorConsoleLog(nowt+">>>"+lines[0]+":"+lines[1]+":"+lines[2]+"("+ldata+")");
+            // MonitorConsoleLog(nowt+">>>"+lines[0]+":"+lines[1]+":"+lines[2]+"("+ldata+")");
             if (ldata=='0') checksum = 0; 
             checksum += parseInt(ldata); 
             if (ldata=='-499500') {
                 websocket.send("2:"+checksum.toString()); 
-                MonitorConsoleLog("\nchecksum="+checksum.toString()+"\n");
+                // MonitorConsoleLog("\nchecksum="+checksum.toString()+"\n");
             }
 
          }
@@ -305,9 +305,9 @@ function onMessage(event) {
     // Add the received message to the queue
 
     messageQueue.push(event.data);
-    if (lines[2])
-        MonitorConsoleLog(nowt+">>>"+lines[0]+":"+lines[1]+":"+lines[2]+"("+atob(lines[MSGTEXT])+")");
-    if (ackrepsone) MonitorConsoleLog(nowt+"<<<A:");
+    // if (lines[2])
+    //     MonitorConsoleLog(nowt+">>>"+lines[0]+":"+lines[1]+":"+lines[2]+"("+atob(lines[MSGTEXT])+")");
+    // if (ackrepsone) MonitorConsoleLog(nowt+"<<<A:");
 
     resetPingTimer();
     // Process the message queue asynchronously
@@ -350,18 +350,18 @@ function processMessages(msg) {
             case "1": // Serial Monitor
             // Resolve the reply promise with the received message
             if (ldata=='P:PONG' && replyPromise) { // for pong
-                    MonitorConsoleLog('PONG received');
+                    // MonitorConsoleLog('PONG received');
 
                     replyPromise.resolve(ldata);
                     replyPromise = null;
                     return;
                 
             }else {
-                MonitorConsoleLog(ldata);
+                // MonitorConsoleLog(ldata);
             }
             break;
             case "2": // Serial Monitor test for ack 
-                MonitorConsoleLog(ldata);
+                // MonitorConsoleLog(ldata);
                 break;
             case "8": // audio
             AudioFunc(ldata);

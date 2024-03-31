@@ -1,7 +1,9 @@
 [中文](./讀我.md)
 ## ESP32 tinyConsole with TinyBasic
-This firmware with web browser is a console, can upload, download, run TinyBasic on ESP32 board online. User can learn TinyBasic Language.
+This firmware with web browser is a console, can upload, download, run TinyBasic on ESP32 board online. User can learn TinyBasic Language. 
 ESP32 Web Server (tinyConsole) use me-no-dev/ESPAsyncWebServer, bases on WebSocket to implement bidirection serial port.
+
+Now, JerryScript Intepreter is option. 
 
 ### Functions
   
@@ -24,6 +26,13 @@ Currently, tinyConsole only supports DigitIO, Timer, FileIO, and WebSocket Seria
 
 (GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007)
 
+## JerrySript LICENSE:
+JerryScript library is modified from the  fork below
+https://github.com/dmazzella/Arduino_Portenta_JerryScript
+
+[libarary fork LICENSE MIT](https://github.com/spuggy0919/Arduino_Portenta_JerryScript/blob/main/LICENSE)
+[JerryScript LICENSE Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
 ## TinyConsole base on following libraries and Platform. Thanks for them, and a lot of packages under these.
 [espressif/arduino-esp32](https://github.com/espressif/arduino-esp32)
 [me-no-dev/ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
@@ -40,6 +49,21 @@ Don't be worried, platform.ini will auto download, no missing parts.
  ESP32 is supported
  *Platform.io* will check dependency and download dependency libraries automatically.
  Tool bar at bottom , click Switch  env icon to select Project and env
+
+### Either TINYBASIC or JERRYSCRIPT，modify /src/cmdconfig.h
+```
+// Language Config
+// #define TINYBASIC    /* define TINYBASIC undef is  JERRYSCRIPT */
+// #include "TinyBasic.h" // if not include the pio will not get dependency for lib
+
+// need to add below into lib_dep of platform.ini
+// then define JERRYSCRIPT and  #include "JerryScript_tc.h"
+	// lib_dep = https://github.com/spuggy0919/Arduino_Portenta_JerryScript.git  ; javascript 
+#ifndef TINYBASIC
+#define _LANG_JERRYSCRIPT_ 
+#include "JerryScript_tc.h"
+#endif
+```
 #### For ESP32
 ```
 Default(esp32_TinyConsole) folder*
@@ -118,6 +142,7 @@ WebServerGPIOControl Starting...
 ```
 %dl hello.bas [enter]
 ```
+## TINYBASIC
 ####  Run TinyBasic interpreter, use "TinyBasic" or "tb", then '>' in Tinybasic Interactive mode.
 ```
 %TinyBasic hello.bas [enter] // interactive mode use TinyBasic
@@ -157,6 +182,13 @@ hardware-arduino-HTTP.h
 Blink example
 ```
 %tb blinkwod.bas
+```
+## JERRYSCRIPT
+```
+%cd js
+%ls                 // list all example
+% js 0time.js       // run js file Date object
+% je [enter]        // JS REPL mode
 ```
 ## Demo & graphics
 ![graphics](png/graphics.jpeg)

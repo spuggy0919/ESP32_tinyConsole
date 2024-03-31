@@ -41,7 +41,7 @@ private:
     std::mutex touchMutex;
     std::list<std::tuple<int, int, int>> touchList;
 };
-#define TOUCHQUEUESIZE 16
+#define TOUCHQUEUESIZE 32
 extern TouchQueue gTouchQueue;
 
 #endif //_TOUCH_H_

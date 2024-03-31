@@ -1,6 +1,8 @@
 /*
  * This file is part of ESP32_TinyConsole.
  *
+ *  Copyright (c) 2022-2024 spuggy0919
+ *
  * ESP32_TinyConsole is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -139,53 +141,26 @@ const char *statemsg[]={
 #define LINE_LIMIT 256
 char buf[LINE_LIMIT];
 int len = 0;
-String BannerTinyConsoleCopyRightNotice =" \
-ESP32 Websocket TinyConsole("+HTTP_CONSOLE_Version+") 2022/10/19 \n \
-https://github.com/spuggy0919/ESP32_tinyConsole.git \n \
-(GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007) \n \
-Author:spuggy0919 \n  \
-";
 
-String BannerMessageWithTinyBasicCopyRightNotice ="\n \
-/* \n \
- *	$Id: basic.c,v 1.138 2022/08/15 18:08:56 stefan Exp stefan $ \n \
- * \n \
- *	Stefan's IoT BASIC interpreter \n \
- * \n \
- * 	See the licence file on \n \
- *	https://github.com/slviajero/tinybasic for copyright/left.\n \
- *    (GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007)\n \
- *\n \
- *	Author: Stefan Lenz, sl001@serverfabrik.de\n \
- */ \n\
- Press any key to continue, try help, ? or h ";
 int interpreter() {
     int ret;
     // Serial.printf("State:%s\n",statemsg[interpreterState]);
     switch(interpreterState) {
       case INTERPRETER_STARTUP:
            if (!WebWSConnect()) break;
-#ifdef TINYBASIC
-           wsTextPrintln(BannerTinyConsoleCopyRightNotice);
-           wsTextPrintln("Buildin TinyBasic with below");
-           wsTextPrintln(BannerMessageWithTinyBasicCopyRightNotice);
-            wsSerial.getChar();
-#endif
-           cmd_cls(argc,argv); 
-           wsTextPrintln("ESP32 Websocket TinyConsole" +  HTTP_CONSOLE_Version);
-           wsTextPrintln("Author:spuggy0919");
-          wsSerial.write('\n');
-          wsSerial.write('%');
+           tc_Banner();
+
           interpreterCmdBuf = "";
           interpreterState = INTERPRETER_WAITING;
           break;
        case INTERPRETER_READY:
-          wsSerial.write('\n');
-          wsSerial.write('%');
+          tc_Prompt();
+
           interpreterCmdBuf = "";
           interpreterState = INTERPRETER_WAITING;
           break;
        case INTERPRETER_WAITING:
+           len = LINE_LIMIT;
            if (wsSerial.readLine(buf, &len)){
               // printhexLong(buf, len);
               if (buf[0]=='\n') {

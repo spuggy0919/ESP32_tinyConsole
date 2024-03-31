@@ -1,0 +1,21 @@
+File.mkdir('abc');
+print('mkdir',File.ls('abc'));
+File.cd('abc');
+print(File.cd());
+File.writeFile('test.js','print("Hello World!");\n');
+print('writeFile','test.js','print("Hello World!");\n');
+print('readFile',File.readFile('test.js'));
+let script = File.readFile('test.js');
+eval(script);
+File.appendFile('test.js','print("哈囉歡迎您！");\n');
+print('appendFile','print("哈囉歡迎您！");\n');
+print('readFile',File.readFile('test.js'));
+let script1 = File.readFile('test.js');
+eval(script1);
+File.writeFile('abd.js','print("Hello World!");');
+print('ls',File.ls());
+print('rm','abd.js');
+File.deleteFile('abd.js');
+print('ls',File.ls());
+File.cd('..');
+

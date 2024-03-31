@@ -29,7 +29,11 @@
 #include <math.h>
 #define DHTPIN 17  // Replace with the pin your sensor is connected to
 
+#ifdef _LANG_JERRYSCRIPT_
+extern DHTesp dht;
+#else
 DHTesp dht;
+#endif
 LineChart chart;
 void cmd_dht_setup(){
       dht.setup(DHTPIN,DHTesp::AM2302); // io pin 

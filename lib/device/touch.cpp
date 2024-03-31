@@ -57,6 +57,7 @@ size_t TouchQueue::available() {
         touchMutex.lock();
         size_t result = touchList.size();
         touchMutex.unlock();
+        yield();
         return result;
 }
 
@@ -88,24 +89,24 @@ void TouchQueue::push(String msg) {  //T:X:Y
 void TouchQueue::push(int event, int x, int y) {
         touchMutex.lock();
         if (touchList.size()>TOUCHQUEUESIZE) touchList.pop_front();
+        Serial.printf("[Touch]:push(%d)\n",touchList.size());
         touchList.push_back(std::make_tuple(event, x, y));
         touchMutex.unlock();
-
+        yield();
 }
 
 bool TouchQueue::pop(int &event, int &x, int &y) {
-        touchMutex.lock();
-        if (!touchList.empty()) {
+        if (available()) {
+            touchMutex.lock();
+            Serial.printf("[Touch]:pop(%d)\n",touchList.size());
             std::tuple<int, int, int> front = touchList.front();
             event = std::get<0>(front);
             x = std::get<1>(front);
             y = std::get<2>(front);
             touchList.pop_front();
-            // Serial.printf("TouchQueue::pop(%d,%d,%d)\n",event,x,y);
+            // Serial.printf("[Touch]:pop(%d,%d,%d)\n",event,x,y);
             touchMutex.unlock();
             return true;
         }
-        touchMutex.unlock();
-
     return false;
 }

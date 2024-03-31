@@ -1,0 +1,16 @@
+var LOW = 0;
+var HIGH= 1;
+var INPUT = 1;
+var OUTPUT = 3;
+var INPUT_PULLUP = 5;
+var LED_BUILTIN = 2;
+var KEY_BUILTIN = 0; 
+print("LED_BUILTIN=",LED_BUILTIN);
+print("HIGH=",HIGH);
+print("LOW=",LOW);
+print("OUTPUT=",OUTPUT);
+print("INPUT=",INPUT);
+pinMode(LED_BUILTIN,OUTPUT);
+digitalWrite(LED_BUILTIN,LOW);
+delay(2000);
+digitalWrite(LED_BUILTIN,HIGH);

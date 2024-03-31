@@ -71,6 +71,17 @@
               fref.close();
             return 1;
         }
+        bool pstd::fexist(const char *filename){
+            String paths =  getfullpathFileOrDir(LittleFS, filename);
+            File file = littlefsRef.open((paths).c_str());
+            // Serial.printf("[fsio]:%x,%s",file,(paths).c_str())
+            if (!file&&file.isDirectory())  return false;
+            if (!file) {
+                return false;
+            }
+            file.close();
+            return true;
+        }
         FILE *pstd::fopen(const char *filename, const char *mode){
             String paths =  getfullpathFileOrDir(LittleFS, filename);
 #ifdef ESP32
@@ -109,7 +120,7 @@
         int pstd::fseek(FILE *stream, long int offset, int whence){
               File fref=getFile(stream);
               SeekMode mode = (whence==0)? SeekSet:(whence==1)?SeekCur:SeekEnd;
-              Serial.printf("fileseek%x\n",fref);
+            //   Serial.printf("[fsio]:fileseek%x\n",fref);
               return fref.seek(offset, mode);   
         }
         long int pstd::ftell(FILE *stream){

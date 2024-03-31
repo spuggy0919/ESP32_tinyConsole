@@ -25,6 +25,7 @@
 #include "ESP32inc.h"
 
 #include "command.h"
+#include "version.h"
 
 #include "dumphex.h"
 #include "testmain.h"

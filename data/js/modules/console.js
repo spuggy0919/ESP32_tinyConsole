@@ -1,0 +1,33 @@
+// Define a console object with a log function
+var console = {
+    log: function(...args) {
+        // Print the arguments using a custom format
+        var message = args.join(' '); // Concatenate arguments into a single message
+        print(message); // Assuming 'print' is your output function
+    },
+    error: function(...args) {
+        // Print the arguments using a custom format
+        var message = args.join(' '); // Concatenate arguments into a single message
+        print(message); // Assuming 'print' is your output function
+    }
+};
+
+// module.exports = console;
+
+// Usage of console.log
+console.log('Hello', 'from', 'console.log!'); // Prints: Hello from console.log!
+
+try {
+    // Simulate an error condition
+    throw new Error('This is a simulated error.');
+} catch (e) {
+    // Catch and handle the error
+    console.error('Error:', e.message);
+}
+console.log("Hello",Math.random());
+console.error("Oh...",123, "中文");
+
+module.exports = {
+    log:console.log,    
+    error:console.error
+};

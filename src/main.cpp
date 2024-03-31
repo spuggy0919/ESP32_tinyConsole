@@ -1,6 +1,8 @@
 /*
  * This file is part of ESP32_TinyConsole.
  *
+ *  Copyright (c) 2022-2024 spuggy0919
+ *
  * ESP32_TinyConsole is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -113,35 +115,50 @@ void setup(){
 }
 int cmd_exec(int argc, char *argv[]);
 
-char  cmd[32]="tb";
+// cmd should be double quote "" string
+#ifdef TINYBASIC
+#define AUTORUN "tb /basic/autoexec.bas"
+#define AUTORUNFILE "/basic/autoexec.bas"
+#else 
+#define AUTORUN "js /js/start.js"
+#define AUTORUNFILE "/js/start.js"
+#endif
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 char *argvlist[]={
-    "exec",cmd
+    "exec",AUTORUN
 };
 /**
- * @brief power on autoexec, *experiment* tb is not object , it can not be reentry.
+ * @brief power on autoexec, *experiment* tb and js are not object , it can not be reentry.
  * 
  * @details
  * 1. default, if autoexec.bas exist, it run "tb" at background task
- * 2. if autoexec key is defined in config.json, then run this key value.
+ * 2. if autorun key is defined in config.json, then run this key value.
  *    cmd line is running in Task by InterpreterExcute
  *
  * 
  * @return true, task is running
  */
-bool autoexec_bas(){
-  String filestr=readFile(LittleFS, "/basic/autoexec.bas");
-  String autoexec = Config_Get("autoexec");
-  if (autoexec.length()>0){
-    strcpy(cmd,autoexec.c_str());
+
+int autoexec_bas_js(){
+  String filestr=readFile(LittleFS,AUTORUNFILE);
+  String autorun = Config_Get("autorun");  // json key autorun 
+  // Serial.printf("[main]:autorun(%d,%d) found \n%s\n",2,filestr.length(),filestr);
+
+  if (autorun!="null" && autorun.length()>0){
+    String cmd= autorun;
+    argvlist[1]=(char *)(cmd.c_str());
+    cmd_exec(2,argvlist); // for exeample "exec tb", will run autoexec.bas
+    Serial.printf("[main]:autorun(%d,%d) found(%s %s) \n",2,autorun.length(),argvlist[0],argvlist[1]);
+    return 2;
   }
   if (filestr.length()>0) { // autoexec.bas file exist
       cmd_exec(2,argvlist); // for exeample "exec tb", will run autoexec.bas
-      return true;
+      Serial.printf("[main]:autorun(%d) found(%s %s) \n",1,argvlist[0],argvlist[1]);
+      return 1;
   }
-  return false;
+  return 0;
 }
-int autocheck = 0; // 0 disable no autorun exoerment
+int autocheck = 1; // 0 disable, no autorun 
 void loop(){
 
 
@@ -153,7 +170,7 @@ void loop(){
   
   if (autocheck) { // not statble
      // run autoexec.bas 
-     autoexec_bas();
+     bool ret = autoexec_bas_js();
      autocheck = 0;
   // cmd_task(1,(char **)NULL); // testing for task
   }

@@ -20,39 +20,15 @@
  *	Author: spuggy0919, spuggy0919@gmail.com
  */
 #include "ESP32inc.h"
-
-int cmd_pwd(int argc,char * argv[]){
-    wsTextPrintln(currentDir());
-    return 0;
-}
+#include "cmdconfig.h"
 int cmd_cd(int argc,char * argv[]){
-  if (argc<=1) return -1;
+  if (argc<=1){
+      wsTextPrintln(changeDir(LittleFS,"."));
+      return 0;
+  } 
   wsTextPrintln(changeDir(LittleFS,argv[1]));
   return 0;
 
-}
-int cmd_fp(int argc,char * argv[]){
-  if (argc<=1) return -1;
-  wsTextPrintln(getfullpathFileOrDir(LittleFS, argv[1]));
-  return 0;
-  
-}
-int cmd_append(int argc,char * argv[]){
-  if (argc<=2) return -1;
-  appendFile(LittleFS, argv[1], argv[2]);
-  String data = readFile(LittleFS, argv[1]);
-  wsTextPrintln(data.c_str());
-   return 0;
- 
-}
-int cmd_write(int argc,char * argv[]){
-  if (argc<=2) return -1;
-      writeFile(LittleFS, argv[1], argv[2]);
-      String data = readFile(LittleFS, argv[1]);
-
-   wsTextPrintln(data.c_str());
-   return 0;
- 
 }
 int cmd_ls(int argc,char * argv[]){
   String path=String(argv[1]);
@@ -62,34 +38,17 @@ int cmd_ls(int argc,char * argv[]){
   return 0;
 
 }
-
-int cmd_ls0(int argc,char * argv[]){
-  String path=currentDir();
-  wsTextPrintln(listDir(LittleFS, path.c_str(), 1));
-    return 0;
-
-}
-
-int cmd_mkdir(int argc,char * argv[]){
+int cmd_rm(int argc,char * argv[]){
   if (argc<=1) return -1;
 #ifdef LITTLEFSFUN
-  createDir(LittleFS, argv[1]);
+  deleteFile(LittleFS, argv[1]);
 #else
-  g_fsio.mkdir( argv[1]);
+  return g_fsio.remove( argv[1]);
 #endif
     return 0;
 
 }
-int cmd_rmdir(int argc,char * argv[]){
-  if (argc<=1) return -1;
-#ifdef LITTLEFSFUN
-  removeDir(LittleFS, argv[1]);
-#else
-  g_fsio.rmdir( argv[1]);
-#endif
-    return 0;
 
-}
 int cmd_cat(int argc,char * argv[]){
   if (argc<=1) return -1;
 
@@ -118,17 +77,6 @@ int cmd_cat(int argc,char * argv[]){
     return 0;
 
 }
-int cmd_rm(int argc,char * argv[]){
-  if (argc<=1) return -1;
-#ifdef LITTLEFSFUN
-  deleteFile(LittleFS, argv[1]);
-#else
-  return g_fsio.remove( argv[1]);
-#endif
-    return 0;
-
-}
-
 int cmd_cp(int argc,char * argv[]){
   if (argc<=2) return -1;
   String data = readFile(LittleFS, argv[1]);
@@ -142,3 +90,68 @@ int cmd_mv(int argc,char * argv[]){
   ret = cmd_rm(argc,argv);
   return ret;
 }
+
+#ifdef CMD_FILE_EXT
+
+int cmd_pwd(int argc,char * argv[]){
+    wsTextPrintln(currentDir());
+    return 0;
+}
+
+int cmd_fp(int argc,char * argv[]){
+  if (argc<=1) return -1;
+  wsTextPrintln(getfullpathFileOrDir(LittleFS, argv[1]));
+  return 0;
+  
+}
+int cmd_append(int argc,char * argv[]){
+  if (argc<=2) return -1;
+  appendFile(LittleFS, argv[1], argv[2]);
+  String data = readFile(LittleFS, argv[1]);
+  wsTextPrintln(data.c_str());
+   return 0;
+ 
+}
+int cmd_write(int argc,char * argv[]){
+  if (argc<=2) return -1;
+      writeFile(LittleFS, argv[1], argv[2]);
+      String data = readFile(LittleFS, argv[1]);
+
+   wsTextPrintln(data.c_str());
+   return 0;
+ 
+}
+
+
+int cmd_ls0(int argc,char * argv[]){
+  String path=currentDir();
+  wsTextPrintln(listDir(LittleFS, path.c_str(), 1));
+    return 0;
+
+}
+
+int cmd_mkdir(int argc,char * argv[]){
+  if (argc<=1) return -1;
+#ifdef LITTLEFSFUN
+  createDir(LittleFS, argv[1]);
+#else
+  g_fsio.mkdir( argv[1]);
+#endif
+    return 0;
+
+}
+int cmd_rmdir(int argc,char * argv[]){
+  if (argc<=1) return -1;
+#ifdef LITTLEFSFUN
+  removeDir(LittleFS, argv[1]);
+#else
+  g_fsio.rmdir( argv[1]);
+#endif
+    return 0;
+
+}
+
+
+
+
+#endif // CMD_FILE_EXT

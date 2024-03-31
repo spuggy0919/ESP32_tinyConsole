@@ -33,26 +33,31 @@ COMMAND_TABLE commandTable[] = {
   "tb",     cmd_tinybasic,  "file.bas\t// tinyBasic run file",
   "tinybasic",  cmd_tinybasic,  "\t// tinyBasic interactive",
 #endif
-#ifdef JERRYSCRIPT
+#ifdef _LANG_JERRYSCRIPT_
+  "j9",   js_example9,   "\t\t// JerryScript Example 9 ",
+  "j10",   js_example10,   "\t\t// JerryScript Example 10 ",
   "jb",   cmd_JerryScript_Basic,   "\t\t// JerryScript Basic ",
   "js",   cmd_JerryScript_RunFile,   "\t\t// JerryScript runfile",
   "jerryscript",   cmd_JerryScript_Repl,   "\t// JerryScript Repl",
 #endif 
-  "pwd",    cmd_pwd,    "\t\t// current path",
   "cd",     cmd_cd,     "\t\t// change directory",
+  "ls",     cmd_ls,     "path  \t// list directory",
+  "rm",     cmd_rm,     "file  \t// remove file",
+  "cat",    cmd_cat,    "file  \t// diplay file content",
+  "mv",     cmd_mv,     "file1 file2 \t// rename file1 to file2",
+  "df",     cmd_df,     "\t\t// disk infomation",
+  "echo",   cmd_echo,   "msg   \t// echo message",
+
+#ifdef CMD_FILE_EXT
+  "pwd",    cmd_pwd,    "\t\t// current path",
   "fp",     cmd_fp,     "path \t// full path testing",
   // "ls0",    cmd_ls0,    "      // dummy list",
-  "df",     cmd_df,     "\t\t// disk infomation",
-  "ls",     cmd_ls,     "path  \t// list directory",
   "mkdir",  cmd_mkdir,  "path  \t// make directory ",
-  "rm",     cmd_rm,     "file  \t// remove file",
   "rmdir",  cmd_rmdir,  "path  \t// remove directory",
-  "cat",    cmd_cat,    "file  \t// diplay file content",
-  "echo",   cmd_echo,   "msg   \t// echo message",
   "write",  cmd_write,  "file msg \t// write message" ,
   "append", cmd_append, "file msg // append message",
   "cp",     cmd_cp,     "file1 file2 \t// copy file1 to file2",
-  "mv",     cmd_mv,     "file1 file2 \t// rename file1 to file2",
+#endif
 #ifdef CMD_TIME
   "time",   cmd_time,   "\t\t// display currnet time",
 #endif

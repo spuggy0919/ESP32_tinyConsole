@@ -31,178 +31,8 @@
  * @date March 19, 2024
  */
 #include "cmdconfig.h"
-#ifdef _TICKER_TASK_
-#include <Arduino.h>
-#include <queue>
-#include <mutex>
-#include <Ticker.h>
 
-    wsTaskMgr::wsTaskMgr() {
-        // Initialize ticker to call tick function every 1 second
-        ticker.attach(1, std::bind(&wsTaskMgr::tick, this));
-        ticker.begin();
-    }
-
-    ~wsTaskMgr::wsTaskMgr() {
-        // Stop the ticker on destruction
-        ticker.detach();
-        ticker.stop();
-    }
-
-    void wsTaskMgr::queueTaskInterval(const String& name, unsigned long interval, MAINPTR function) {
-        Task task = {name, TaskType::RUNINTERVAL, interval, 0, TaskStatus::READY, function};
-        mutex.lock();
-        tasks.push(task);
-        mutex.unlock();
-    }
-
-    void wsTaskMgr::queueTaskOnce(const String& name, unsigned long delay, MAINPTR function) {
-        Task task = {name, TaskType::RUNTIMEOUT, delay, 0, TaskStatus::WAIT, function};
-        mutex.lock();
-        tasks.push(task);
-        mutex.unlock();
-    }
-
-    void wsTaskMgr::startTask(Task& task) {
-        task.status = TaskStatus::RUNNING;
-        task.lastExecution = millis();
-        task.ret = task.function(task.argc,task.argv);
-    }
-
-    void wsTaskMgr::stopTask(Task& task) {
-        task.status = TaskStatus::STOPPED;
-    }
-
-    void wsTaskMgr::removeTask(const String& name) {
-        mutex.lock();
-        std::queue<Task> temp;
-        while (!tasks.empty()) {
-            Task task = tasks.front();
-            tasks.pop();
-            if (task.name != name) {
-                temp.push(task);
-            }
-        }
-        tasks = temp;
-        mutex.unlock();
-    }
-
-    void tick() {
-        unsigned long currentTime = millis();
-        mutex.lock();
-        while (!tasks.empty()) {
-            Task& task = tasks.front();
-            switch(task.taskType){
-                case taskType::RUNLOOP:
-                    if (task.status!=taskStatus::STOPPED) startTask(task);
-                break;
-                case taskType::RUNINTERVAL:
-                if (task.lastExecution==0||(millis()-task.lastExecution)>task.interval){
-                    startTask(task);
-                }else{
-                    task.status = taskStatus::READY;
-                }
-                break;
-                case taskType::RUNTIMEOUT:
-                if (task.status==WAIT){
-                    if (task.lastExecution==0) task.lastExecution=millis();
-                    if ((millis()-task.lastExecution)>task.interval) {
-                        startTask(task);
-                    }
-                }else if (task.status==taskStatus::READY||task.status==taskStatus::RUNNING){
-                    task.status=taskStatus::STOPPED;
-                }else{
-                    task.status=taskStatus::STOPPED;
-                }         
-                break;
-                case taskType::STOPPED:
-                break;
-            }
-            if (task.status == TaskStatus::READY) {
-                task.status = TaskStatus::RUNNING;
-                task.lastExecution = currentTime;
-                task.function();
-            } else if (task.status == TaskStatus::RUNNING && currentTime - task.lastExecution >= task.interval) {
-                task.lastExecution = currentTime;
-                task.function();
-            }
-            if (task.status == TaskStatus::STOPPED) {
-                tasks.pop();
-            } else {
-                break;
-            }
-        }
-        mutex.unlock();
-        yield();
-    }
-
-    String reportStatus() {
-        String report;
-        mutex.lock();
-        std::queue<Task> tempQueue = taskQueue; // Create a copy of the queue for iteration
-        mutex.unlock();
-        while (!tempQueue.empty()) {
-            Task task = tempQueue.front();
-            report+=task.name;
-            report+="\t"+task.TaskType;
-            Serial.print(", Status: ");
-            switch (task.status) {
-                case TaskStatus::WAIT:
-                    report+="\tWAIT";
-                    break;
-                case TaskStatus::READY:
-                    report+="\tREADY";
-                    break;
-                case TaskStatus::RUNNING:
-                    report+="\tRUNNING";
-                    break;
-                case TaskStatus::PENDING:
-                    report+="\tPENDING";
-                    break;                
-                case TaskStatus::STOPPED:
-                    report+="\tSTOPPED";
-                    break;
-            }
-            report+="\n";
-            tempQueue.pop();
-        }
-    }
-
-    void begin() {
-        ticker.start();
-    }
-
-    void end() {
-        ticker.stop();
-    }
-};
-
-TaskManager taskManager;
-
-// Example tasks
-void task1() {
-    Serial.println("Task 1 executed");
-}
-
-void task2() {
-    Serial.println("Task 2 executed");
-}
-
-// void setup() {
-//     Serial.begin(9600);
-
-//     // Queue tasks
-//     taskManager.queueTask("Task1", 1000, task1); // Queue task1 to run every 1 second
-//     taskManager.queueTaskOnce("Task2", 5000, task2); // Queue task2 to run once after 5 seconds
-
-//     // Start task manager
-//     taskManager.begin();
-// }
-
-// void loop() {
-//     // Your main loop code here
-// }
-#else // __FREERTOS_YASK__
+##ifdef  FREERTOS_TIMERTASK
 #include <Arduino.h>
 #include <FreeRTOS.h>
 #include <task.h>
@@ -229,77 +59,63 @@ public:
         // Cleanup tasks and resources on destruction
     }
 
-    void queueTask(const String& name, unsigned long interval) {
-        TaskHandle_t taskHandle;
-        xTaskCreate(taskFunction, name.c_str(), 2048, NULL, 1, &taskHandle);
-        mutex.lock();
-        taskQueue.push(taskHandle);
-        mutex.unlock();
-    }
+        // Task that simulates a periodic function call (setInterval equivalent)
+typedef void callback_t();
+struct timeInterval{
+    TickType_t tick;
+    callback_t   func;
+};
+typedef struct timeInterval *pTimer_t;
 
-    void queueTaskOnce(const String& name, unsigned long delay) {
-        TaskHandle_t taskHandle;
-        xTaskCreate(taskFunction, name.c_str(), 2048, NULL, 1, &taskHandle);
-        mutex.lock();
-        taskQueue.push(taskHandle);
-        mutex.unlock();
-    }
-
-    void startTask(TaskHandle_t taskHandle) {
-        vTaskResume(taskHandle);
-    }
-
-    void stopTask(TaskHandle_t taskHandle) {
-        vTaskSuspend(taskHandle);
-    }
-
-    void removeTask(const String& name) {
-        mutex.lock();
-        std::queue<TaskHandle_t> temp;
-        while (!taskQueue.empty()) {
-            TaskHandle_t taskHandle = taskQueue.front();
-            taskQueue.pop();
-            if (String(pcTaskGetTaskName(taskHandle)) != name) {
-                temp.push(taskHandle);
-            } else {
-                vTaskDelete(taskHandle); // Delete the task
-            }
+    void periodicFunction(void* parameters) {
+        pTimer_t p = (pTimer_t)parameters;
+        TickType_t interval = pdMS_TO_TICKS(p->ticks);
+        callback_t func = p->func;
+        while (1) {
+            // Perform the periodic operation here
+            func();
+            vTaskDelay(interval);
         }
-        taskQueue = temp;
-        mutex.unlock();
+    }
+    // Task that simulates a delayed function call (setTimeout equivalent)
+    void delayedFunction(void* parameters) {
+        pTimer_t p = (pTimer_t)parameters;
+        TickType_t interval = pdMS_TO_TICKS(p->ticks);
+        vTaskDelay((*(TickType_t*)parameters) / portTICK_PERIOD_MS);
+        // Perform the delayed operation here
+        callback_t func = p->func;
+
+    }
+    void setTimeout(unsigned int delayMs,callback_t callfunc) {
+            // Calculate the interval in ticks
+            TickType_t ticks = pdMS_TO_TICKS(intervalMs);
+            pTimer_t param ={pdMS_TO_TICKS(intervalMs),callfunc};
+
+        // Create a task to simulate the delayed function call
+        xTaskCreate(delayedFunction, "DelayedFunction", configMINIMAL_STACK_SIZE, &ticks, tskIDLE_PRIORITY + 1, NULL);
+    }
+    void setInterval(unsigned int intervalMs,callback_t callfunc) {
+        if (intervalTaskHandle == NULL) {
+            // Calculate the interval in ticks
+            TickType_t ticks = pdMS_TO_TICKS(intervalMs);
+            pTimer_t param ={pdMS_TO_TICKS(intervalMs),callfunc};
+            // Create a task for the periodic function call
+            xTaskCreate(periodicFunction, "PeriodicFunction", configMINIMAL_STACK_SIZE, param, tskIDLE_PRIORITY + 1, &intervalTaskHandle);
+        }
     }
 
-    void reportStatus() {
-        mutex.lock();
-        while (!taskQueue.empty()) {
-            TaskHandle_t taskHandle = taskQueue.front();
-            Serial.print("Task: ");
-            Serial.print(pcTaskGetTaskName(taskHandle));
-            Serial.print(", Status: ");
-            eTaskState taskState = eTaskGetState(taskHandle);
-            switch (taskState) {
-                case eReady:
-                    Serial.println("READY");
-                    break;
-                case eRunning:
-                    Serial.println("RUNNING");
-                    break;
-                case eSuspended:
-                    Serial.println("SUSPENDED");
-                    break;
-                case eDeleted:
-                    Serial.println("DELETED");
-                    break;
-                case eBlocked:
-                    Serial.println("BLOCKED");
-                    break;
-                case eInvalid:
-                    Serial.println("INVALID");
-                    break;
-            }
-            taskQueue.pop();
+    void clearInterval() {
+        if (intervalTaskHandle != NULL) {
+            vTaskDelete(intervalTaskHandle);
+            intervalTaskHandle = NULL;
         }
-        mutex.unlock();
+    }
+
+    String reportStatus() {
+        char taskListBuffer[512]; // Buffer to hold the task list information
+        // Generate the task list information
+        vTaskList(taskListBuffer);
+        return String(taskListBuffer);
     }
 
     void begin() {

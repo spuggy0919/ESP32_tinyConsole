@@ -171,21 +171,26 @@ void wsTextPrintln(String msg){
   return ; // DEBUG
 
 }
+#include <string.h>
 void wsTextPrintf(const char *fmt,...){
-  char buf[128];
+  int sizebuf = strlen(fmt)+100;
+  char *buf=(char *)malloc(sizebuf);
   va_list args;
   va_start(args, fmt);
-  vsnprintf(buf, sizeof(buf), fmt, args);
+  vsnprintf(buf, sizebuf, fmt, args);
   va_end(args);  
   wsTextPrintBase64(0,buf); // extension 
+  free(buf);
 }
 void wsMonitorPrintf(const char *fmt,...){
-  char buf[128];
+  int sizebuf = strlen(fmt)+100;
+  char *buf=(char *)malloc(sizebuf);
   va_list args;
   va_start(args, fmt);
-  vsnprintf(buf, sizeof(buf), fmt, args);
+  vsnprintf(buf, sizebuf, fmt, args);
   va_end(args);  
   wsTextPrintBase64noAck(1,buf); // extension 
+  free(buf);
 }
 
 // wi is dev, 0:terminal 1:monitor, msg with base64
@@ -199,12 +204,13 @@ void WSTransferMessage(int wi,String msg){
 }
 
 void _wsDevice(const char dev,const char *fmt,...){
-  char buf[128];
-  va_list args;
+  int sizebuf = strlen(fmt)+100;
+  char *buf=(char *)malloc(sizebuf);  va_list args;
   va_start(args, fmt);
-  vsnprintf(buf, sizeof(buf), fmt, args);
+  vsnprintf(buf, sizebuf, fmt, args);
   va_end(args);  
   wsTextPrintBase64(dev,buf); // extension 
+  free(buf);
 }
 
 static char obuf[2][BUFFERSIZE];
@@ -275,11 +281,11 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
         char c;
         for(int i = 0 ;i <msg.length() ;i++) {
             c=msg.charAt(i);
-              Serial.printf("R[%2x]\n ",c);
+              Serial.printf("[websocket]:R[%2x]\n ",c);
         }
 
       if (!wsSerial.push((const char*)(msg.c_str()), msg.length())){
-        Serial.printf("ERROR: WS:RECV: buffer full!");
+        Serial.printf("[websocket]:ERROR: WS:RECV: buffer full!");
       }
       wsTextPrintBase64noAck(1,"X:"+msg+"\n");
 
@@ -299,18 +305,18 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
         // wsTextPrintBase64noAck(1,"V:"+msg+":clientID="+String(ws_clientid)+"\n");
     }
     if (cmd == "T:"){ // touch
-        wsTextPrintBase64noAck(1,"T:"+msg+"\n");
+        // wsTextPrintBase64noAck(1,"T:"+msg+"\n");
         gTouchQueue.push(msg);
     }
     if (cmd == "M:"){ // mouse
-        wsTextPrintBase64noAck(1,"M:"+msg+"\n");
+        // wsTextPrintBase64noAck(1,"M:"+msg+"\n");
         gTouchQueue.push(msg);
     }
     if (cmd == "R:"){ // request from client 
         // WSTransferBufferFlush(0);
     }
     if (cmd == "P:"){ // request from client  PING PONG
-        wsTextPrintBase64noAck(1,"P:PONG");
+        // wsTextPrintBase64noAck(1,"P:PONG");
     }
   }
 }

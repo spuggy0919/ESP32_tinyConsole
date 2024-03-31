@@ -47,10 +47,13 @@ public:
     size_t push(const char *buf, int len); 
     char pop();
     bool popLine(char *buf, int *len); 
+    const char* classname="WebSocketSerial";
 private:
+    
     std::mutex wsTxMutex,wsRxMutex;
     std::queue<char> wsTxBuf;
     std::queue<char> wsRxBuf;
+    bool client_immediate=false;
 };
 #define WSSERIALQUEUESIZE 512
 extern WebSocketSerial wsSerial;

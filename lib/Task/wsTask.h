@@ -52,7 +52,11 @@ enum class TaskType{
     STOPPED
 };
 // Task structure
-struct Task {
+class Task{
+    public:
+        Task(){
+
+        }
     String          name;
     TaskType        taskType;
     int             ret;
@@ -62,12 +66,15 @@ struct Task {
     MAINPTR         function;
 };
 
+typedef void xTaskFuc(void *pvParameters);
+
 Class wsTaskMgr{
 public:
     wsTaskMgr();
     ~wsTaskMgr();
-    void queueTaskInterval(const String& name, unsigned long interval, MAINPTR function);
-    void queueTaskTimeout(const String& name, unsigned long Timeout, MAINPTR function);
+    void queueTaskSetInterval(const String& name, unsigned long interval, MAINPTR function);
+    void queueTaskClearInterval(const String& name);
+    void queueTaskSetTimeout(const String& name, unsigned long Timeout, MAINPTR function);
     void queueTaskRunLoop(const String& name, MAINPTR function);
     String reportStatus();
 private:

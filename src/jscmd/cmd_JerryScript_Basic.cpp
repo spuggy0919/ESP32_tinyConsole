@@ -1,9 +1,10 @@
 #include "ESP32inc.h"
 
 #include "cmdconfig.h"
-#ifdef JERRYSCRIPT
+#ifdef _LANG_JERRYSCRIPT_
 
 #include "Arduino_Portenta_JerryScript.h"
+#include "jswrap_tc.h"
 
 // REDIRECT_STDOUT_TO(Serial);
 
@@ -35,7 +36,7 @@ int cmd_JerryScript_Basic(int argc,char* argv[]) {
   jerry_cleanup ();
   return 0;
 }
-#endif //JERRYSCRIPT
+#endif //_LANG_JERRYSCRIPT_
 // void loop() {
 //   delay(1000);
 // }

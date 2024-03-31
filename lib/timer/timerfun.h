@@ -19,6 +19,7 @@ void timerSetTest();
 String timerCurrent();
 String timerGetEpoch();
 void timerSetEpoch(unsigned long epoch);
+extern ESP32Time rtc; // UTC+8
 #endif
 
 #endif // __TIMERFUN_H__ 
