@@ -1,5 +1,5 @@
 [中文](./讀我.md)
-## ESP32 tinyConsole with TinyBasic
+## ESP32 tinyConsole with TinyBasic or JerryScript
 This firmware with web browser is a console, can upload, download, run TinyBasic on ESP32 board online. User can learn TinyBasic Language. 
 ESP32 Web Server (tinyConsole) use me-no-dev/ESPAsyncWebServer, bases on WebSocket to implement bidirection serial port.
 
@@ -26,7 +26,7 @@ Currently, tinyConsole only supports DigitIO, Timer, FileIO, and WebSocket Seria
 
 (GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007)
 
-## JerrySript LICENSE:
+## JerryScript LICENSE:
 JerryScript library is modified from the  fork below
 https://github.com/dmazzella/Arduino_Portenta_JerryScript
 
