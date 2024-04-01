@@ -2,7 +2,7 @@ JerryScript is a lightweight Javascript interpreter, it only has language capabi
 the IO and library function still need C++ wrapper to bridge.
 
 #### Where does the bridge come from ?
-1.iot.js has its own bridge, he build a lot of iotjs_modules-XXX in C language, these become MCU IO layer API, then iotjs integrate JerryScript and porting. A lot of js objects are defined as IO libraries, i.e. gpio, adc, ble, ...
+1. iot.js has its own bridge, he build a lot of iotjs_modules-XXX in C language, these become MCU IO layer API, then iotjs integrate JerryScript and porting. A lot of js objects are defined as IO libraries, i.e. gpio, adc, ble, ...
 2. For JerryScript only, we need to created these wrappers, here we select Arduino platform, give a example dht sensor, and my console io.
 
    If you want more functions, you can integrate iotjs or wrap by your own  as my sample code.
@@ -92,7 +92,7 @@ print("Milli=",now.getMilliseconds()); // Get the milliseconds
 print("Time =",now.getTime());          // Get the number of milliseconds since the Unix epoch
 print("toStr=",now.toString());         // Get a string representation of the Date object
 ```
-#### Serial IO wrap as below, exaple sio.js
+#### Serial IO wrap as below, example sio.js
     JERRYX_PROPERTY_FUNCTION ("name", js_wsSerial_classname),
     JERRYX_PROPERTY_FUNCTION ("begin", js_wsSerial_begin),
     JERRYX_PROPERTY_FUNCTION ("flush", js_wsSerial_flush),

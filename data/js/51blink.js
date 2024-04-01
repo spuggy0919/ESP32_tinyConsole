@@ -1,15 +1,14 @@
-
+let pin = require('gpio');
+let sio = require('sio');
 var out=0;
 function blinkToggle(){
     out = 1-out;
-    digitalWrite(LED_BUILTIN,out);
+    pin.digitalWrite(pin.LED_BUILTIN,out);
     print((out==1) ? "ON":"OFF");
 }
 
 function setup(){
-    LED_BUILTIN = 2;
-    OUTPUT = 3;
-    pinMode(LED_BUILTIN,OUTPUT); 
+    pin.pinMode(pin.LED_BUILTIN,pin.OUTPUT); 
 }
 function loop(){
     blinkToggle();
@@ -19,5 +18,5 @@ setup();
 var b = false;
 while(!b) {
     loop();
-    b=wsSerial.escape();
+    b=sio.escape();
 }

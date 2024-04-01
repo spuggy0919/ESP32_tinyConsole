@@ -31,6 +31,10 @@
 
 #ifdef _LANG_JERRYSCRIPT_
 
+
+String checkExtension(const char *filename);
+bool RunScriptsFile(const char *path);
+
 // print, setInterval, setTimeout, clearInterval,clearTimeout;
 jerry_value_t register_module_class();
 

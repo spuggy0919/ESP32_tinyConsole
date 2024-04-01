@@ -6,14 +6,7 @@
 #include "Arduino_Portenta_JerryScript.h"
 #include "jswrap_tc.h"
 
-String checkExtension(const char *filename){
-        String fname = String(filename);
-        String dot =".";
-        if (fname.indexOf(dot) == -1) {
-            fname+=".js";
-        }
-        return fname;
-}
+
 int  cmd_JerryScript_RunFile(int argc,char* argv[]) {
 
 //   wsTextPrintf("Arduino Core API: %d.%d.%d\n", ARDUINO/1000, ARDUINO/100%10, ARDUINO%100);
@@ -43,13 +36,7 @@ int  cmd_JerryScript_RunFile(int argc,char* argv[]) {
   jerryxx_register_arduino_library(); //in jswarp_tc
 
     for(int i=1;i<argc;i++){
-        String fname_ext = checkExtension(argv[i]);
-        jerry_size_t result = jerryx_source_exec_script ((const char *)fname_ext.c_str());
-            if (jerry_value_is_error(result)) {
-                JERRYX_ERROR_MSG("exec: %d\n", jerry_value_is_error(result));
-                return 2;
-            }
-        jerry_value_free(result);
+        if (!RunScriptsFile(argv[i])) return 2;
     }
 
   jerry_cleanup();

@@ -26,6 +26,27 @@
 
 
 #include "jswrap_tc.h"
+String checkExtension(const char *filename){
+        String fname = String(filename);
+        String dot =".";
+        if (fname.indexOf(dot) == -1) {
+            fname+=".js";
+        }
+        return fname;
+}
+
+bool RunScriptsFile(const char *path){
+    String fname_ext = checkExtension(path);
+    jerry_size_t result = jerryx_source_exec_script ((const char *)fname_ext.c_str());
+        if (jerry_value_is_error(result)) {
+            JERRYX_ERROR_MSG("exec: %d\n", jerry_value_is_error(result));
+            return false;
+        }
+    jerry_value_free(result);
+    return true;
+}
+
+
 void jerryxx_register_arduino_library(){
   /* Register the print function in the global object */
      jerryxx_register_extra_api(); 
@@ -38,6 +59,7 @@ void jerryxx_register_arduino_library(){
      /*filelib File*/
      js_tcfilelib_classobj_wraper();
 
+
 #ifdef CMD_DHT
      /*mqtt*/
      js_mqtt_classobj_wraper();
@@ -47,6 +69,9 @@ void jerryxx_register_arduino_library(){
      js_dht_classobj_wraper();
 #endif
     /* library */
+
+    /* module*/
+    if (!RunScriptsFile("/js/modules/module.js")) return; // require('module');
 
 }
 

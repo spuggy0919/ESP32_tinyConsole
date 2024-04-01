@@ -40,15 +40,19 @@ jerryx_repl_with_cmd (const char *prompt_p)
   int repl_ret;
   jerry_value_t print_result;
   jerry_value_t script;
+
+
   while (true)
   {
     jerryx_print_string (prompt_p);
 
     jerry_size_t length;
     jerry_char_t *line_p = jerry_port_line_read (&length);
-    
+
     repl_ret = repl_command_check(line_p);
-    if (repl_ret <= REPL_NULL) {return;}
+    if (repl_ret <= REPL_NULL) {
+      return;  // REPL_EXIT < REPL_NULL
+    }
     if (repl_ret == REPL_CONTINUE) {continue;}
 
     if (!jerry_validate_string (line_p, length, JERRY_ENCODING_UTF8))

@@ -15,15 +15,22 @@ function getline(){
     s=sio.readline();
     return s;
 }
+ 
 
 function writeline(s){ //wsSerial.write write string to ws tx queue buffer
     return sio.writestring(s);
 }
-
-console.log("Hit by key testing(esc,ctrl-c,'q','Q')...\n");
-console.log(kbhit());
-console.log("getline...");
-str = getline();
-console.log('\n',str,"\n");
-console.log("writeline...");
-writeline("中文ABC測試\n");
+sio.kbhit = kbhit();
+sio.getc = getc();
+sio.writeline = writeline(s);
+ 
+if (module === undefined) {
+    print("Hit by key testing(esc,ctrl-c,'q','Q')...\n");
+    print(kbhit());
+    print("getline...");
+    str = getline();
+    print('\n',str,"\n");
+    print("writeline...");
+    writeline("中文ABC測試\n");
+}
+module.exports = sio;

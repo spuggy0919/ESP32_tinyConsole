@@ -1,14 +1,15 @@
+let dht = require('dht');
 dht.setup(17);
 switch(dht.getStatus()) {
     case 0: // NORMAL;
-        print("Status Normal");
+        console.log("Status Normal");
         break;
     case 1: // timeout
-        print("Status Timeout");
+        console.log("Status Timeout");
         break;
     case 2: // 
-    print("Status Checksum error");
+    console.log("Status Checksum error");
         break;
 }
-print("temperature=",dht.getTemperature());
-print("humitity=",dht.getHumidity());
+console.log("temperature=",dht.getTemperature());
+console.log("humitity=",dht.getHumidity());

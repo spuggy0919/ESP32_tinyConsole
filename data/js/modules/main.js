@@ -1,4 +1,4 @@
-// main.js
+// main.js example to use addmodule
 
 // Require the module using the provided module loader
 const addmodule = require('addmodule');

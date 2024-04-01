@@ -1,3 +1,4 @@
+let ctx = require('canvas');
 // Function to convert a hex color code to an unsigned integer color
 function hexToUintColor(hexColor) {
     // Remove the "#" symbol from the hex color code
@@ -37,14 +38,14 @@ const vga_pallete = [
 const uintColor = hexToUintColor('#FF00FFFF');
 //清螢幕
 color =vga_pallete[0]>>>0;
-Canvas.drawPenColor(color); //blue
-Canvas.drawClearScr();
+ctx.drawPenColor(color); //blue
+ctx.drawClearScr();
 var i=0;
 for(y=0;y<480;y+=80){
     for(x=0;x<640;x+=80){
         color=vga_pallete[i]>>>0;
-        Canvas.drawPenColor(color); //blue
-        Canvas.drawFRect(x,y,80,80); //blue
+        ctx.drawPenColor(color); //blue
+        ctx.drawFRect(x,y,80,80); //blue
         i=(i+1)%16;
 
     }
