@@ -295,7 +295,7 @@ String listDir(fs::FS &fs, const char * dirname, uint8_t levels){
     String fdir = checkPath;
     if (fdir == "") return "";
     levellist = levels;
-    levels = 0;
+    levels = 1;
     dirlistContent = "directory: "+ fdir +"\r\n";
     listDir1(fs,  fdir.c_str(), levels);
     // Serial.printf("Listing done \r\n");
