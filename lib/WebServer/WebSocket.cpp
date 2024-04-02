@@ -313,10 +313,10 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
         gTouchQueue.push(msg);
     }
     if (cmd == "R:"){ // request from client 
-        // WSTransferBufferFlush(0);
+        WSTransferBufferFlush(0);
     }
     if (cmd == "P:"){ // request from client  PING PONG
-        // wsTextPrintBase64noAck(1,"P:PONG");
+        wsTextPrintBase64noAck(1,"P:PONG");
     }
   }
 }

@@ -7,6 +7,8 @@
 /* include your librar and add to ini library depe*/
 
 const char* _mqtt_server = "broker.mqtt-dashboard.com";
+const IPAddress _mqtt_clientip(192, 168, 1, 149);
+IPAddress _mqtt_serverip(18,198,222,5); //18.198.222.5
 WiFiClient espClient;
 PubSubClient client(espClient);
 unsigned long lastMsg = 0;
@@ -36,7 +38,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void reconnect() {
   // Loop until we're reconnected
-  while (!client.connected()) {
+  while (!wsSerial.escape()&&!client.connected()) {
     wsTextPrintf("Attempting MQTT connection...");
     // Create a random client ID
     String clientId = "ESP8266Client-";
@@ -60,12 +62,19 @@ void reconnect() {
 
 void cmd_mqtt_setup(){
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+
   // mqtt client
    randomSeed(micros());
-  client.setServer(_mqtt_server, 1883);
+  client.setServer(_mqtt_serverip, 1883);
   client.setCallback(callback);
 }
 int cmd_mqtt(int argc,char *argv[]){
+    if (argc==2){
+       wsTextPrintf("Usage for example mqtt serverip_192.168.1.1");
+       String str = String(argv[1]);
+       _mqtt_serverip.fromString(str);
+       wsTextPrintf("new serverip %s",argv[1]);
+    }
     cmd_mqtt_setup();
     while(!wsSerial.escape()){ // loop
         if (!client.connected()) {

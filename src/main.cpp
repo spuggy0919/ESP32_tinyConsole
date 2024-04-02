@@ -37,6 +37,7 @@
 #include "ESP32inc.h"
 #include "interpreter.h"
 #include "WifiSetting.h"
+#include "cmdconfig.h"
 
 #undef LOOP_SSE_TEST
 
@@ -120,8 +121,8 @@ int cmd_exec(int argc, char *argv[]);
 #define AUTORUN "tb /basic/autoexec.bas"
 #define AUTORUNFILE "/basic/autoexec.bas"
 #else 
-#define AUTORUN "js /js/start.js"
-#define AUTORUNFILE "/js/start.js"
+#define AUTORUN "js /js/index.js" // use same as node.js entry with index.js
+#define AUTORUNFILE "/js/index.js"
 #endif
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 char *argvlist[]={
@@ -147,12 +148,23 @@ int autoexec_bas_js(){
   if (autorun!="null" && autorun.length()>0){
     String cmd= autorun;
     argvlist[1]=(char *)(cmd.c_str());
-    cmd_exec(2,argvlist); // for exeample "exec tb", will run autoexec.bas
+#ifdef STARTUP_DIRECT_RUNAUTO     
+      InterpreterExcute(&cmd);
+      interpreterState =  INTERPRETER_READY; // to skip banner
+#else
+      cmd_exec(2,argvlist); // for exeample "exec tb", will run autoexec.bas
+#endif
     Serial.printf("[main]:autorun(%d,%d) found(%s %s) \n",2,autorun.length(),argvlist[0],argvlist[1]);
     return 2;
   }
-  if (filestr.length()>0) { // autoexec.bas file exist
+  if (filestr.length()>0) { // autoexec file exist
+      String cmd=String(AUTORUN);
+#ifdef STARTUP_DIRECT_RUNAUTO     
+      InterpreterExcute(&cmd);
+      interpreterState =  INTERPRETER_READY; // to skip banner
+#else
       cmd_exec(2,argvlist); // for exeample "exec tb", will run autoexec.bas
+#endif
       Serial.printf("[main]:autorun(%d) found(%s %s) \n",1,argvlist[0],argvlist[1]);
       return 1;
   }
@@ -173,8 +185,9 @@ void loop(){
      bool ret = autoexec_bas_js();
      autocheck = 0;
   // cmd_task(1,(char **)NULL); // testing for task
+  }else {
+     interpreter();
   }
-   interpreter();
 
 
  

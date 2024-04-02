@@ -5,7 +5,8 @@ var LOW = 0;
 var HIGH= 1;
 var OUTPUT = 3;
 
-var _mqtt_server = "broker.mqtt-dashboard.com";
+// var _mqtt_server = "broker.mqtt-dashboard.com";
+var _mqtt_serverip = "18.198.222.5";
 var value = 0;
 var lastMsg = 0;
 var msg;
@@ -47,7 +48,7 @@ function generateRandomHex() {
 
 function reconnect() {
     // Loop until we're reconnected
-    while (!client.connected()) {
+    while (!wsSerial.escape()&&!client.connected()) {
       print("Attempting MQTT connection...");
       // Create a random client ID
       let  clientId = "ES32Client-"+ generateRandomHex(); //    clientId += String(Math.random(0xffff), HEX);
@@ -71,7 +72,7 @@ function cmd_mqtt_setup(){
     pinMode(LED_BUILTIN, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
     // mqtt client
     // Math.random(micros()); TODO no seed function
-    client.setServer(_mqtt_server, 1883);
+    client.setServer(_mqtt_serverip, 1883); // dns fail use ip , server not work
     client.setCallback(callback);
   }
 function cmd_mqtt(){

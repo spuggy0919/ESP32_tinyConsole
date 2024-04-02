@@ -98,7 +98,7 @@ function wsPingRequest(){
     if (!websocket) return;
     // if (websocket.readyState!==1) return;
     // const binaryData = new Uint8Array([0x01, 0x02, 0x03]).buffer;
-    // // Send the binary data as a ping frame
+    // Send the binary data as a ping frame
     // socket.send(binaryData);
     sendMessage("P:PING");
     // Set up a new promise for the reply with a timeout of 5 seconds

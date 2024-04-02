@@ -151,6 +151,25 @@ JERRYXX_DECLARE_FUNCTION(wsSerial_writestring){
 
   return jerry_number(wsSerial.write(buf,sizeof(buf)-1));
 } /*js_wsSerial_write*/
+JERRYXX_DECLARE_FUNCTION(wsSerial_printf){
+  JERRYX_UNUSED(call_info_p);
+  JERRYXX_ON_ARGS_COUNT_THROW_ERROR_SYNTAX(args_cnt != 1, "Wrong arguments count");
+  char buf[128];
+  uint32_t  len=128;  
+  const jerryx_arg_t mapping[] =
+      {
+      jerryx_arg_utf8_string(buf, sizeof(buf), JERRYX_ARG_NO_COERCE, JERRYX_ARG_REQUIRED),
+      // jerryx_arg_uint32(&len, JERRYX_ARG_CEIL, JERRYX_ARG_NO_CLAMP, JERRYX_ARG_NO_COERCE, JERRYX_ARG_REQUIRED),
+      };
+
+  const jerry_value_t rv = jerryx_arg_transform_args(args_p, args_cnt, mapping, JERRYXX_ARRAY_SIZE(mapping));
+  if (jerry_value_is_exception(rv)){
+    return rv;
+  }
+  wsTextPrintf(buf);
+  return jerry_undefined();
+} /*js_wsSerial_printf*/
+
 //     char peek();
 JERRYXX_DECLARE_FUNCTION(wsSerial_peek){
   JERRYX_UNUSED(call_info_p);
@@ -203,6 +222,7 @@ bool js_wsSerial_classobj_wraper(){
     JERRYX_PROPERTY_FUNCTION ("escape", js_wsSerial_escape),
     // JERRYX_PROPERTY_FUNCTION ("writebyte", js_wsSerial_write),
     JERRYX_PROPERTY_FUNCTION ("writestring", js_wsSerial_writestring),
+    JERRYX_PROPERTY_FUNCTION ("print", js_wsSerial_printf),
     JERRYX_PROPERTY_FUNCTION ("peek", js_wsSerial_peek),
     // JERRYX_PROPERTY_FUNCTION ("push", js_wsSerial_push),
     // JERRYX_PROPERTY_FUNCTION ("pop", js_wsSerial_pop),

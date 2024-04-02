@@ -104,7 +104,7 @@ void tc_Banner(){
 
 #endif
         // wsSerial.getChar();
-        Banner_Tc();
+        // Banner_Tc();
         wsTextPrintf("\x1b[2J"); // cls
         wsTextPrintf("tinyConsole %s\n",TINYCONSOLEVSTR.c_str());
         wsTextPrintf("Copyright (c) 2022-2024 spuggy0919\n");

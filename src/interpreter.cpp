@@ -23,11 +23,7 @@
  */
 #include "interpreter.h"
 
-#define INTERPRETER_STARTUP 0
-#define INTERPRETER_READY 1
-#define INTERPRETER_WAITING 2
-#define INTERPRETER_RUNNING 3
-#define INTERPRETER_DONE 4
+
 
 
 
@@ -148,12 +144,11 @@ int interpreter() {
     switch(interpreterState) {
       case INTERPRETER_STARTUP:
            if (!WebWSConnect()) break;
-           tc_Banner();
-
+          tc_Banner();
           interpreterCmdBuf = "";
           interpreterState = INTERPRETER_WAITING;
           break;
-       case INTERPRETER_READY:
+      case INTERPRETER_READY:
           tc_Prompt();
 
           interpreterCmdBuf = "";

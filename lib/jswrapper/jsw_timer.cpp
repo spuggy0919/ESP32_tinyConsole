@@ -214,14 +214,14 @@ JERRYXX_DECLARE_FUNCTION(set_interval)
   
 } /* js_set_interval */
 
-JERRYXX_DECLARE_FUNCTION(millis)
-{
-  JERRYX_UNUSED(call_info_p);
-  JERRYX_UNUSED(args_p);
-  JERRYXX_ON_ARGS_COUNT_THROW_ERROR_SYNTAX(args_cnt != 0, "Wrong arguments count");
+// JERRYXX_DECLARE_FUNCTION(millis) defined in Jerryscipt lib
+// {
+//   JERRYX_UNUSED(call_info_p);
+//   JERRYX_UNUSED(args_p);
+//   JERRYXX_ON_ARGS_COUNT_THROW_ERROR_SYNTAX(args_cnt != 0, "Wrong arguments count");
 
-  return jerry_number(millis()); // ardunino millis incorrect??
-} /* js_millis */
+//   return jerry_number(millis()); // ardunino millis incorrect??
+// } /* js_millis */
 
 
 
@@ -269,7 +269,7 @@ bool jerryxx_register_extra_api(void)
   /* Register the clearInterval function in the global object */
   JERRYXX_BOOL_CHK(jerryx_register_global("clearInterval", js_delete_timer));
 
-  JERRYXX_BOOL_CHK(jerryx_register_global("millis", js_millis));
+//   JERRYXX_BOOL_CHK(jerryx_register_global("millis", js_millis));
 
 cleanup:
   return ret;

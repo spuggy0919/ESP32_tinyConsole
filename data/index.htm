@@ -497,7 +497,7 @@
             // }
             function clearTextarea(byid) {
               document.getElementById(byid).value = "";
-              // document.getElementById("consolelog").value = ""; 
+              document.getElementById("consolelog").value = ""; 
               wsSentChar("\n"); // enter for terminal
             }
             function CTRLCKey() {             
@@ -534,6 +534,17 @@
                 // console.log(seq.hexEncode());
                 if (eschex == "1b5b324a") {
                   // console.log("ESC Found");
+                  clearTextarea('terminal'); 
+                  wsSentChar("\r"); // clear screen sent enter
+                  return true;
+                }
+                if (eschex == "1b5b306d") { //ESC[8m]
+                  enableCanvas(true);
+                  return true;
+                }
+                if (eschex == "1b5b386d") { //ESC[8m]
+                  enableCanvas(false);
+                  clearTextarea('terminal'); 
                   wsSentChar("\r"); // clear screen sent enter
                   return true;
                 }

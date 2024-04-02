@@ -40,7 +40,13 @@
 #define COMMAND_ARG1_WILDCARD_FOUND  COMMAND_OPTION(4)
 #define COMMAND_ARG2_WILDCARD_FOUND  COMMAND_OPTION(4)
 
-
+#define INTERPRETER_STARTUP 0
+#define INTERPRETER_RUNSTARTUP 1
+#define INTERPRETER_READY 1
+#define INTERPRETER_WAITING 2
+#define INTERPRETER_RUNNING 3
+#define INTERPRETER_DONE 4
+extern int interpreterState;
 
 void parsercmdline(String line);
 void wsTextPrintln(String msg);

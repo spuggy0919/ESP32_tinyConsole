@@ -33,11 +33,11 @@ extern PubSubClient client; //in cmd_mqtt
 // 1.client.setServer(_mqtt_server, 1883);
 JERRYXX_DECLARE_FUNCTION(mqttclient_setserver){ //1
   JERRYX_UNUSED(call_info_p);
-  char server_str[80]; //2
+  char serverip_str[20]; //2
   uint16_t mqttport=1883;
   const jerryx_arg_t mapping[] = //3
       {
-    jerryx_arg_string (server_str, sizeof (server_str), JERRYX_ARG_NO_COERCE, JERRYX_ARG_REQUIRED),
+    jerryx_arg_string (serverip_str, sizeof (serverip_str), JERRYX_ARG_NO_COERCE, JERRYX_ARG_REQUIRED),
     jerryx_arg_uint16(&mqttport, JERRYX_ARG_CEIL, JERRYX_ARG_NO_CLAMP, JERRYX_ARG_NO_COERCE, JERRYX_ARG_OPTIONAL),
       };
   const jerry_value_t rv = jerryx_arg_transform_args(args_p, args_cnt, mapping, JERRYXX_ARRAY_SIZE(mapping));
@@ -45,8 +45,13 @@ JERRYXX_DECLARE_FUNCTION(mqttclient_setserver){ //1
     return rv;
   }
   JERRYXX_ON_ARGS_COUNT_THROW_ERROR_SYNTAX((args_cnt != 1 && args_cnt != 2 ) , "Wrong arguments count");  //4
-   Serial.printf("[jsw_mqtt]:%s,%d\n",server_str,mqttport);
-   client.setServer(server_str,mqttport); //5
+   Serial.printf("[jsw_mqtt]:%s,%d\n",serverip_str,mqttport);
+   IPAddress _mqtt_serverip(18,198,222,5);
+   String ipstr = String(serverip_str);
+   if (ipstr != "") {
+      _mqtt_serverip.fromString(ipstr);
+      client.setServer(_mqtt_serverip,mqttport); //5
+   }
   return jerry_undefined();
 } /*js_mqttclient_setserver*/ //6
 

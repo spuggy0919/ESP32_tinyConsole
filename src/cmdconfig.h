@@ -21,6 +21,12 @@
 /* wsTask manager */
 // #define FREERTOS_TIMERTASK // setTimeout setInterval clearInterval
 // device or APP config
+
+// direct running autorun for js use index.js 
+// undef will use task background autorun, interpreter shell will life, but interference 
+// the backgroup autorun task, still no idea to solve this
+#define STARTUP_DIRECT_RUNAUTO 
+
 #define  CMD_FILE_EXT
 #define CMD_MQTT
 #define CMD_DHT

@@ -3,7 +3,7 @@
 This firmware with web browser is a console, can upload, download, run TinyBasic on ESP32 board online. User can learn TinyBasic Language. 
 ESP32 Web Server (tinyConsole) use me-no-dev/ESPAsyncWebServer, bases on WebSocket to implement bidirection serial port.
 
-Now, JerryScript Intepreter is option. 
+Now, JerryScript Interpreter is option. 
 
 ### Functions
   
@@ -142,8 +142,9 @@ WebServerGPIOControl Starting...
 ```
 %dl hello.bas [enter]
 ```
-## TINYBASIC
-####  Run TinyBasic interpreter, use "TinyBasic" or "tb", then '>' in Tinybasic Interactive mode.
+### Shell instructions 
+#### TINYBASIC
+Run TinyBasic interpreter, use "TinyBasic" or "tb", then '>' in Tinybasic Interactive mode.
 ```
 %TinyBasic hello.bas [enter] // interactive mode use TinyBasic
 ```
@@ -183,12 +184,21 @@ Blink example
 ```
 %tb blinkwod.bas
 ```
-## JERRYSCRIPT
+#### JERRYSCRIPT
 ```
 %cd js
 %ls                 // list all example
 % js 0time.js       // run js file Date object
 % je [enter]        // JS REPL mode
+```
+### AUTORUN
+use autorun to replace Interpreter，you can customize power on，system default check "autoexec.bas" for tinybasic or "index.js" for Jerryscript, or use config autorun key。
+```
+// for Tinybasic 
+%export autorun "tb /basic/autoexec.bas" // run basic use absolute path
+// for Tinybasic 
+%export autorun "js /js/41graphics.js"   // js start up run scripts
+%export                                  // view exports
 ```
 ## Demo & graphics
 ![graphics](png/graphics.jpeg)
