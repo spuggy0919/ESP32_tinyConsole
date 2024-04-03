@@ -536,17 +536,17 @@
                   // console.log("ESC Found");
                   clearTextarea('terminal'); 
                   wsSentChar("\r"); // clear screen sent enter
-                  return true;
+                  return true;  
                 }
                 if (eschex == "1b5b306d") { //ESC[8m]
                   enableCanvas(true);
-                  return true;
+                  return true;  
                 }
                 if (eschex == "1b5b386d") { //ESC[8m]
                   enableCanvas(false);
-                  clearTextarea('terminal'); 
+                  // clearTextarea('terminal'); 
                   wsSentChar("\r"); // clear screen sent enter
-                  return true;
+                  return true;  
                 }
                 return false;
             }
@@ -556,7 +556,7 @@
                 // console.log("terminal");
                 // console.log(inmsg);
                 if (checkEscCommand(inmsg)) { // clear screen
-                   document.getElementById("terminal").value = "";
+                  //  document.getElementById("terminal").value = "";
                 }else{
   
 

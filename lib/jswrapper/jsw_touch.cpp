@@ -108,7 +108,7 @@ bool js_touch_classobj_wraper(){  //1 a)modified func name and b) define in .h c
   bool ret = false;
   // Register initialization function
   jerryx_property_entry methods[] ={ //2 methods
-    JERRYX_PROPERTY_FUNCTION ("name", js_touch_classname),
+    JERRYX_PROPERTY_STRING_SZ ("id", "touch"),
     JERRYX_PROPERTY_FUNCTION ("begin", js_touch_begin),
     JERRYX_PROPERTY_FUNCTION ("attach", js_touch_attach),
     JERRYX_PROPERTY_FUNCTION ("event", js_touch_getevent),

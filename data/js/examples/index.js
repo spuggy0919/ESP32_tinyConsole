@@ -37,7 +37,7 @@
  *  3. if autorun exit, or non autorun mode, the default shell interpreter will run.
  * 
  * @classname none
- * @instance 
+ * @instance none
  * 
  * @date Apirl 3, 2024
  */

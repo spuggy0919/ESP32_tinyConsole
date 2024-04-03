@@ -28,5 +28,11 @@ bool WiFiSTAAutoIP();
 bool WiFiSTAStaticIP(String ssid,String pass,String ip, String gateway);
 bool WiFiAP();
 bool WiFimDNS();
+// wifi status
+String WifiLocalIP();
+String WifiSSID();
+long WifiRSSI();
+int WifiMode();
+
 
 #endif

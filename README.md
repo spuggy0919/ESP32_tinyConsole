@@ -104,7 +104,10 @@ You also can set it in console mode, use export command.
 {"ssid":"","password":""}
 ```
 Or later use CONSOLE command "export" to setup to STA mode. For example, below SSID ABCD password 12345678
+**NOTICE** config.json should be located at root directory, before export, make sure your working directory.
 ```
+%cd /                       // check it is root
+/
 %export ssid ABCD           // set SSID
 %export password 12345678   // set password
 %export                     // get settings

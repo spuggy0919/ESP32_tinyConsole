@@ -82,6 +82,7 @@ bool js_dht_classobj_wraper(){
           // Register initialization function
  jerryx_property_entry methods[] =
   {
+    JERRYX_PROPERTY_STRING_SZ ("id", "dht"),
     JERRYX_PROPERTY_FUNCTION ("setup", js_dht_init),
     JERRYX_PROPERTY_FUNCTION ("getStatus", js_dht_get_status),
     JERRYX_PROPERTY_FUNCTION ("getTemperature", js_dht_get_temperature),

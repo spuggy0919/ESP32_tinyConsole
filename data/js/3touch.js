@@ -100,4 +100,5 @@ while (!k) {
     evt = touch.event();
     touchAttachlast = touchAttachnow; 
 }
+sio.print("\x1b[8m"); // turnoff graphics canvas esc only esc[2J esc[0m esc[8m 
 

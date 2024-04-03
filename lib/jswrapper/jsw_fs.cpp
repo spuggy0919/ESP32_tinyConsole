@@ -274,7 +274,7 @@ bool js_tcfilelib_classobj_wraper(){
   bool ret = false;
           // Register initialization function
   jerryx_property_entry methods[] ={
-    JERRYX_PROPERTY_FUNCTION ("name", js_fs_classname),
+    JERRYX_PROPERTY_STRING_SZ ("id", "fs"),
     JERRYX_PROPERTY_FUNCTION ("df", js_fs_info),
     JERRYX_PROPERTY_FUNCTION ("cd", js_fs_cd),
     JERRYX_PROPERTY_FUNCTION ("ls", js_fs_ls),

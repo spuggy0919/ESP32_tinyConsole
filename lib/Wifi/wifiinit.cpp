@@ -164,3 +164,34 @@ String mac = WiFi.macAddress();
   }
   return true;
 }
+
+String WifiLocalIP(){
+    return  WiFi.localIP().toString();
+}
+String WifiSSID(){
+    return WiFi.SSID();
+}
+long WifiRSSI(){
+    return WiFi.RSSI();
+}
+int WifiMode(){
+    return WiFi.getMode();
+}
+// Serial.print("WiFi mode: ");
+//   switch (WiFi.getMode()) {
+//     case WIFI_OFF: //0
+//       Serial.println("OFF");
+//       break;
+//     case WIFI_STA: //1
+//       Serial.println("STA (Station)");
+//       break;
+//     case WIFI_AP: //2
+//       Serial.println("AP (Access Point)");
+//       break;
+//     case WIFI_AP_STA:
+//       Serial.println("AP_STA (Access Point & Station)");
+//       break;
+//     default:
+//       Serial.println("Unknown");
+//       break;
+//   }

@@ -107,6 +107,7 @@ const jsFiles = {
 const nativeModules = {
   // module: 'module', load by native cached
   fs: File,
+  wifi: wifi,
   sio: wsSerial,
   canvas: Canvas,
   touch: Touch,

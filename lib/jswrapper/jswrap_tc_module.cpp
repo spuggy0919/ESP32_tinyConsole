@@ -58,7 +58,8 @@ void jerryxx_register_arduino_library(){
      js_touch_classobj_wraper();
      /*filelib File*/
      js_tcfilelib_classobj_wraper();
-
+     /*wifi obj*/
+     js_wifi_classobj_wraper(); //1
 
 #ifdef CMD_DHT
      /*mqtt*/

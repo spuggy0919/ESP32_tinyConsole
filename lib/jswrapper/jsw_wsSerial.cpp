@@ -211,7 +211,7 @@ bool js_wsSerial_classobj_wraper(){
   bool ret = false;
           // Register initialization function
   jerryx_property_entry methods[] ={
-    JERRYX_PROPERTY_FUNCTION ("name", js_wsSerial_classname),
+    JERRYX_PROPERTY_STRING_SZ ("id", "sio"),
     JERRYX_PROPERTY_FUNCTION ("begin", js_wsSerial_begin),
     JERRYX_PROPERTY_FUNCTION ("flush", js_wsSerial_flush),
     JERRYX_PROPERTY_FUNCTION ("available", js_wsSerial_available),

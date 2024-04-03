@@ -39,7 +39,7 @@ const uintColor = hexToUintColor('#FF00FFFF');
 //清螢幕
 color =vga_pallete[0]>>>0;
 ctx.drawPenColor(color); //blue
-ctx.drawClearScr();
+ctx.drawFRect(0,0,640,480);
 var i=0;
 for(y=0;y<480;y+=80){
     for(x=0;x<640;x+=80){

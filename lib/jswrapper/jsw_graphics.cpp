@@ -505,7 +505,7 @@ bool js_graphics_classobj_wraper(){
   bool ret = false;
           // Register initialization function
   jerryx_property_entry methods[] ={
-    JERRYX_PROPERTY_FUNCTION ("name", js_graphics_classname),
+    JERRYX_PROPERTY_STRING_SZ ("id", "canvas"),
     JERRYX_PROPERTY_FUNCTION ("drawClearScr", js_graphics_drawclearscr),
     JERRYX_PROPERTY_FUNCTION ("drawRect", js_graphics_drawrect),
     JERRYX_PROPERTY_FUNCTION ("drawFRect", js_graphics_drawfrect),

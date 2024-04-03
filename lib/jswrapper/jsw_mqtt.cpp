@@ -227,7 +227,7 @@ bool js_mqtt_classobj_wraper(){  //1 a)modified func name and b) define in .h c)
   bool ret = false;
   // Register initialization function
   jerryx_property_entry methods[] ={ //2 methods
-    JERRYX_PROPERTY_FUNCTION ("name", js_mqtt_classname),
+    JERRYX_PROPERTY_STRING_SZ ("id", "mqtt"),
     JERRYX_PROPERTY_FUNCTION ("setServer", js_mqttclient_setserver),
     JERRYX_PROPERTY_FUNCTION ("setCallback", js_mqttclient_setcallback),
     JERRYX_PROPERTY_FUNCTION ("connect", js_mqttclient_connect),

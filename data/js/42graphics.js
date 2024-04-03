@@ -20,7 +20,7 @@ class DrawShapes {
     }
     clrscr(){
         this.colorRGBAr();
-        ctx.drawClearScr();
+        ctx.drawFRect(0,0,640,480);
     }
     drawFRectr() {
         let x = Math.floor(Math.random() * this.width / 2);

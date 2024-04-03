@@ -51,6 +51,8 @@ bool js_touch_classobj_wraper();
 //fsfilelib 
 bool js_tcfilelib_classobj_wraper();
 jerry_value_t register_fs_module();
+//wifi
+bool js_wifi_classobj_wraper(); //1
 
 //mqtt
 #ifdef CMD_MQTT

@@ -30,7 +30,7 @@ function colorRGBA(){
 function clrscr(color){
     color = color>>>0;
     ctx.drawPenColor(color);
-    ctx.drawClearScr();
+    ctx.drawFRect(0,0,640,480);
 }
 
 clrscr(256);
@@ -62,8 +62,8 @@ for(i=0;i<pts;i++){
 //清螢幕
 color =(230<<8)|(255);
 color = color >>>0;
-ctx.drawPenColor(color); //blue
-ctx.drawClearScr();
+clrscr(color);
+
 
 //實心方塊
 color =(255<<24)|(255);
