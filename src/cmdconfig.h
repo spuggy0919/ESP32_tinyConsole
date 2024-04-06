@@ -11,10 +11,11 @@
 
 // need to add below into lib_dep of platform.ini
 // then define JERRYSCRIPT and  #include "JerryScript_tc.h"
-	// lib_dep = https://github.com/spuggy0919/Arduino_Portenta_JerryScript.git  ; javascript 
+	// lib_dep = https://github.com/spuggy0919/Arduino_Portenta_JerryScript.git  ; jerryscript 
 #ifndef TINYBASIC
 #define _LANG_JERRYSCRIPT_ 
 #include "JerryScript_tc.h"
+#undef _JS_EXAMPLE_
 #endif
 
 #define _LICENSE_BANNER_NOTICE_
@@ -27,6 +28,9 @@
 // the backgroup autorun task, still no idea to solve this
 #define STARTUP_DIRECT_RUNAUTO 
 
+// jerryscript c++ wrapper
+#define _CLASSOBJ_EXAMPLE_
+// shell interpreter CMD disable for save prog space
 #define  CMD_FILE_EXT
 #define CMD_MQTT
 #define CMD_DHT

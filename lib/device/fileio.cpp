@@ -92,11 +92,11 @@
                   return idx;
             }else{
                   File file = littlefsRef.open((paths).c_str(),mode,true);
-                  Serial.printf("fileopen%x",file);
+                //   Serial.printf("fileopen%x",file);
                   if (!file&&file.isDirectory())  return NULL;
                   FILE* idx=setFile(file);
-                  Serial.printf("fileopen%x",file);
-                  Serial.printf("filefsFile%x\n",fileArray[(int)idx]);
+                //   Serial.printf("fileopen%x",file);
+                //   Serial.printf("filefsFile%x\n",fileArray[(int)idx]);
                   return idx;
             }
             return 0;
@@ -110,7 +110,7 @@
         }
         size_t pstd::fread(char *ptr, size_t size, size_t nmemb, FILE *stream){
               File fref=getFile(stream);
-              Serial.printf("fileread%x\n",fref);
+            //   Serial.printf("fileread%x\n",fref);
               return fref.read((uint8_t *)ptr, size*nmemb);   
         }
         size_t pstd::fwrite(const char  *ptr, size_t size, size_t nobj, FILE *stream){

@@ -65,7 +65,7 @@ bool  WebSocketSerial::flush()  {
     wsTxMutex.lock();
     while(wsTxBuf.size()&& (millis()-currentMillis)<timeoutDuration){
         wsRxBuf.pop();
-        delay(2);
+        yield(); // delay(2); 
     }
     wsTxMutex.unlock();
     return (wsTxBuf.size()==0);
@@ -91,7 +91,7 @@ char WebSocketSerial::read() {
     if (available()!=0) {
         wsRxMutex.lock();
         char c = wsRxBuf.front();
-        Serial.printf("[wsSerial]:read[%2x]%c\n",c,c);
+        // Serial.printf("[wsSerial]:read[%2x]%c\n",c,c);
         wsRxBuf.pop();
         wsRxMutex.unlock();
         return c;
@@ -102,7 +102,7 @@ bool WebSocketSerial::escape(){
     if (available()!=0) { // keyboarinput check
             char c=read();
             if (peek()==0xa) read(); // ahead 0xa give up for jerrycript
-            Serial.printf("[wsSerial]:escape[%2x]%c\n",c,c);
+            // Serial.printf("[wsSerial]:escape[%2x]%c\n",c,c);
             if (c=='\x03') return true;
             if (c=='\x1b') return true;
             if (c=='q'||c=='Q') return true; // force quit
@@ -173,7 +173,7 @@ size_t WebSocketSerial::write(uint8_t c) {
                     wsTxBuf.push(c);
                     wsTxMutex.unlock();
                  }
-                 delay(1);
+                yield(); // delay(1); 
             }
          
         }

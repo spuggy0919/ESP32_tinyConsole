@@ -60,6 +60,13 @@ void jerryxx_register_arduino_library(){
      js_tcfilelib_classobj_wraper();
      /*wifi obj*/
      js_wifi_classobj_wraper(); //1
+     /*esp32 info obj*/
+     js_esp32_classobj_wraper();
+
+
+#ifdef _CLASSOBJ_EXAMPLE_
+     js_cobj_classobj_wraper(); //1 a)modified func name and b) define in .h c) call by jswwrap_tc
+#endif 
 
 #ifdef CMD_DHT
      /*mqtt*/

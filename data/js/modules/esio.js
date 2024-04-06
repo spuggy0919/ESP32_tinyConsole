@@ -1,36 +1,36 @@
 let sio = require('sio');
-function kbhit(){ // by esc, control-c, q, Q
-    b = false;
-    while(!b) {
-        b=sio.escape();
+const esio ={
+    kbhit:function (){ // by esc, control-c, q, Q
+        let b = false;
+        while(!b) {
+            b=sio.escape();
+        }
+        return b;
+    },
+    getc :function(){ // now wsSerial is sent line base, should be enter then sent out
+        let c=sio.getchar();
+        return c;
+    },
+
+    getline : function (){
+        let s=sio.readline();
+        return s;
+    },
+ 
+
+    writeline : function writeline(s){ //wsSerial.write write string to ws tx queue buffer
+        return sio.writestring(s);
     }
-    return b;
-}
-function getc(){ // now wsSerial is sent line base, should be enter then sent out
-    c=sio.getchar();
-    return c;
 }
 
-function getline(){
-    s=sio.readline();
-    return s;
-}
  
-
-function writeline(s){ //wsSerial.write write string to ws tx queue buffer
-    return sio.writestring(s);
-}
-sio.kbhit = kbhit();
-sio.getc = getc();
-sio.writeline = writeline(s);
- 
-if (module === undefined) {
+if (typeof module === 'undefined') {
     print("Hit by key testing(esc,ctrl-c,'q','Q')...\n");
-    print(kbhit());
+    print(esio.kbhit());
     print("getline...");
-    str = getline();
+    str = esio.getline();
     print('\n',str,"\n");
     print("writeline...");
-    writeline("中文ABC測試\n");
+    esio.writeline("中文ABC測試\n");
 }
-module.exports = sio;
+module.exports = esio;

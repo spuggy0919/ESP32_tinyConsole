@@ -117,6 +117,14 @@ JERRYXX_DECLARE_FUNCTION(wifi_status){ //1
   return jerry_number(WiFi.status());
 } /*js_wifi_status*/ //6
 
+// String WifigatewayIP();
+JERRYXX_DECLARE_FUNCTION(wifi_gatewayip){
+  JERRYX_UNUSED(call_info_p);
+  JERRYX_UNUSED(args_p);
+  JERRYXX_ON_ARGS_COUNT_THROW_ERROR_SYNTAX(args_cnt != 0, "Wrong arguments count");
+  
+  return jerry_string_sz((WiFi.gatewayIP().toString()).c_str());
+} /*js_wifi_gatewayip*/
 // String WifiLocalIP();
 JERRYXX_DECLARE_FUNCTION(wifi_localip){
   JERRYX_UNUSED(call_info_p);
@@ -125,6 +133,14 @@ JERRYXX_DECLARE_FUNCTION(wifi_localip){
   
   return jerry_string_sz((WiFi.localIP().toString()).c_str());
 } /*js_wifi_localip*/
+// String WifiLocalIP();
+JERRYXX_DECLARE_FUNCTION(wifi_clientip){
+  JERRYX_UNUSED(call_info_p);
+  JERRYX_UNUSED(args_p);
+  JERRYXX_ON_ARGS_COUNT_THROW_ERROR_SYNTAX(args_cnt != 0, "Wrong arguments count");
+  
+  return jerry_string_sz(CurrntClientIP.c_str());
+} /*js_wifi_clientip*/
 // String WifiSSID();
 JERRYXX_DECLARE_FUNCTION(wifi_ssid){
   JERRYX_UNUSED(call_info_p);
@@ -169,6 +185,8 @@ bool js_wifi_classobj_wraper(){ //1
     JERRYX_PROPERTY_FUNCTION ("begin", js_wifi_begin),
     JERRYX_PROPERTY_FUNCTION ("status", js_wifi_status),
     JERRYX_PROPERTY_FUNCTION ("localIP", js_wifi_localip),
+    JERRYX_PROPERTY_FUNCTION ("clientIP", js_wifi_clientip),
+    JERRYX_PROPERTY_FUNCTION ("gatewayIP", js_wifi_gatewayip),
     JERRYX_PROPERTY_FUNCTION ("ssid", js_wifi_ssid),
     JERRYX_PROPERTY_FUNCTION ("rssi", js_wifi_rssi),
     JERRYX_PROPERTY_FUNCTION ("getmode", js_wifi_getmode),

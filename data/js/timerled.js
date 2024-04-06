@@ -1,12 +1,16 @@
+
 var LED_BUILTIN = 2;
 var OUTPUT = 3;
 pinMode(LED_BUILTIN,OUTPUT); 
+let esp = require('esp');
 
 var out=0;
+var cycle =0;
 function blinkToggle(){
     out = 1-out;
+    cycle++;
     digitalWrite(LED_BUILTIN,out);
-    print((out==1) ? "ON":"OFF");
+    print(millis(),cycle,esp.FreeHeap(),(out==1) ? "ON":"OFF");
 }
 function blink(n, delaytime){
     let i=0;
@@ -38,16 +42,19 @@ function blink5_500(){
 }
 // blinkToggle();
 // blink5_500();
+let esio = require('esio');
 id1  = setInterval(blinkToggle,500);
-print(kbhit(),'stop id1=',id1);
+print("press special key(esc,ctrl-c,'q','Q')...\n");
+print(esio.kbhit(),'\n');
 clearInterval(id1);
+id2  = setInterval(blinkToggle,1000);
+print("press special key(esc,ctrl-c,'q','Q')...\n");
+print(esio.kbhit(),'\n');
+clearInterval(id2);
 
-// id2  = setInterval(blinkToggle,1000);
+
+// id2  = setTimeout(blink5_500,1000);
 // print(kbhit(),'stop id1=',id2);
-// clearInterval(id2);
-
-id2  = setTimeout(blink5_500,1000);
-print(kbhit(),'stop id1=',id2);
 // clearTimeout(id2);
 // blink(5,500);
 // id2 = setTimeout(blink5_500,1000);

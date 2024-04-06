@@ -54,6 +54,13 @@ jerry_value_t register_fs_module();
 //wifi
 bool js_wifi_classobj_wraper(); //1
 
+//esp32 
+bool js_esp32_classobj_wraper();
+
+// example c++ class obj wrap
+#ifdef _CLASSOBJ_EXAMPLE_
+bool js_cobj_classobj_wraper(); //1 a)modified func name and b) define in .h c) call by jswwrap_tc
+#endif 
 //mqtt
 #ifdef CMD_MQTT
 bool js_mqtt_classobj_wraper();

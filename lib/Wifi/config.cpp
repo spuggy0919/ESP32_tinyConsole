@@ -37,7 +37,7 @@
 
 #include "config.h"
 const size_t bufferSize = 1024;
-DynamicJsonDocument jsonDoc(bufferSize);
+JsonDocument jsonDoc;
 DeserializationError json_error;
 String configData;
 /**
@@ -112,30 +112,43 @@ int Config_Init()
 String Config_Get(String key)
 {
     String result = (json_error) ? String(): jsonDoc[key];
-    Serial.println("Get:"+result);
+    // Serial.println("Get:"+result);
     return result;
 }
 int Config_Remove(String key)
 {   
      String configData;
      jsonDoc.remove(key);
-     Serial.println("Remove Key:"+key);
-     Serial.println("Remove configData:"+configData);
+    //  Serial.println("Remove Key:"+key);
+    //  Serial.println("Remove configData:"+configData);
      serializeJson(jsonDoc, configData);
-     Serial.println("Remove configData:"+configData);
-     return writeFile(LittleFS,"config.json",configData.c_str());
+    //  Serial.println("Remove configData:"+configData);
+     return writeFile(LittleFS,"/config.json",configData.c_str());
+}
+int  Config_SetArgv(String key, int argc, char* argv[]){
+
+    Config_Remove(key);
+     // create an empty array
+     JsonArray argvlist = jsonDoc.createNestedArray(key);
+     for(int i=0;i<argc;i++){
+        argvlist.add(String(argv[i]));
+     }
+    // serialize the array and send the result to Serial
+     serializeJson(jsonDoc, configData);
+     return writeFile(LittleFS,"/config.json",configData.c_str());
+  
 }
 
 int  Config_Set(String key, String value)
 {
      String configData;
      jsonDoc[key] = value;
-     Serial.println("Set configData:"+configData);
+    //  Serial.println("Set configData:"+configData);
      serializeJson(jsonDoc, configData);
-     Serial.println("Set configData:"+configData);
-     return writeFile(LittleFS,"config.json",configData.c_str());
+    //  Serial.println("Set configData:"+configData);
+     return writeFile(LittleFS,"/config.json",configData.c_str());
 }
 String  Config_Data()
 {
-    return  readFile(LittleFS, "config.json");
+    return  readFile(LittleFS, "/config.json");
 }

@@ -10,6 +10,7 @@
 
 
 bool WebWSConnect();
+extern String CurrntClientIP;
 
 void WSSendTXT(String msg);
 bool WSSendTXTAck(String msg);

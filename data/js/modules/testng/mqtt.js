@@ -1,36 +1,38 @@
-
+// exit restart bug
 // Arduino define
-var LED_BUILTIN = 2;
-var LOW = 0;
-var HIGH= 1;
-var OUTPUT = 3;
+let process = require('process');
+let esio = require('esio');
+let sio = require('sio');
+let client = require('mqtt');
+let pin = require('gpio');
+let esp = require('esp');
+
 
 // var _mqtt_server = "broker.mqtt-dashboard.com";
-var _mqtt_serverip = "18.198.222.5";
+var _mqtt_serverip = "192.168.1.102"; //"18.198.222.5";
 var value = 0;
-var lastMsg = 0;
+var lastMsgTime = 0;
 var msg;
 
-var client =  MqttClient;
 
 // JavaScript function that takes a Typed Array as an argument
 function processByteArray(byteArray) {
     for (var i = 0; i < byteArray.length; i++) {
-        print(byteArray[i]);
+        console.log(byteArray[i]);
     }
 }
 
 function callback(topic,payload,len) {
-    print("Message arrived [",topic,"]",len);
+    console.log(esp.FreeHeap(),"Message arrived [",topic,"]",len);
     processByteArray(payload);
 
    // Switch on the LED if an 1 was received as first character
    if (payload[0] == '1') {
-        digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on (Note that LOW is the voltage level
+        pin.digitalWrite(pin.LED_BUILTIN, pin.LOW);   // Turn the LED on (Note that LOW is the voltage level
     // but actually the LED is on; this is because
     // it is active low on the ESP-01)
     }else{
-        digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
+        pin.digitalWrite(pin.LED_BUILTIN, pin.HIGH);  // Turn the LED off by making the voltage HIGH
     }
 
   
@@ -49,51 +51,65 @@ function generateRandomHex() {
 function reconnect() {
     // Loop until we're reconnected
     while (!wsSerial.escape()&&!client.connected()) {
-      print("Attempting MQTT connection...");
+      console.log("Attempting MQTT connection...");
       // Create a random client ID
       let  clientId = "ES32Client-"+ generateRandomHex(); //    clientId += String(Math.random(0xffff), HEX);
       // Attempt to connect
       if (client.connect(clientId)) {
-        print("connected\n");
+        console.log("connected",clientId);
         // Once connected, publish an announcement...
         client.publish("outTopic", "hello world");
         // ... and resubscribe
         client.subscribe("inTopic");
       } else {
-        print("failed, rc=",client.state());
-        print(" try again in 5 seconds\n");
-        // Wait 5 seconds before retrying
-        delay(5000);
+          console.log("failed, rc=",client.state());
+          console.log(" try again in 5 seconds\n");
+          // Wait 5 seconds before retrying
+          delay(5000);
       }
     }
   }
 
 function cmd_mqtt_setup(){
-    pinMode(LED_BUILTIN, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+    pinMode(pin.LED_BUILTIN, pin.OUTPUT);     // Initialize the BUILTIN_LED pin as an output
     // mqtt client
     // Math.random(micros()); TODO no seed function
-    client.setServer(_mqtt_serverip, 1883); // dns fail use ip , server not work
+    if (process.argv.length > 2 && process.argv[2]) {
+      console.log('serverip',process.argv[2]);
+      client.setServer(process.argv[2], 1883); // dns fail use ip , server not work
+    }else{
+      console.log('serverip',_mqtt_serverip);
+      client.setServer(_mqtt_serverip, 1883); // dns fail use ip , server not work
+    }
     client.setCallback(callback);
+
   }
 function cmd_mqtt(){
       cmd_mqtt_setup();
-      while(!wsSerial.escape()){ // loop
+      while(!sio.escape()){ // loop
           if (!client.connected()) {
-              reconnect();
+               reconnect();
           }
           client.loop();
   
           let now = millis();
-          if (now - lastMsg > 2000) {
-              lastMsg = now;
+          if (now - lastMsgTime > 2000) {
+              lastMsgTime = now;
               value +=1;
               msg="hello world #%ld"+value;
 
-              print("Publish message: ",msg);
+              console.log("Publish message: ",msg);
               client.publish("outTopic", msg);
           }
       }; 
+      client.disconnect(); // stop to avoid native object call jerry callback cause crash
+      console.log('disconnecting...');
+      
       return 0;
   }
 
-  cmd_mqtt();
+  let ret = cmd_mqtt();
+  console.log(ret);
+
+  console.log("Hit by key testing(esc,ctrl-c,'q','Q')...\n");
+  console.log(esio.kbhit());

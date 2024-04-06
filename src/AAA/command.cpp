@@ -34,8 +34,17 @@ COMMAND_TABLE commandTable[] = {
   "tinybasic",  cmd_tinybasic,  "\t// tinyBasic interactive",
 #endif
 #ifdef _LANG_JERRYSCRIPT_
+#ifdef _JS_EXAMPLE_
+  "j2",   js_example2,   "\t\t// JerryScript Example 2 ",
+  "j3",   js_example3,   "\t\t// JerryScript Example 3 ",
+  "j4",   js_example4,   "\t\t// JerryScript Example 4 ",
+  "j5",   js_example5,   "\t\t// JerryScript Example 5 ",
+  "j6",   js_example6,   "\t\t// JerryScript Example 6 ",
+  "j7",   js_example7,   "\t\t// JerryScript Example 6 ",
+  "j8",   js_example8,   "\t\t// JerryScript Example 6 ",
   "j9",   js_example9,   "\t\t// JerryScript Example 9 ",
   "j10",   js_example10,   "\t\t// JerryScript Example 10 ",
+#endif
   "jb",   cmd_JerryScript_Basic,   "\t\t// JerryScript Basic ",
   "js",   cmd_JerryScript_RunFile,   "\t\t// JerryScript runfile",
   "jerryscript",   cmd_JerryScript_Repl,   "\t// JerryScript Repl",

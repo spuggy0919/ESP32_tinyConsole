@@ -225,12 +225,12 @@ void WSTransferBufferFlush(int wi){
       // Serial.printf("WS:TX:\n");
       while (!wsSerial.popLine(obuf[wi],&(olen[wi]))){
         char c=0xa;
-        for(int i = 0 ;i <olen[wi] ;i++) {
-            c=obuf[wi][i];
-              // Serial.printf("f[%2x]\n ",c);
-        } 
+        // for(int i = 0 ;i <olen[wi] ;i++) {
+        //     c=obuf[wi][i];
+        //       // Serial.printf("f[%2x]\n ",c);
+        // } 
         sendstr += String(obuf[wi]);
-        Serial.printf("s%s[%2x]%c\n ",sendstr.c_str(),c,c);
+        // Serial.printf("s%s[%2x]%c\n ",sendstr.c_str(),c,c);
          if (c<=0x7f) {
            String wholeStr="";
            while (queueStr.size()>0) {
@@ -278,16 +278,16 @@ void wsOnMessageReceive(void *arg, uint8_t *data, size_t len) {
       int loc = 0;
       // if (data[2]=='\x0d') loc=3;
         // Serial.printf("WS:RECV:\n");
-        char c;
-        for(int i = 0 ;i <msg.length() ;i++) {
-            c=msg.charAt(i);
-              Serial.printf("[websocket]:R[%2x]\n ",c);
-        }
+        // char c;
+        // for(int i = 0 ;i <msg.length() ;i++) {
+        //     c=msg.charAt(i);
+        //       Serial.printf("[websocket]:R[%2x]\n ",c);
+        // }
 
       if (!wsSerial.push((const char*)(msg.c_str()), msg.length())){
         Serial.printf("[websocket]:ERROR: WS:RECV: buffer full!");
       }
-      wsTextPrintBase64noAck(1,"X:"+msg+"\n");
+      // wsTextPrintBase64noAck(1,"X:"+msg+"\n");
 
     }
 

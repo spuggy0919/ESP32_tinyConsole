@@ -1,10 +1,39 @@
 var modules = {
+    id: 'modules',
     cache: {}, // Cache object to store loaded modules
     // nativeModules: {}, // Object to store native modules
     jsScripts: {}, // Object to store JavaScript files
     jsFiles: {}, // Object to store JavaScript files
+    /* not work below */
+    dumpObject : function (obj) {
+        var result='';
+        var depth = 0;
+        for (let key in obj) {
+            if (typeof obj[key] === 'function') {
+              // If property is a function, stringify its definition
+              result += `${' '.repeat(depth * 2)}${key}: function },\n`;
+            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+              // If property is an object, recursively dump it
+              result += `${' '.repeat(depth * 2)}${key}: object,\n`;
+              this.dumpObject(obj[key]);
+            } else {
+              // For other types, stringify the value
+              result += `${' '.repeat(depth * 2)}${key}: property ${JSON.stringify(obj[key])},\n`;
+            }
+          }
+        },
+        listProps :function (obj){
+          // Enumerate and list all elements (including functions) in the object
+          for (let key in obj) {
+            if (obj.hasOwnProperty(key)) {
+              console.log(key,"\t",obj[key]); // Print the property name
+              // console.log(obj[key]); // Print the property value (function in this case)
+            }
+          }
+        } 
+  }; //modules
 
-  };
+const listProps = modules.listProps;
 const ModuleType = {
   UNKNOWN :   0, /*try type JSFILES 3*/
   CACHE :     1, /* get module and return module.exports */
@@ -19,6 +48,7 @@ function chkModuleType(moduleName){
   if (modules.jsFiles[moduleName]) return ModuleType.JSFILES;     /* runtime load */
   return ModuleType.JSFILES;  // unknow try JSFILES type 
 }
+
 function loadScriptsAndEval(moduleName,moduleType){
 
     var content='';
@@ -41,7 +71,7 @@ function loadScriptsAndEval(moduleName,moduleType){
         let module = {exports:{ },id:'',content:''};
         modules.cache[moduleName] = module; // cache done
         module.id = moduleName;
-        let script = '(function(module) {' + content +
+        let script = '(function(module) { let exports = module.exports;' + content +
                     ' })(module,module.exports);'  //IIEF return module.exports 
         // module.content = script;
         const result = eval(script);
@@ -106,12 +136,14 @@ const jsFiles = {
 
 const nativeModules = {
   // module: 'module', load by native cached
+  esp: esp32,
   fs: File,
   wifi: wifi,
   sio: wsSerial,
   canvas: Canvas,
   touch: Touch,
   dht: dht,
+  mqtt: MqttClient,
 };
 
   Object.entries(nativeModules).forEach(([moduleName, obj]) => {

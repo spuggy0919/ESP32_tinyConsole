@@ -1,1 +1,6 @@
-{"ssid":"","password":"","autorun":""}
+{"ssid":"Kuo3",
+"password":"22320397",
+"user":"anonymous",
+"passwrd":"admin",
+"autorun":"js /js/index.js 123 abc \"中文 字串\" def"
+}

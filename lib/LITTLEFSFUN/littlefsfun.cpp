@@ -94,7 +94,7 @@ String getPrefix(String path){
     if (loc != 0){
         ret =  path.substring(1,loc);
     }
-    Serial.println("fsfun:getPrefix:"+ret+" original"+path);
+    // Serial.println("fsfun:getPrefix:"+ret+" original"+path);
     return ret;
 }
 String trimLast(String path){ // ..
@@ -104,13 +104,13 @@ String trimLast(String path){ // ..
     if (loc != -1){
         ret = path.substring(0,loc+1);
     }
-    Serial.println("fsfun:trimLast:"+ret+" original"+path);
+    // Serial.println("fsfun:trimLast:"+ret+" original"+path);
     return ret;
 }
 bool relativePath(String path) {
     bool ret = !(path.indexOf('/')==0);
-     if (ret)   Serial.println("fsfun:relativePath:"+path);
-     else Serial.println("fsfun:absolutePath:"+path);
+    //  if (ret)   Serial.println("fsfun:relativePath:"+path);
+    //  else Serial.println("fsfun:absolutePath:"+path);
      return ret;
 }
 bool checkDir(fs::FS &fs, const char *path,int *filedirorNone);
@@ -211,7 +211,7 @@ String getDirname(const char *pname){
     String tpname = String(pname);
     int lastidx = tpname.lastIndexOf('/');
     if (lastidx == -1) return "";
-    Serial.printf("dirpath:%d",lastidx);
+    // Serial.printf("dirpath:%d",lastidx);
     return tpname.substring(0, lastidx+1);
 }
 
@@ -239,18 +239,18 @@ String getfullpathFileOrDir(fs::FS &fs, const char *pname){
     // trim filename
     String ret;
     int checktype;
-    Serial.printf("getfullpathFileOrDir %s\r\n", pname);
+    // Serial.printf("getfullpathFileOrDir %s\r\n", pname);
     String last =   getlastComponet(pname);
     if (last == "") return "";
-    Serial.println("last:"+last);
+    // Serial.println("last:"+last);
     String dirpath = getDirname(pname);
-    Serial.println("dirpath:"+dirpath);
+    // Serial.println("dirpath:"+dirpath);
     if (checkDir(fs, dirpath.c_str(),&checktype)){
         ret = checkPath + last;
     }else {
         String ret = currentPath+last;
     }
-    Serial.println("ret:"+ret);
+    // Serial.println("ret:"+ret);
     return ret;
 
 }
@@ -349,16 +349,16 @@ void listDir1(fs::FS &fs,   const char *  dirname, uint8_t levels){
 void createDir(fs::FS &fs, const char * pathi){
     String paths =  getfullpathFileOrDir(fs, pathi);
     const char * path = paths.c_str();
-    Serial.printf("Creating Dir: %s\n", path);
+    // Serial.printf("Creating Dir: %s\n", path);
     if(!fs.mkdir(path)){
-        Serial.println("mkdir failed");
+        Serial.println("[fs]ERROR:mkdir failed");
     }
 }
 
 void removeDir(fs::FS &fs, const char * pathi){
     String paths =  getfullpathFileOrDir(fs, pathi);
     const char * path = paths.c_str();
-    Serial.printf("Removing Dir: %s\n", path);
+    // Serial.printf("Removing Dir: %s\n", path);
     if(!fs.rmdir(path)){
         // Serial.println("rmdir failed");
     }
@@ -375,7 +375,7 @@ String readFile(fs::FS &fs, const char * pathi){
   File file = fs.open(path, FILE_READ);
 #endif
   if(!file || file.isDirectory()){
-    Serial.printf("ERROR:- empty file or failed to open file\n");
+    Serial.printf("[fs]ERROR:- empty file or failed to open file\n");
     return String();
   }
 //   Serial.println("- read from file:");
@@ -390,17 +390,17 @@ String readFile(fs::FS &fs, const char * pathi){
 int writeFile(fs::FS &fs, const char * pathi, const char * message){
     String paths =  getfullpathFileOrDir(fs, pathi);
     const char * path = paths.c_str();
-    Serial.printf("Writing file: %s\r\n", path);
+    // Serial.printf("Writing file: %s\r\n", path);
 
 
     File file = fs.open(path, FILE_WRITE);
 
     if(!file){
-        Serial.println("- failed to open file for writing");
+        Serial.println("[fs]ERROR: failed to open file for writing");
         return -1;
     }
     if(!file.print(message)){
-        Serial.println("- write failed");
+        Serial.println("[fs]ERROR:- write failed");
     // } else {
     //     Serial.println("- write failed");
         return -2;
@@ -412,7 +412,7 @@ int writeFile(fs::FS &fs, const char * pathi, const char * message){
 void appendFile(fs::FS &fs, const char * pathi, const char * message){
     String paths =  getfullpathFileOrDir(fs, pathi);
     const char * path = paths.c_str();
-        Serial.printf("Appending to file: %s\r\n", path);
+        // Serial.printf("Appending to file: %s\r\n", path);
 
     File file = fs.open(path, FILE_APPEND);
     if(!file){
@@ -420,7 +420,7 @@ void appendFile(fs::FS &fs, const char * pathi, const char * message){
         return;
     }
     if(!file.print(message)){
-        Serial.println("- append failed");
+        Serial.println("[fs]ERRPR:- append failed");
     // } else {
     //     Serial.println("- append failed");
     }
@@ -432,9 +432,9 @@ void renameFile(fs::FS &fs, const char * pathi1, const char * pathi2){
     const char * path1 = paths.c_str();
     paths =  getfullpathFileOrDir(fs, pathi2);
     const char * path2 = paths.c_str();
-    Serial.printf("Renaming file %s to %s\r\n", path1, path2);
+    // Serial.printf("Renaming file %s to %s\r\n", path1, path2);
     if (!fs.rename(path1, path2)) {
-        Serial.println("- rename failed");
+        Serial.println("[fs]ERROT:- rename failed");
     // } else {
     //     Serial.println("- rename failed");
     }
@@ -443,7 +443,7 @@ void renameFile(fs::FS &fs, const char * pathi1, const char * pathi2){
 void deleteFile(fs::FS &fs, const char * pathi){
     String paths =  getfullpathFileOrDir(fs, pathi);
     const char * path = paths.c_str();
-    Serial.printf("Deleting file: %s\r\n", path);
+    // Serial.printf("Deleting file: %s\r\n", path);
     if(!fs.remove(path)){
         // Serial.println("- delete failed");
     // } else {
@@ -526,7 +526,7 @@ void deleteFile2(fs::FS &fs, const char * path){
 void writeBlock(fs::FS &fs, const char * path,const unsigned char *buf, unsigned int len){
         File file = fs.open(path, FILE_WRITE);
     if(!file){
-        Serial.println("- failed to open file for writing");
+        Serial.println("[fs]ERROR:- failed to open file for writing");
         return;
     }    
         while(len>0) {
@@ -543,7 +543,7 @@ void testFileIO(fs::FS &fs, const char * path){
     size_t len = 0;
     File file = fs.open(path, FILE_WRITE);
     if(!file){
-        Serial.println("- failed to open file for writing");
+        Serial.println("[fs]ERROR:- failed to open file for writing");
         return;
     }
 

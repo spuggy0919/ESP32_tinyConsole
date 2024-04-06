@@ -56,6 +56,8 @@ JERRYXX_DECLARE_FUNCTION(mqttclient_setserver){ //1
 } /*js_mqttclient_setserver*/ //6
 
 static jerry_value_t jerry_mqtt_callback_fn = 0; //2
+#define CMD_MQTT_TEST_WITH_C_CALLBACK
+#ifdef CMD_MQTT_TEST_WITH_C_CALLBACK
 void mqtt_test(char* topic, byte* payload, unsigned int length) {
   wsTextPrintf("Message arrived [");
   wsTextPrintf(topic);
@@ -74,34 +76,40 @@ void mqtt_test(char* topic, byte* payload, unsigned int length) {
     digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
   }
 }
+#endif
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
+#ifdef CMD_MQTT_TEST_WITH_C_CALLBACK
     mqtt_test(topic,payload,length);
     return;
+#endif
 
     // *setup argp argc
   jerry_value_t args[] = {
     jerry_string_sz (topic),
-    jerry_string_sz ((char *)payload), // to do payload maybe binary shouldbe bytearray
+    jerry_string ((const unsigned char *)payload,length,JERRY_ENCODING_UTF8),
     jerry_number (length),
   };
-    jerry_size_t argc = sizeof (args) / sizeof (args[0]);
-    jerry_value_t callback_fn_copy = jerry_value_copy (jerry_mqtt_callback_fn);
-    jerry_value_t global_obj_val = jerry_current_realm ();
-    jerry_value_t result_val = jerry_call (callback_fn_copy, global_obj_val, args, argc);
-    jerry_value_free (result_val);
-    jerry_value_free (global_obj_val);
-    jerry_value_free (callback_fn_copy);            // Perform the periodic operation here
+    // jerry_value_t callback_fn_copy = jerry_value_copy (jerry_mqtt_callback_fn);
+    // jerry_value_t global_obj_val = jerry_current_realm ();
+    jerry_value_t result_val = jerry_call (jerry_mqtt_callback_fn, jerry_undefined(), args, 3);
+    // jerry_value_free (result_val);
+    // jerry_value_free (global_obj_val);
+    // jerry_value_free (args[0]);
+    // jerry_value_free (args[1]);
+    // jerry_value_free (args[2]);
+    // jerry_value_free (args);
+    // jerry_value_free (callback_fn_copy);            // Perform the periodic operation here
     return;
 }
 
 // 2.client.setCallback(callback);
 JERRYXX_DECLARE_FUNCTION(mqttclient_setcallback){ //1
   JERRYX_UNUSED(call_info_p);
-//   jerry_value_t callback_fn = 0; //2
+  jerry_value_t callback_fn = 0; //2
 
   const jerryx_arg_t mapping[] = //3
       {
-          jerryx_arg_function(&jerry_mqtt_callback_fn, JERRYX_ARG_REQUIRED),
+          jerryx_arg_function(&callback_fn, JERRYX_ARG_REQUIRED),
       };
   const jerry_value_t rv = jerryx_arg_transform_args(args_p, args_cnt, mapping, JERRYXX_ARRAY_SIZE(mapping));
   if (jerry_value_is_exception(rv)){
@@ -109,7 +117,8 @@ JERRYXX_DECLARE_FUNCTION(mqttclient_setcallback){ //1
   }
   JERRYXX_ON_ARGS_COUNT_THROW_ERROR_SYNTAX((args_cnt != 1) , "Wrong arguments count");  //4
    Serial.printf("[jsw_mqtt]:setcallback\n");
-
+   jerry_mqtt_callback_fn = jerry_value_copy (callback_fn); // release at disconnect
+   
    client.setCallback(mqtt_callback); //5
   return jerry_undefined();
 } /*js_mqttclient_setcallback*/ //6
@@ -154,6 +163,20 @@ JERRYXX_DECLARE_FUNCTION(mqttclient_loop){ //1
  //5
   return jerry_boolean(client.loop()); 
 } /*js_mqttclient_loop*/ //6
+
+// 5.client.loop(); // may be not
+JERRYXX_DECLARE_FUNCTION(mqttclient_disconnect){ //1
+  JERRYX_UNUSED(call_info_p);
+  JERRYX_UNUSED(args_p);
+  JERRYXX_ON_ARGS_COUNT_THROW_ERROR_SYNTAX(args_cnt != 0, "Wrong arguments count");  //4
+
+  Serial.printf("[jsw_mqtt]:disconnect\n");
+  client.disconnect();//5
+  delay(5000);
+  jerry_value_free (jerry_mqtt_callback_fn);            // Perform the periodic operation here
+
+  return jerry_undefined(); 
+} /*js_mqttclient_disconnect*/ //6
 
 // not necessary 2.void reconnect() 
 //       void callback(char* topic, byte* payload, unsigned int length) 
@@ -232,6 +255,7 @@ bool js_mqtt_classobj_wraper(){  //1 a)modified func name and b) define in .h c)
     JERRYX_PROPERTY_FUNCTION ("setCallback", js_mqttclient_setcallback),
     JERRYX_PROPERTY_FUNCTION ("connect", js_mqttclient_connect),
     JERRYX_PROPERTY_FUNCTION ("connected", js_mqttclient_connected),
+    JERRYX_PROPERTY_FUNCTION ("disconnect", js_mqttclient_disconnect),
     JERRYX_PROPERTY_FUNCTION ("loop", js_mqttclient_loop),
     JERRYX_PROPERTY_FUNCTION ("State", js_mqttclient_state),
     JERRYX_PROPERTY_FUNCTION ("publish", js_mqttclient_publish),

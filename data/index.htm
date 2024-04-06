@@ -431,6 +431,10 @@
                           console.log("leading xd found");
                         }
                          wsSentChar(linebuf);
+                        // if (c == 'q'|| c=='Q' ) { bug q will linefeed
+                        //    linebuf = linebuf.concat(c);
+                        //    return;
+                        // }
                         if (linebuf.length>=2) { // more than one key 
                           cacheLineBuf.pop();
                           if (cacheLineBuf.length>=25) {
@@ -566,7 +570,8 @@
                   console.log(utf8Bytes);
                   var unicodeString=convertUtf8.utf8BytesToUtf16String(utf8Bytes);
                   console.log(unicodeString);
-                 document.getElementById("terminal").value += unicodeString ;
+                  updateConsoleLog(unicodeString,"terminal")
+                //  document.getElementById("terminal").value += unicodeString ;
                 }
                 terminalData = document.getElementById("terminal").value.length; // keep data before keyin
 
@@ -577,23 +582,28 @@
                 monitorchecked(); // sync checked
                 
             }
-            function updateConsoleLog(txt) {
-                if (!monitorcheck) return; 
-                var txtValue = document.getElementById("consolelog").value;
-                console.log("consolelog");
-                console.log(txtValue);
-                document.getElementById("consolelog").value += txt; //window.atob(txt
+            function updateConsoleLog(txt,id) {
+                // if (!monitorcheck) return; 
+                var textlog = document.getElementById(id);
+                var txtValue = textlog.value + txt;
+                var txtlines = txtValue.split('\n');
+                const MaxLines = 256;
+                var removelines = 0;
+                if (txtlines.length>MaxLines) removelines = txtlines.length-MaxLines;
+                txtValue = txtlines.slice(removelines).join('\n');
+                textlog.value = txtValue; //window.atob(txt
                 if (scrollcheck){
-                  document.getElementById("consolelog").scrollTop = document.getElementById("consolelog").scrollHeight;
+                  textlog.scrollTop = textlog.scrollHeight;
                 }
             }
             function MonitorConsoleLog(txt) {
               if (!monitorcheck) return; 
-                var txtValue = document.getElementById("consolelog").value;
-                document.getElementById("consolelog").value += txt + "\n";
-                if (scrollcheck){
-                  document.getElementById("consolelog").scrollTop = document.getElementById("consolelog").scrollHeight;
-                }
+              updateConsoleLog(txt,"consolelog");
+                // var txtValue = document.getElementById("consolelog").value;
+                // document.getElementById("consolelog").value += txt + "\n";
+                // if (scrollcheck){
+                //   document.getElementById("consolelog").scrollTop = document.getElementById("consolelog").scrollHeight;
+                // }
             }
             // change Textarea Style
             function updateRowCol(element) {

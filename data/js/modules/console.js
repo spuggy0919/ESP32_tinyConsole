@@ -1,5 +1,6 @@
 // Define a console object with a log function
 const console = {
+    id : 'console',
     log: function(...args) {
         // Print the arguments using a custom format
         var message = args.join(' '); // Concatenate arguments into a single message

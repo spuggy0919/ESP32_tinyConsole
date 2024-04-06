@@ -37,3 +37,4 @@ data/.audio
 *.c__
 lib/JerryScript
 data/basic
+cmd_example*.cpp 

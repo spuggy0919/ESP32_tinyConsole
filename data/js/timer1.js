@@ -11,15 +11,15 @@ function f10(){
     print(id10,"10sec Interval",t);
 }
 function kbhit(){ // by esc, control-c, q, Q
-    b = false;
+    let b = false;
     while(!b) {
         b=wsSerial.escape();
     }
     return b;
 }
-f1(); // jerryscrip bug ? function define after called
-f2();
-f10();
+// f1(); // jerryscrip bug ? function define after called
+// f2();
+// f10();
 
 id1 = setInterval(f1,1000);
 id2 = setInterval(f2,2000);

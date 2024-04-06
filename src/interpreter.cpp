@@ -77,13 +77,17 @@ int separate (
 }
 void parsercmdline(String line){
      argc = 0;
-     if (line == "" || line == "\n") return;
+     char c = line.charAt(0);
+     if (c == 0x1b || c == 0x3) {
+        line =line.substring(1);
+     }
+     if (line == "" || line == "\n" ) return;
      argc = separate (line, argv, ARGVPTR_SIZE);
      Serial.printf("Parser command Line argc=%d\n",argc);
-    //  for(int i=0;i<argc;i++)
-    //    Serial.printf("argv[%d]=%s\n",i,argv[i]);
-    //   for(int i=0;i<strlen(argv[0]);i++)
-    //        Serial.printf("argv0[%2x]%c\n",argv[i]);
+     for(int i=0;i<argc;i++)
+       Serial.printf("argv[%d]=%s\n",i,argv[i]);
+      for(int i=0;i<strlen(argv[0]);i++)
+           Serial.printf("argv0[%2x]%c\n",argv[i]);
 
 }
 int InterpreterExcute(String *cmd){
@@ -99,6 +103,7 @@ int InterpreterExcute(String *cmd){
          wsTextPrint("\n"); // newline for console
          Serial.printf("Command:%s match!",commandTable[i].funName);
          cmd_option(argc,argv); // check option exist or not
+         Config_SetArgv("argv",argc,argv);
          int ret=(*(commandTable[i].cmdPtr))(argc,argv);
           *cmd = "";
 
