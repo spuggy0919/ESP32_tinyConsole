@@ -34,13 +34,27 @@ int repl_command_check(jerry_char_t *line_p){
 }
 
 void
-jerryx_repl_with_cmd (const char *prompt_p)
+jerryx_repl_with_cmd (const char *prompt_p,int argc,char* argv[])
 {
   jerry_value_t result;
   int repl_ret;
   jerry_value_t print_result;
   jerry_value_t script;
 
+  if (argc>1) {
+      // check externsion exist or not 
+
+      for(int i=1;i<=1;i++) { // check argv[1] .js file only
+              String fname_ext = checkExtension(argv[i]);
+              if (!g_fsio.fexist(fname_ext.c_str())) {
+              wsTextPrintf("ERROR:File not found!(%s)\n",argv[i]);
+              return;
+          }
+      }
+      if (ParserRunScriptsFile(argv[1])) {
+          wsTextPrintf("ParserRun Load(%s)\n",argv[1]);
+      }
+  }
 
   while (true)
   {
@@ -132,7 +146,7 @@ int cmd_JerryScript_Repl(int argc,char* argv[]) {
   jerryxx_register_arduino_library(); //in jswarp_tc
 
   /* Read Evaluate Print Loop */
-  jerryx_repl_with_cmd("js>");
+  jerryx_repl_with_cmd("js>",argc,argv);
 
   /* Cleanup engine */
   jerry_cleanup ();

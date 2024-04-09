@@ -68,15 +68,15 @@ const T9 = 32;
 const DAC1 = 25;
 const DAC2 = 26;
 
-print("LED_BUILTIN=",LED_BUILTIN);
-print("HIGH=",HIGH);
-print("LOW=",LOW);
-print("OUTPUT=",OUTPUT);
-print("INPUT=",INPUT);
+console.log("LED_BUILTIN=",LED_BUILTIN);
+console.log("HIGH=",HIGH);
+console.log("LOW=",LOW);
+console.log("OUTPUT=",OUTPUT);
+console.log("INPUT=",INPUT);
 pinMode(LED_BUILTIN,OUTPUT);
-digitWrite(LED_BUILTIN,LOW);
-print("Led Off\n");
+digitalWrite(LED_BUILTIN,LOW);
+console.log("Led Off\n");
 delay(1000);
-digitWrite(LED_BUILTIN,HIGH);
-print("Led On\n");
+digitalWrite(LED_BUILTIN,HIGH);
+console.log("Led On\n");
 

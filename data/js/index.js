@@ -47,13 +47,6 @@ let touch = require('touch');
 let wifi = require('wifi');
 let process = require('process');
 
-function kbhit(){ // by esc, control-c, q, Q
-    b = false;
-    while(!b) {
-        b=sio.escape();
-    }
-    return b;
-}
 function getuser(process){
     process.usrInput = (sio.readline()).slice(0,-1); // delete linefeed
 }

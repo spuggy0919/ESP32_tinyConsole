@@ -4,7 +4,7 @@ var out=0;
 function blinkToggle(){
     out = 1-out;
     pin.digitalWrite(pin.LED_BUILTIN,out);
-    print((out==1) ? "ON":"OFF");
+    console.log((out==1) ? "ON":"OFF");
 }
 
 function setup(){

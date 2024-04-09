@@ -6,11 +6,6 @@ ledPin = pin.LED_BUILTIN;    // the number of the LED pin
 
 // variables will change:
 var buttonState = 0;  // variable for reading the pushbutton status
-function kbhit(){ // by esc, control-c, q, Q
-  b = false;
-  while(!b) b=sio.escape();
-  return b;
-}
 function setup() {
     // initialize the LED pin as an output:
     pin.pinMode(ledPin, pin.OUTPUT);

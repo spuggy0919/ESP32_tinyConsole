@@ -26,14 +26,20 @@
 #include "Arduino_Portenta_JerryScript.h"
 #include "ESP32inc.h"
 
-#include "../../src/cmdconfig.h"
+#include "../../src/cmdconfig.h" 
 
 
 #ifdef _LANG_JERRYSCRIPT_
+#define JS_METHOD(f)                                         \
+  jerry_value_t                                                             \
+  js_##f (const jerry_call_info_t *call_info_p, /**< call information */    \
+          const jerry_value_t args_p[], /**< function arguments */          \
+          const jerry_length_t args_cnt) /**< number of function arguments */
 
 
 String checkExtension(const char *filename);
 bool RunScriptsFile(const char *path);
+bool ParserRunScriptsFile(const char *path);
 
 // print, setInterval, setTimeout, clearInterval,clearTimeout;
 jerry_value_t register_module_class();
@@ -56,11 +62,19 @@ bool js_wifi_classobj_wraper(); //1
 
 //esp32 
 bool js_esp32_classobj_wraper();
-
+#ifdef _LIB_WIRE_
+// Wire.h
+#include "Wire.h"
+bool js_wire_classobj_wraper(); //1 a)modified func name and b) define in .h c) call by jswwrap_tc
+#endif
 // example c++ class obj wrap
 #ifdef _CLASSOBJ_EXAMPLE_
 bool js_cobj_classobj_wraper(); //1 a)modified func name and b) define in .h c) call by jswwrap_tc
 #endif 
+// autogen
+#ifdef _LIB_RECTANGLE_
+bool js_rectangle_classobj_wraper();
+#endif
 //mqtt
 #ifdef CMD_MQTT
 bool js_mqtt_classobj_wraper();

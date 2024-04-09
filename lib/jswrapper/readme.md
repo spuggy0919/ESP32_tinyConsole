@@ -1,6 +1,19 @@
 JerryScript is a lightweight Javascript interpreter, it only has language capability,
 the IO and library function still need C++ wrapper to bridge.
 
+## Here a auto wrapprt generator
+
+```
+%js  jswmgen [enter]
+#then select copy and paste to your files
+```
+When you get the autogen file, you should check,
+1. if tab postion wrong, bad news!
+2. check each methods, if C using same method, different args, it should be merge into one, by check arg_cnt, or using differnet method name.
+3. callback wrapper function, should be created. This generator does not generator.
+4. non method property, need to set/get, it is function type.
+5. bytes array no idea, how to mapping.
+   
 #### Where does the bridge come from ?
 1. iot.js has its own bridge, he build a lot of iotjs_modules-XXX in C language, these become MCU IO layer API, then iotjs integrate JerryScript and porting. A lot of js objects are defined as IO libraries, i.e. gpio, adc, ble, ...
 2. For JerryScript only, we need to created these wrappers, here we select Arduino platform, give a example dht sensor, and my console io.
@@ -107,7 +120,7 @@ print("toStr=",now.toString());         // Get a string representation of the Da
     JERRYX_PROPERTY_FUNCTION ("peek", js_wsSerial_peek),
 ```
 function kbhit(){ // by esc, control-c, q, Q
-    b = false;
+    let b = false;
     while(!b) b=Input.escape();
     return b;
 }

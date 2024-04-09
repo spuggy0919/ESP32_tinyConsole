@@ -47,7 +47,7 @@ let touch = require('touch');
 let wifi = require('wifi');
 
 function kbhit(){ // by esc, control-c, q, Q
-    b = false;
+    let b = false;
     while(!b) {
         b=sio.escape();
     }

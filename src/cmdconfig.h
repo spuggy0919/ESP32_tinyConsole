@@ -16,7 +16,9 @@
 #define _LANG_JERRYSCRIPT_ 
 #include "JerryScript_tc.h"
 #undef _JS_EXAMPLE_
-#endif
+#define  _LIB_WIRE_    // ARDUINO WIRE support
+#undef  _LIB_SPI_    // ARDUINO SPI support
+#endif //ifndef TINYBASIC
 
 #define _LICENSE_BANNER_NOTICE_
 /* wsTask manager */
@@ -29,7 +31,10 @@
 #define STARTUP_DIRECT_RUNAUTO 
 
 // jerryscript c++ wrapper
-#define _CLASSOBJ_EXAMPLE_
+#undef _CLASSOBJ_EXAMPLE_
+// autogenerator wrapper test
+#define _LIB_RECTANGLE_
+
 // shell interpreter CMD disable for save prog space
 #define  CMD_FILE_EXT
 #define CMD_MQTT

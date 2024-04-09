@@ -1,8 +1,13 @@
 /* jsww_rectangle.cpp c++ class  object example */
-let a = new Rectangle(30,40);
-let b = new Rectangle(3,4);
-console.log(a.getLength(),'*',a.getWidth(),'=',a.getSize());
-console.log(b.getLength(),'*',b.getWidth(),'=',b.getSize());
-delete b;
-delete a;
+let esp = require('esp');
+let a = [];
+for(let i=0;i<100;i++){
+    a[i] = new Rectangle(Math.random()*10,Math.random()*40);
+    console.log(i,esp.FreeHeap(),a[i].getLength(),'*',a[i].getWidth(),'=',a[i].getSize(),a[i].getSize()==(a[i].getWidth()*a[i].getLength()));
+}
+for(let i=0;i<100;i++){
+    delete a[i];
+    console.log(i,esp.FreeHeap());
+}
+
 

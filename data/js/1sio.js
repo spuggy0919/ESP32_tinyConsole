@@ -36,7 +36,7 @@
  */
 let sio = require('sio');
 function kbhit(){ // by esc, control-c, q, Q
-    b = false;
+    let b = false;
     while(!b) {
         b=sio.escape();
     }

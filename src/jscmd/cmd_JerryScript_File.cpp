@@ -41,13 +41,13 @@ int  cmd_JerryScript_RunFile(int argc,char* argv[]) {
     if (argc>1) {
         // check externsion exist or not 
 
-    for(int i=1;i<=1;i++) { // check argv[1] .js file only
-            String fname_ext = checkExtension(argv[i]);
-            if (!g_fsio.fexist(fname_ext.c_str())) {
-            wsTextPrintf("ERROR:File not found!(%s)\n",argv[i]);
-            return 1;
+        for(int i=1;i<=1;i++) { // check argv[1] .js file only
+                String fname_ext = checkExtension(argv[i]);
+                if (!g_fsio.fexist(fname_ext.c_str())) {
+                wsTextPrintf("ERROR:File not found!(%s)\n",argv[i]);
+                return 1;
+            }
         }
-    }
     }else{
         wsTextPrintf("Usage:js file1 [argv2...]\n");
         return 1; 

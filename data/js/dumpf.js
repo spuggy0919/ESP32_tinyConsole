@@ -36,18 +36,51 @@
  * 
  * @date Apirl 3, 2024
  */
+let process = require('process');
 function listObjProps(obj){ //move to module.js
   // Enumerate and list all elements (including functions) in the object
+  let result = '';
   for (let key in obj) {
     if (obj.hasOwnProperty(key)) {
-      console.log(key,"\t",obj[key]); // Print the property name
+      if (process.argv.length > 2)
+        result+=console.content(key," ",obj[key]) +',';// Print the property name
+      else
+        console.log(key," ",obj[key]);
+      // console.log(obj[key]); // Print the property value (function in this case)
     }
   }
+  return result;
 } 
+function startsWith(str, prefix) {
+  return str.slice(0, prefix.length) === prefix;
+}
+function trim(str) {
+  return str.replace(/^\s+|\s+$/g, '');
+}
 
-let nativeobjs=[this,wsSerial,File,wifi,Touch,Canvas,dht,console,MqttClient];
+const argv = process.argv[2];
+let nativeobjs=[this,wsSerial,File,wifi,Touch,Canvas,dht,console,MqttClient,Rectangle];
+
 nativeobjs.forEach(element => {
   // print(element);
-  listObjProps(element);
+  let result=listObjProps(element)+'\n';
+  let lines = result.split(',');
+  if (argv!=''){
+    // console.log(lines);
+    lines.forEach(e =>{
+      // let prefix = trim(e).slice(0,argv.length);
+     // console.log(prefix,prefix==argv);
+
+      if (startsWith(trim(e),argv)){
+          console.log(e);
+          return;
+      }
+    });
+
+  }else{
+    console.log(lines);
+  }
+  
 });
+
 

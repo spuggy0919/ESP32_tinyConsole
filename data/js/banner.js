@@ -35,7 +35,7 @@ function clrscr(color){
     ctx.drawFRect(0,0,640,480);
 }
 function kbhit(){ // by esc, control-c, q, Q
-    b = false;
+    let b = false;
     while(!b) {
         b=sio.escape();
     }
@@ -82,7 +82,7 @@ color =(255<<16)|(240<<8)|(255);
 color = color >>>0;
 ctx.drawSetFontColor(color); 
 ctx.drawSetFontSize(100); 
-ctx.drawText('JerryScipt',100,400,0);
+ctx.drawText('JerryScipt',30,400,0);
 console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nesc/crtl-c/'q' to quit",waitcnt); // turnoff graphics canvas
 kbhit();
 sio.print("\x1b[8m"); // turnoff graphics canvas esc only esc[2J esc[0m esc[8m 
