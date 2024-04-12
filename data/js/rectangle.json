@@ -1,0 +1,11 @@
+{
+    "classObj" : "rectangle", 
+    "constructorPrototype" : "Rectangle::Rectangle(int length,int width);", 
+    "prototypesArray" : [
+        "int getSize();",
+        "int getLength();",
+        "int getWidth();"
+    ],
+    "className" :"",
+    "methodNames":[]
+}

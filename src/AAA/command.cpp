@@ -76,6 +76,11 @@ COMMAND_TABLE commandTable[] = {
  "avtest",  cmd_avtest, "[0|1|2]\t// video graphic testing",
  "export",  cmd_export, "\t\t// export ssid ABC \n \t\t// export password 12345678 \n\t\t// export\n\t\t// export all wifi config or set config", 
   "loop",   cmd_test,  "\t\t// loopback test and arglist parser Test",
+#ifdef CMD_WIRE
+  "wire",    cmd_wire,    "\t\t// wire example",
+  "wiremaster",    cmd_wireMaster,    "\t// wire master example",
+  "lcd2x16",    cmd_wire_liquid,    "\t// lcd2x16 demo",
+#endif
 #ifdef CMD_DHT
   "dht",    cmd_dht,    "\t\t// dht example",
 #endif

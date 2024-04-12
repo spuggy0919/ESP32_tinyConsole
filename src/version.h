@@ -27,7 +27,6 @@
 #include "cmdconfig.h"
 #include "ESP32inc.h"
 
-#ifdef _LICENSE_BANNER_NOTICE_
 
 #define TINYCONSOLE_API_MAJOR_VERSION 0
 #define TINYCONSOLE_API_MINOR_VERSION 9
@@ -36,7 +35,6 @@
 #define _TC_VERSION_(major,minor,patch) (major*1000)+((minor%10)*100)+(patch%100)
 #define _TC_VERSION_STR_(major,minor,patch) (String(major)+"."+String(minor%10)+"."+String(patch%100))
 
-#endif //_LICENSE_BANNER_NOTICE_
 void tc_Prompt();
 void tc_Banner();
 #define cls()  wsTextPrintf("\n%")

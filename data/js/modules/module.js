@@ -106,6 +106,7 @@ function require(moduleName) {
 
   // Function to register native modules
   function registerNativeModule(moduleName, nativeObj) {
+    if (typeof nativeObj === 'undefined') return;
     const module = {exports:{ },id:''};
     module.exports = nativeObj;
     module.id = moduleName;
@@ -144,6 +145,7 @@ const nativeModules = {
   touch: Touch,
   dht: dht,
   mqtt: MqttClient,
+  // wire:TwoWire, //I2C
 };
 
   Object.entries(nativeModules).forEach(([moduleName, obj]) => {

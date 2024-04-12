@@ -48,7 +48,7 @@ function parser_dfinfo(inputString){// Loop through each line
 }
 // Split the string by newline
 let dfobj = parser_dfinfo(fsinfo);
-console.lof(dfobj.FreeHeap);
+console.log(dfobj.FreeHeap);
 // Convert the dictionary to JSON
 var jsonData = JSON.stringify(data);
 

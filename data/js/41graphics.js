@@ -89,6 +89,11 @@ color = color >>>0;
 ctx.drawSetFontSize(100); 
 ctx.drawSetFontColor(color); //purple
 ctx.drawText('哈囉世界！',150,100,0);
+color =(255<<16)|(255);
+color = color >>>0;
+ctx.drawSetFontSize(90); 
+ctx.drawSetFontColor(color); 
+ctx.drawText('tinyConsole',20,250,0);
 color =(255<<16)|(240<<8)|(255);
 color = color >>>0;
 ctx.drawSetFontColor(color); 

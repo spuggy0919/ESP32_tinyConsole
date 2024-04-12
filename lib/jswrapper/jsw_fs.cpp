@@ -23,6 +23,7 @@
  */
 
 #include "jswrap_tc.h"
+#include "ESP32inc.h"
 
 // String reportfs(fs::FS &fs);
 JERRYXX_DECLARE_FUNCTION(fs_info){ //1

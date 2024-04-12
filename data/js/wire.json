@@ -1,0 +1,37 @@
+{
+    "classObj" : "wire", 
+    "constructorPrototype" : "TwoWire::TwoWire(uint8_t bus_num);", 
+    "prototypesArray" : [
+        "bool setPins(int sda, int scl);",
+        "bool begin(int sda, int scl, uint32_t frequency=0);",
+        "bool begin(uint8_t slaveAddr, int sda, int scl, uint32_t frequency);",
+        "bool begin()",
+        "bool begin(uint8_t addr)",
+        "bool begin(int addr)",
+        "bool end();",
+        "size_t setBufferSize(size_t bSize);",
+        "void setTimeOut(uint16_t timeOutMillis);",
+        "uint16_t getTimeOut();",
+        "bool setClock(uint32_t clock);",
+        "uint32_t getClock();",
+        "void beginTransmission(int address);",
+        "uint8_t endTransmission(bool sendStop);",
+        "uint8_t endTransmission();",
+        "size_t requestFrom(uint16_t address, size_t size, bool sendStop);",
+        "uint8_t requestFrom(int address, int size, int sendStop);",
+        "uint8_t requestFrom(int address, int size);",
+        "size_t write(int data);",
+        "size_t write(uint8_t* buf, size_t len);",
+        "size_t write(uint8_t* buf);",
+        "int available();",
+        "int read();",
+        "int peek();",
+        "void flush();",
+        "void onReceive(funcptr cb_fun );", 
+        "void onRequest(funcptr cb_fun);",
+        "size_t slaveWrite(uint8_t * buf, size_t len);"
+    ],
+    "className" :"",
+    "methodNames":[]
+
+}

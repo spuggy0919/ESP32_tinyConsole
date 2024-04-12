@@ -34,8 +34,14 @@ String checkExtension(const char *filename){
         }
         return fname;
 }
+int InterpreterExcute(String *cmd);
+int execShellCmd(const char *cmdline){
+    String cmdString = String(cmdline);
+    InterpreterExcute(&cmdString); //bug possible reentry 
+    return true;
+}
 
-bool RunScriptsFile(const char *path){
+bool execScriptsFile(const char *path){
     String fname_ext = checkExtension(path);
     jerry_size_t result = jerryx_source_exec_script ((const char *)fname_ext.c_str());
         if (jerry_value_is_error(result)) {
@@ -46,7 +52,7 @@ bool RunScriptsFile(const char *path){
     return true;
 }
 
-bool ParserRunScriptsFile(const char *path){
+bool parserRunScriptsFile(const char *path){
     String fname_ext = checkExtension(path);
     jerry_size_t length;
     jerry_value_t print_result;
@@ -93,10 +99,14 @@ void jerryxx_register_arduino_library(){
      /*esp32 info obj*/
      js_esp32_classobj_wraper();
 
-#ifdef _LIB_WIRE_
-// Wire.h
-bool js_wire_classobj_wraper(); //1 a)modified func name and b) define in .h c) call by jswwrap_tc
+#ifdef _LIB_LIQUIDCRYSTAL_I2C_
+// LiquidCrystal_I2C.h
+      js_liquidlcd_classobj_wrapper(); // register 
 #endif
+
+#ifdef  _LIB_ADAFRUIT_SSD1306_
+      js_sd1306_classobj_wrapper(); 
+#endif //_LIB_ADAFRUIT_SSD1306_
 
 #ifdef _CLASSOBJ_EXAMPLE_
      js_cobj_classobj_wraper(); //1 a)modified func name and b) define in .h c) call by jswwrap_tc
@@ -115,8 +125,13 @@ bool js_wire_classobj_wraper(); //1 a)modified func name and b) define in .h c) 
     /* library */
 
     /* module*/
-    if (!RunScriptsFile("/js/modules/module.js")) return; // require('module');
+    if (!execScriptsFile("/js/modules/module.js")) return; // require('module');
 
 }
 
 
+void jerryxx_free_library(){
+    /* call necessay free before jerry_cleanup */
+    jerryxx_register_extra_api_free();
+
+}

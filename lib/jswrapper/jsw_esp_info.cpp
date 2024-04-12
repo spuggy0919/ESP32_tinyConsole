@@ -23,6 +23,7 @@
  */
 
 #include "jswrap_tc.h"
+#include "ESP32inc.h"
 
 #ifdef _LANG_JERRYSCRIPT_
 JERRYXX_DECLARE_FUNCTION(esp_get_heapsize){

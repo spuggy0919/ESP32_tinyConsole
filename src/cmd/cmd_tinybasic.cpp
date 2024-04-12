@@ -22,7 +22,7 @@
  */
 #include "ESP32inc.h"
 
-#include "cmdconfig.h"
+#include "command.h"
 #ifdef TINYBASIC
 
 int cmd_tinybasic(int argc,char * argv[]){

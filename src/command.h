@@ -71,6 +71,11 @@ int cmd_kill(int argc, char *argv[]);
 int cmd_ps(int argc, char *argv[]);/*How to pluginto your command */
 int cmd_exehello(int argc,char * argv[]); // experiment
 int test_main(int argc,char * argv[]);
+#ifdef CMD_WIRE
+int cmd_wire(int argc,char *argv[]);
+int cmd_wireMaster(int argc,char *argv[]);
+int cmd_wire_liquid(int argc,char *argv[]);
+#endif
 #ifdef CMD_DHT
 int cmd_dht(int argc,char *argv[]);
 #endif

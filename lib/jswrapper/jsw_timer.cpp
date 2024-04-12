@@ -43,18 +43,23 @@ int numTimers = 0; // Current number of tasks
 
 #define TASKSTACK 8192
 
+void timer_free_callback(void* native_p, jerry_object_native_info_t *info_p);
+const static jerry_object_native_info_t timer_info = {
+    .free_cb = timer_free_callback
+};
     void deleteTimer(int taskid);
     void stopAllTimers(){
         if (numTimers==0) return;
         for(int i=0;i<MAX_TASKS;i++) {
             if (taskArray[i].params!=NULL){
-                 deleteTimer(i);
                  Serial.printf("[timer]:%d exist free\n",i);
+                 deleteTimer(i);
             }
         }
+        numTimers = 0;
     }
     void flushTimerSpace(){
-        stopAllTimers();
+        // stopAllTimers();
         for(int i=0;i<MAX_TASKS;i++) {
             taskArray[i].params=NULL;
         }
@@ -65,10 +70,10 @@ int numTimers = 0; // Current number of tasks
         pTimer_t p = (pTimer_t)pvTimerGetTimerID(xTimer);
         if (xSemaphoreTake(p->mutex,portMAX_DELAY)==pdTRUE){
             jerry_value_t callback_fn =  p->func;
-            jerry_value_t global_obj_val = jerry_current_realm ();
-            jerry_value_t result_val = jerry_call (callback_fn, global_obj_val, NULL, 0);
+            // jerry_value_t global_obj_val = jerry_current_realm ();
+            jerry_value_t result_val = jerry_call (callback_fn, jerry_undefined(), NULL, 0);
             jerry_value_free (result_val);
-            jerry_value_free (global_obj_val);
+            // jerry_value_free (global_obj_val);
         }
         xSemaphoreGive(p->mutex);
     }
@@ -250,10 +255,62 @@ JERRYXX_DECLARE_FUNCTION(set_interval)
  * @return true - if the operation was successful,
  *         false - otherwise.
  */
+/* ~DummyTimer rectangle destroy */
+class DummyTimer {
+    public:
+    DummyTimer(){    
+        };
+    ~DummyTimer(){};
+};
+void timer_free_callback(void* native_p, jerry_object_native_info_t *info_p){
+    WSDEBUG_TPRINTF("[Timer] delete %x\n",native_p);
+    DummyTimer* dummytimer = (DummyTimer*)native_p;
+    // /** **TODO** free your own resource here **/
+    delete(dummytimer);
+
+};
+
+bool registerTimerDummy(){
+
+    jerry_value_t object = jerry_object();
+    jerryx_property_entry methods[] ={ //5 methods
+        JERRYX_PROPERTY_STRING_SZ ("id", "DummyTimer"),
+        JERRYX_PROPERTY_LIST_END(),
+    };
+    jerryx_register_result reg = jerryx_set_properties (object, methods);
+
+    if (jerry_value_is_exception (reg.result))
+    {
+        wsTextPrintf ("Only registered %d properties\r\n", reg.registered);
+        /* clean up not registered property values */
+        jerryx_release_property_entry (methods, reg);
+        jerry_value_free (reg.result);
+        return false;
+        /* clean up the error */
+    }
+    /* Set the native function as a property of the empty JS object */
+    DummyTimer* dummytimer = new DummyTimer(); 
+    WSDEBUG_TPRINTF("[Timer] new DummyTimer %x\n",dummytimer);
+    jerry_object_set_native_ptr(object, &timer_info , dummytimer );
+
+    // wrap to dht 
+    jerry_value_t globalObject = jerry_current_realm ();
+    jerry_value_t prop_name = jerry_string_sz((const char*)"DummyTimer");
+    jerry_value_free (jerry_object_set (globalObject, prop_name, object));
+
+
+    jerry_value_free (object);
+    jerry_value_free (prop_name);
+    jerry_value_free (globalObject);
+
+  return true;
+}
 bool jerryxx_register_extra_api(void)
 {
   bool ret = false;
   flushTimerSpace();
+
+//   registerTimerDummy();  
   /* Register the print function in the global object */
   JERRYXX_BOOL_CHK(jerryx_register_global("print", jerryx_handler_print));
 
@@ -269,8 +326,11 @@ bool jerryxx_register_extra_api(void)
   /* Register the clearInterval function in the global object */
   JERRYXX_BOOL_CHK(jerryx_register_global("clearInterval", js_delete_timer));
 
-//   JERRYXX_BOOL_CHK(jerryx_register_global("millis", js_millis));
 
 cleanup:
   return ret;
 } /* jerryxx_register_extra_api */
+bool jerryxx_register_extra_api_free(void){
+    stopAllTimers();
+    return true;
+}

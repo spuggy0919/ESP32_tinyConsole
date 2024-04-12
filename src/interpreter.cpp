@@ -90,9 +90,19 @@ void parsercmdline(String line){
            Serial.printf("argv0[%2x]%c\n",argv[i]);
 
 }
+int InterpreterArgvList(String *cmd, int* pargc, char** pargv[]){
+    parsercmdline(*cmd);
+    Config_SetArgv("argv",argc,argv);
+    *pargc =  argc;
+    *pargv = argv;
+    return argc;
+};
 int InterpreterExcute(String *cmd){
   int i;
-  parsercmdline(*cmd);
+  int argc;
+  char** argv;
+  InterpreterArgvList(cmd,&argc,&argv);
+
   Serial.printf("Command:argc=%d, %s found!", argc, argv[0]);
   String cmdStr = String(argv[0]);
   cmdStr.toLowerCase();
@@ -103,10 +113,10 @@ int InterpreterExcute(String *cmd){
          wsTextPrint("\n"); // newline for console
          Serial.printf("Command:%s match!",commandTable[i].funName);
          cmd_option(argc,argv); // check option exist or not
-         Config_SetArgv("argv",argc,argv);
          int ret=(*(commandTable[i].cmdPtr))(argc,argv);
           *cmd = "";
 
+         interpreterState =  INTERPRETER_READY; // to skip banner
 
         //  Serial.printf(" %d\n",ret);
          return ret;
@@ -116,6 +126,7 @@ int InterpreterExcute(String *cmd){
   } 
   *cmd = "";
   if (argc>0) wsTextPrint("\nillegal cmd, try help\n%");
+  interpreterState =  INTERPRETER_READY; // to skip banner
   return -1;
 }
 bool interpreterCheckReceiveCmd(String cmd){

@@ -24,7 +24,7 @@
 #ifndef _JSWRAP_TC_H_
 #define _JSWRAP_TC_H_
 #include "Arduino_Portenta_JerryScript.h"
-#include "ESP32inc.h"
+#include "debuglog.h" 
 
 #include "../../src/cmdconfig.h" 
 
@@ -36,16 +36,21 @@
           const jerry_value_t args_p[], /**< function arguments */          \
           const jerry_length_t args_cnt) /**< number of function arguments */
 
+/* sheel interpreter function */
+int InterpreterArgvList(String *cmd, int* argc, char** argv[]);
+int InterpreterExcute(String *cmd);
 
 String checkExtension(const char *filename);
-bool RunScriptsFile(const char *path);
-bool ParserRunScriptsFile(const char *path);
+bool execScriptsFile(const char *path);
+bool parserRunScriptsFile(const char *path);
+int execShellCmd(const char *cmdline); // bug:maybe reentry for repl only
 
 // print, setInterval, setTimeout, clearInterval,clearTimeout;
 jerry_value_t register_module_class();
 
 // print, setInterval, setTimeout, clearInterval,clearTimeout;
 bool jerryxx_register_extra_api(void);
+bool jerryxx_register_extra_api_free(void);
 //arduino
 void jerryxx_register_arduino_library();
 //device
@@ -62,10 +67,14 @@ bool js_wifi_classobj_wraper(); //1
 
 //esp32 
 bool js_esp32_classobj_wraper();
-#ifdef _LIB_WIRE_
-// Wire.h
-#include "Wire.h"
-bool js_wire_classobj_wraper(); //1 a)modified func name and b) define in .h c) call by jswwrap_tc
+//Wire
+#ifdef  _LIB_ADAFRUIT_SSD1306_
+bool js_sd1306_classobj_wrapper(); 
+#endif //_LIB_ADAFRUIT_SSD1306_
+
+#ifdef _LIB_LIQUIDCRYSTAL_I2C_
+// LiquidCrystal_I2C.h
+bool js_liquidlcd_classobj_wrapper();
 #endif
 // example c++ class obj wrap
 #ifdef _CLASSOBJ_EXAMPLE_
@@ -83,6 +92,9 @@ bool js_mqtt_classobj_wraper();
 #ifdef CMD_DHT
 bool js_dht_classobj_wraper();
 #endif //CMD_DHT
+
+
+void jerryxx_free_library();
 
 #endif //_LANG_JERRYSCRIPT_
 

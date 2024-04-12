@@ -31,16 +31,17 @@ to be defined
 #endif
 
 
-
+void wsTextPrintf(const char *fmt,...);
+void wsMonitorPrintf(const char *fmt,...);
 #define  __WSDEBUG_LEVEL__ 0
 #define  __WSDEBUG_NONE__ 0
 #define __WSDEBUG_ERROR__ -1
 #define __WSDEBUG_DRIVER__ 9
-#undef  __WSDEBUG__  
+#define  __WSDEBUG__  
 
 #ifdef  __WSDEBUG__ 
 #define WSDEBUG_TPRINTF(...)  wsTextPrintf(__VA_ARGS__);
-#define WSDEBUG_MPRINTF(...)  wsMonitorPrintf(__VA_ARGS__);
+#define WSDEBUG_MPRINTF(...)  wsMonitorPrintf(__VA_ARGS__); // index.htm dsiable this, unstable
 #define WSDEBUGCHK(level)  if (level<__DEBUG_LEVEL__) 
 #else
 #define WSDEBUG_TPRINTF(...)    

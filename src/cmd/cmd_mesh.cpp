@@ -4,7 +4,7 @@
 */
 #include "ESP32inc.h"
 
-#include "cmdconfig.h"
+#include "command.h"
 #ifdef CMD_MESH
 #include "painlessMesh.h"
 

@@ -12,105 +12,215 @@
  * 4. select, copy and paste to file.
  */
 
-let process = require('process');
 // TODO for command line mode
 // TODO usage js jswmgen methos.json file.cpp 
-//  process.argv[2] is json file
-//  process.argv[3] is cpp file 
 // todo method prototype array using Object.array.forEach to generate all method handles
-// Example Wire method prototype generrator 
-// Input methods
-var methods = {
-    classObj : 'rectangle', // TBD write your own object name
-    constructorPrototype : 'Rectangle::Rectangle(int length,int width);',  // should be CLASSNAME::CONSTRUCTOR
-    prototypesArray : [// TODO will use only C Prototype , suppose JS is auto generated
-    // C prototype                                  JS prototype to compare arg type for cast
-    'int getSize();',
-    'int getLength();',
-    'int getWidth();'
-    ],
-    className :'',
-    methodNames:[],
-
-};
-
-const argMappings_C_to_JS = { // TODO for arg_type mappings type 
-    "size_t": "int32",
-    "int": "int32",
-    "int8": "int8",
-    "int16": "int16",
-    "int32": "int32",
-    "int_t": "int32",
-    "int8_t": "int8",
-    "int16_t": "int16",
-    "int32_t": "int32",
-    "uint": "uint32",
-    "uint8": "uint8",
-    "uint16": "uint16",
-    "uint32": "uint32",
-    "uint_t": "uint32",
-    "uint8_t": "uint8",
-    "uint16_t": "uint16",
-    "uint32_t": "uint32",
-    "uint8*": "string",
-    "uint8_t*": "string",
-    "char*": "string_sz",
-    "char": "uint8",
-    // "char": "String",
-    "double": "number",
-    "float": "number",
-    "bool": "boolean",
-    "void*": "native_pointer", // not support now
-    "void": "ignore",        
-    "funcptr": "function"   // TODO for callback should be typedef funcptr prototype
-};
-const retMappings_C_to_JS = { // TODO for return js type 
-    "size_t": "number",
-    "int8": "number",
-    "int16": "number",
-    "int32": "number",
-    "int": "number",
-    "int_t": "number",
-    "int8_t": "number",
-    "int16_t": "number",
-    "int32_t": "number",
-    "uint8": "number",
-    "uint16": "number",
-    "uint32": "number",
-    "uint": "number",
-    "uint_t": "number",
-    "uint8_t": "number",
-    "uint16_t": "number",
-    "uint32_t": "number",
-    "uint8*": "string",
-    "char*": "string_sz",
-    "char": "number",
-    "void": "void"   // undefined is keywordmaybe transfer in functions
-};// TODO crettype auto transfer to jsrettype
-
-// todo method prototype array using Object.array.forEach to generate all method handles
-// Example Wire method prototype generrator 
-// Input methods
-var methods = {
-    classObj : 'rectangle', // TBD write your own object name
-    constructorPrototype : 'Rectangle::Rectangle(int length,int width);',  // should be CLASSNAME::CONSTRUCTOR
-    prototypesArray : [// TODO will use only C Prototype , suppose JS is auto generated
-    // C prototype                                  JS prototype to compare arg type for cast
-    'int getSize();',
-    'int getLength();',
-    'int getWidth();'
-    ],
-    className :'',
-    methodNames:[],
-
-};
+// Example rectangle
+// %js jswmgen rectangle.json rect.cpp
+// %cat rect.cpp
+//  select copy and past 
+//   readme to add into
 
 /* main */
-let cobj = constructorPrototypeParser(methods.classObj,methods.constructorPrototype);
-methods.className = cobj.className;
-methods.methodNames=[];
+    // type mapping (c_arg_type->js_arg_type) (cret->jsrettype)
+    // maybe need to correction
+
+let process = require('process');   
+const version = '0.9.0';
+const app = process.argv[1];
+let fs = require('fs');  
+let jsonFileName='/js/rectangle.json';
+let outFileName='';
+var methods;
+var cobj;
+
+if (process.argv.length>2) {
+    jsonFileName = process.cwd+process.argv[2];
+    if (process.argv.length==4) outFileName=process.cwd+process.argv[3];
+}
+const [argMappings_C_to_JS,retMappings_C_to_JS] = definedConst();
+[methods,cobj] = loadJsonFile(jsonFileName);
+dumpMethods(jsonFileName,outFileName,methods);
+pass1CheckMethods(jsonFileName,outFileName,methods);
+
 jswGenerator(methods);
-  
+
+/* load method Object which is defined in JSON file */
+function loadJsonFile(jsonFile){
+let methods={ // default
+    classObj : "rectangle", 
+    constructorPrototype : "Rectangle::Rectangle(int length,int width);", 
+    prototypesArray : [
+        "int getSize();",
+        "int getLength();",
+        "int getWidth();"
+    ],
+    className :"",
+    methodNames:[]    
+};
+    const configStr = fs.readFile(jsonFile);
+    methods = JSON.parse(configStr); 
+    if (typeof methods == 'undefined') {
+        console.log('Error: JSAON Parser');
+    }
+    let cobj = constructorPrototypeParser(methods.classObj,methods.constructorPrototype);
+    methods.className = cobj.className;
+    methods.methodNames=[];
+    return [methods,cobj]; 
+}
+function writeln(outFile,msg){
+    fs.appendFile(outFile,msg);
+    fs.appendFile(outFile,"\n");
+}
+function dumpMethods(jsonFile,outFile,methods){
+    console.log('//Json:',jsonFile);
+    console.log('//File:',outFile);
+    console.log('//className:',methods.className);
+    console.log('//classObj:',methods.classObj);
+    console.log('//constructorPrototype:',methods.constructorPrototype);
+    console.log('//prototypesArray:');
+    methods.prototypesArray.forEach(element => {
+        // print(element);
+        console.log('//   ',element);
+    });
+    if (outFile!=''){
+        fs.deleteFile(outFile);
+        fs.writeFile('// '+outFile,app+version);
+        writeln(outFile,'//Json:'+jsonFile);
+        writeln(outFile,'//File:'+outputFile);
+        writeln(outFile,'//className:'+methods.className);
+        writeln(outFile,'//classObj:'+methods.classObj);
+        writeln(outFile,'//constructorPrototype:'+methods.constructorPrototype);
+        writeln(outFile,'//prototypesArray:');
+        methods.prototypesArray.forEach(element => {
+            // print(element);
+            writeln(outFile,'//   '+element);
+        });
+    }
+
+}
+
+function pass1CheckMethods(jsonFile,outFile,methods){
+
+    methods.prototypesArray.forEach(element => {
+        // print(element);
+        methodParserCheckeer(element);
+    });
+}
+function methodParserCheckeer(methodPrototype) {
+    let methodElementsC = extractMethodElements(methodPrototype);
+    let methodName = methodElementsC.methodName;
+    let argvtype = methodElementsC.argvtypeArray;
+    let argvname = methodElementsC.argvnameArray;
+    let returnctype = methodElementsC.rettype;
+    //TODO retMappings_C_to_JS[returnctype];
+    //TODO concerns call method arg typecast
+    let returnjstype = retMappings_C_to_JS[returnctype];//methodElementsJS.rettype;
+    try {
+        if (typeof returnjstype === 'undefined' || returnjstype === ''){
+            returnjstype = 'undefined';
+            throw new Error(`Exception retType ${returnctype}, js is null`);
+        }
+        argvtype.forEach(element => {
+            let argCtype = argMappings_C_to_JS[element]; // print(element);
+            if (typeof returnjstype === 'undefined' || argCtype === ''){
+                throw new Error(`Exception argType ${methodName} ${argCtype}`);
+            }
+        });  
+        argvname.forEach(element => {
+            if (typeof returnjstype === 'undefined' || argvname === ''){
+                throw new Error(`Exception argName ${methodName} ${argvname}`);
+            }
+        });   
+    }catch(e){
+        console.error('Error:', e.message);        
+    }   
+}
+
+function outputFile(statements){
+    if (outFileName!=''){ // outFileName global
+        // append file TODO
+        writeln(outFileName,statements);
+        return;
+    }
+    console.log(statements);
+}
+function outputFileBoth(statements){
+    if (outFileName!=''){ // outFileName global
+        // append file TODO
+        writeln(outFileName,statements);
+    }
+    if (statements.length>10) console.log(statements," Done!");
+}
+function definedConst(){
+    return [definedConstArg(),definedConstRet()];
+}
+function definedConstArg(){
+        const argMappings_C_to_JS = { // TODO for arg_type mappings type 
+        "size_t": "uint32",
+        "int": "int32",
+        "int_t": "int32",
+        "int8_t": "int8",
+        "int16_t": "int16",
+        "int32_t": "int32",
+        "uint": "uint32",
+        "uint8": "uint8",
+        "uint16": "uint16",
+        "uint32": "uint32",
+        "uint_t": "uint32",
+        "uint8_t": "uint8",
+        "uint16_t": "uint16",
+        "uint32_t": "uint32",
+        "uint_t*": "ignore",
+        "uint8_t*": "ignore",
+        "uint16_t*": "ignore",
+        "uint32_t*": "ignore",
+        "int_t*": "ignore", // ignore part should be modified as GFX drawbitmap
+        "int8_t*": "ignore",
+        "int16_t*": "ignore",
+        "int32_t*": "ignore",        
+        "char*": "string", // possible use string_sz
+        "char": "uint8",
+        "char*": "string",
+        "double": "number",
+        "float": "number",
+        "bool": "boolean",
+        "ignore": "ignore",         // TODO for callback should be typedef funcptr prototype
+        "void*": "native_pointer",    // TODO for callback should be typedef funcptr prototype     
+        "funcptr": "function",   // TODO for callback should be typedef funcptr prototype
+        "custome": "custome"   // TODO for callback should be typedef funcptr prototype
+    };
+    return argMappings_C_to_JS;
+}
+function definedConstRet(){
+    const retMappings_C_to_JS = { // TODO for return js type 
+        "size_t": "number",
+        "int8": "number",
+        "int16": "number",
+        "int32": "number",
+        "int": "number",
+        "int_t": "number",
+        "int8_t": "number",
+        "int16_t": "number",
+        "int32_t": "number",
+        "uint8": "number",
+        "uint16": "number",
+        "uint32": "number",
+        "uint": "number",
+        "uint_t": "number",
+        "uint8_t": "number",
+        "uint16_t": "number",
+        "uint32_t": "number",
+        "uint8*": "string",
+        "uint8_t*": "string",
+        "char*": "string_sz",
+        "char": "number",
+        "bool": "boolean",
+        "void": "void"   // undefined is keywordmaybe transfer in functions
+    };// TODO crettype auto transfer to jsrettype
+
+    return retMappings_C_to_JS;
+}  
 function jswGenerator(methods){
 
     // #ifdef _LIB_CLASS_
@@ -124,7 +234,7 @@ function jswGenerator(methods){
     outputFile(`//Verify Methods List`);
     cobj.methods = methods.methodNames;
     cobj.methods.forEach((element) => {
-       outputFile(`/*js_${element}*/`);
+       outputFile(`/*js_${cobj.classObjName}_${element}*/`);
     });  
     // constructor
     constructorGenerator(cobj);
@@ -148,14 +258,14 @@ function methodGenerator(className,classObj,prototypeC) {
     //TODO concerns call method arg typecast
     let returnjstype = retMappings_C_to_JS[returnctype];//methodElementsJS.rettype;
     
-    if (returnjstype === ''){
+    if (typeof returnjstype === 'undefined' || returnjstype === ''){
         returnjstype = 'undefined';
         throw new Error(`Exception retType ${returnctype}, js is null`);
     }
     let argvCtype = methodElementsC.argvtypeArray;
 
     try {
-        genFunctionHeaderPush(prototypeC,methodName);
+        genFunctionHeaderPush(classObj,prototypeC,methodName);
 
     //2. mapping argument
             argList(argvtype,argvname);
@@ -171,13 +281,7 @@ function methodGenerator(className,classObj,prototypeC) {
     }
     return methodName;
 }
-function outputFile(statements){
-    // if (process.argv[3]!=''){
-    //      // append file TODO
-    //      return;
-    // }
-    console.log(statements);
-}
+
 var blocks=[];
 var level=0;
 function resetblock(){
@@ -191,14 +295,14 @@ function pushblock(f){
 function popblock(){
     s = blocks.pop();
     level--;
-    outputFile(s);
+    outputFileBoth(s);
 }
-function genFunctionHeaderPush(prototypeC,methodName){
+function genFunctionHeaderPush(classObj,prototypeC,methodName){
     outputFile(`//${prototypeC}`); // method prototype
     //1. method prototype
-    outputFile(`JS_METHOD(${methodName})`); // method prototype
+    outputFile(`JS_METHOD(${classObj}_${methodName})`); // method prototype
     outputFile(`{`);
-    pushblock(`} /*js_${methodName}*/`);
+    pushblock(`} /*js_${classObj}_${methodName}*/`);
 }
 function genFunctionTailPop(){
     popblock();
@@ -248,7 +352,7 @@ function parserMatch(match) {
 }
 function extractMethodElements(methodPrototype) {
     // Regular expression pattern to match the method prototype syntax
-    const pattern = /^(\w+)\s+(\w+)\((.*?)\);$/;
+    const pattern = /^(\w+)\s+(\w+)\((.*?)\);?$/;
     // Execute the regular expression on the method prototype
     const match = methodPrototype.match(pattern);
     if (match) {
@@ -273,8 +377,8 @@ function argList(argvtype,argvname){
     //2. mapping argument
     let i=0;
     for(i=0;i<argvtype.length;i++) {
-        if (argvtype[i]=='uint8_t*'){
-            outputFile(`${' '.repeat(level * 4)}${argvtype[i]} ${argvname[i]}[32];`);
+        if (argvtype[i]=='char*'){
+            outputFile(`${' '.repeat(level * 4)}char ${argvname[i]}[32];// **WARNNING** need to check BUFFERSIZE`);
         }else{
             outputFile(`${' '.repeat(level * 4)}${argvtype[i]} ${argvname[i]};`);
         }
@@ -284,8 +388,15 @@ function argList(argvtype,argvname){
 function mappingEntry_string(argvname,argvtype){
     outputFile(`${' '.repeat(level * 4)}jerryx_arg_string(${argvname}, sizeof(${argvname}), JERRYX_ARG_NO_COERCE, JERRYX_ARG_REQUIRED),`);
 }
+function mappingEntry_array(argvname,argvtype){
+    outputFile(`${' '.repeat(level * 4)}jerryx_arg_array(&${argvname},  JERRYX_ARG_REQUIRED),`);
+}
 function mappingEntry_int(argvname,argvtype){
     outputFile(`${' '.repeat(level * 4)}jerryx_arg_${argvtype}(&${argvname}, JERRYX_ARG_CEIL, JERRYX_ARG_NO_CLAMP, JERRYX_ARG_NO_COERCE, JERRYX_ARG_REQUIRED),`);
+}
+function mappingEntry_native_pointer(argvname,argvtype){
+    outputFile(`${' '.repeat(level * 4)}/* **TODO** need to define your c callback to use jerry_call */`);
+    outputFile(`${' '.repeat(level * 4)}jerryx_arg_function(&${argvname}, JERRYX_ARG_REQUIRED),`);
 }
 function mappingEntry_function(argvname,argvtype){
     outputFile(`${' '.repeat(level * 4)}/* **TODO** need to define your c callback to use jerry_call */`);
@@ -294,11 +405,11 @@ function mappingEntry_function(argvname,argvtype){
 function mappingEntry_coerce_required(argvname,argvtype){
     outputFile(`${' '.repeat(level * 4)}jerryx_arg_${argvtype}(&${argvname},  JERRYX_ARG_NO_COERCE, JERRYX_ARG_REQUIRED),`);
 }
-function mappingEntry_coerce_required(argvname,argvtype){
-    outputFile(`${' '.repeat(level * 4)}jerryx_arg_${argvtype}(&${argvname},  JERRYX_ARG_NO_COERCE, JERRYX_ARG_REQUIRED),`);
+function mappingEntry_coerce_optional(argvname,argvtype){
+    outputFile(`${' '.repeat(level * 4)}jerryx_arg_${argvtype}(&${argvname},  JERRYX_ARG_NO_COERCE, JERRYX_ARG_OPTIONAL),`);
 }
 function mappingEntry_ignore(argvname,argvtype){
-    outputFile(`${' '.repeat(level * 4)}jerryx_arg_ignore (void),`);
+    outputFile(`${' '.repeat(level * 4)}jerryx_arg_ignore (void), // *TODO*ignore should be modified as GFX drawbitmap, to get arraybuffer_data`);
 }
 function mapping(argvtype,argvname){
     if (typeof argvtype=== 'undefined' || argvtype.length == 0) return 0;
@@ -310,6 +421,9 @@ function mapping(argvtype,argvname){
         switch(jsargtype){// convert c type to mapping
         case 'string':
             mappingEntry_string(argvname[i],argvtype[i]);
+            break;
+        case 'array':
+            mappingEntry_array(argvname[i],argvtype[i]);
             break;
         case 'number':
         case 'boolean':
@@ -326,11 +440,13 @@ function mapping(argvtype,argvname){
         case 'function': 
             mappingEntry_function(argvname[i],jsargtype);
             break;
+        case 'native_point': 
+            mappingEntry_native_pointer(argvname[i],jsargtype);
         case 'ignore': 
             mappingEntry_ignore(argvname[i],jsargtype);
             break;
         default:
-            throw new Error(`Exception Type ${argvtype[i]}, ${argvname[i]}for arg Mapping()`);
+            throw new Error(`Exception Type ${argvtype[i]}, ${argvname[i]} for arg Mapping()`);
         }
     }
     popblock();
@@ -424,8 +540,9 @@ function constructorPrototypeParser(classObjName,prototype) {
 }
 function constructorGenerator(cobj) {
     let prototypeC = cobj.prototype;
+    let classObj = cobj.classObjName;
     try {
-        genFunctionHeaderPush(prototypeC,cobj.className);
+        genFunctionHeaderPush(classObj,prototypeC,cobj.className);
     //2. mapping argument
             argList(cobj.argvtypes,cobj.argvnames);
             mapping(cobj.argvtypes,cobj.argvnames);
@@ -472,12 +589,12 @@ function destroyFreeCBGenerator(cobj) { // put before constructor
 function registerGenerator(cobj) {
     let className = cobj.className;
     let classObj = cobj.classObjName;
-    outputFile(`${' '.repeat(level * 4)}bool js_${classObj}_classobj_wraper(){  `);
+    outputFile(`${' '.repeat(level * 4)}bool js_${classObj}_classobj_wrapper(){  `);
     outputFile(`${' '.repeat(level * 4)}//1 a)modified func name and b) define in .h c) call by jswwrap_tc`);
     pushblock(`${' '.repeat(level * 4)}};`);
-        outputFile(`${' '.repeat(level * 4)}jerryx_register_global ("${className}", js_${className});`);
+        outputFile(`${' '.repeat(level * 4)}return jerryx_register_global ("${className}", js_${classObj}_${className});`);
       
-        outputFile(`${' '.repeat(level * 4)}return true;`);
+        // outputFile(`${' '.repeat(level * 4)}return true;`);
     popblock();
 }
 function LibdefHeaderGeneratorPush(cobj) {
@@ -485,13 +602,13 @@ function LibdefHeaderGeneratorPush(cobj) {
     resetblock();
     outputFile(`#include "jswrap_tc.h"`);
     outputFile(`#ifdef _LANG_JERRYSCRIPT_ `);
-    pushblock(`#endif // _LANG_JERRYSCRIPT_ `);  level--; // non level shift
+    pushblock(`#endif // _LANG_JERRYSCRIPT_ Congraturation Done!`);  level--; // non level shift
     outputFile(`#ifdef _LIB_${className.toUpperCase()}_`);
     pushblock(`#endif //_LIB_${className.toUpperCase()}_`); level--; // non level shift
     outputFile(`/* **HOW 1** simple select copy & paste **/`);
     outputFile(`/* **HOW 2** or using process.argv[2] for output file, then dl file**/`);
-    outputFile(`/* **TODO** Include your class declaration here **/`);
     outputFile(`/* **WARNNING** if tab position is wrong, means error found**/`);
+    outputFile(`/* **TODO** Include your class declaration here **/`);
     outputFile(`#include "${className}.h"`);
 
 }
@@ -512,12 +629,13 @@ function classObjSetNativePtr(cobj){
 }
 function methodsTable(cobj){
     let className = cobj.className;
+    let classObj = cobj.classObjName;
     outputFile(`${' '.repeat(level * 4)}// Register initialization function`);
     outputFile(`${' '.repeat(level * 4)}jerryx_property_entry props[] ={ //5 methods`);
         pushblock(`${' '.repeat(level * 4)}};`);
         outputFile(`${' '.repeat(level * 4)}JERRYX_PROPERTY_STRING_SZ ("id", "${className}"),`);
         cobj.methods.forEach((element) => {
-            outputFile(`${' '.repeat(level * 4)}JERRYX_PROPERTY_FUNCTION ("${element}", js_${element}),`);
+            outputFile(`${' '.repeat(level * 4)}JERRYX_PROPERTY_FUNCTION ("${element}", js_${classObj}_${element}),`);
         });
         outputFile(`${' '.repeat(level * 4)}JERRYX_PROPERTY_LIST_END(),`);
         popblock(); 

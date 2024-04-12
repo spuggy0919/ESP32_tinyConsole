@@ -6,7 +6,7 @@ for(let i=0;i<100;i++){
     console.log(i,esp.FreeHeap(),a[i].getLength(),'*',a[i].getWidth(),'=',a[i].getSize(),a[i].getSize()==(a[i].getWidth()*a[i].getLength()));
 }
 for(let i=0;i<100;i++){
-    delete a[i];
+  //  delete a[i]; check whether it is auto free
     console.log(i,esp.FreeHeap());
 }
 

@@ -150,7 +150,6 @@ int autoexec_bas_js(){
     argvlist[1]=(char *)(cmd.c_str());
 #ifdef STARTUP_DIRECT_RUNAUTO     
       InterpreterExcute(&cmd);
-      interpreterState =  INTERPRETER_READY; // to skip banner
 #else
       cmd_exec(2,argvlist); // for exeample "exec tb", will run autoexec.bas
 #endif
@@ -161,7 +160,6 @@ int autoexec_bas_js(){
       String cmd=String(AUTORUN);
 #ifdef STARTUP_DIRECT_RUNAUTO     
       InterpreterExcute(&cmd);
-      interpreterState =  INTERPRETER_READY; // to skip banner
 #else
       cmd_exec(2,argvlist); // for exeample "exec tb", will run autoexec.bas
 #endif

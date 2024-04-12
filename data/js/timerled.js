@@ -50,7 +50,7 @@ clearInterval(id1);
 id2  = setInterval(blinkToggle,1000);
 print("press special key(esc,ctrl-c,'q','Q')...\n");
 print(esio.kbhit(),'\n');
-clearInterval(id2);
+// clearInterval(id2); test auto free 
 
 
 // id2  = setTimeout(blink5_500,1000);

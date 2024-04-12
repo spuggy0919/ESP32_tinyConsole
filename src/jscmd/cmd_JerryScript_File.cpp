@@ -61,10 +61,10 @@ int  cmd_JerryScript_RunFile(int argc,char* argv[]) {
   jerryxx_register_arduino_api (); //not support now
   jerryxx_register_arduino_library(); //in jswarp_tc
 
-    for(int i=1;i<=1;i++){ // run first argc only
-        if (!RunScriptsFile(argv[i])) return 2;
-    }
-
+    // for(int i=1;i<=1;i++){ // run first argc only
+        if (!execScriptsFile(argv[1])) return 2;
+    // }
+  jerryxx_free_library();
   jerry_cleanup();
   return 0;
 }

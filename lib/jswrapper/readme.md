@@ -4,9 +4,14 @@ the IO and library function still need C++ wrapper to bridge.
 ## Here a auto wrapprt generator
 
 ```
-%js  jswmgen [enter]
+%js  jswmgen rectangle rect.cpp[enter]
+%cat rect.cpp [enter]
 #then select copy and paste to your files
+%dl rect.cpp [enter]   #download file
 ```
+## How to build wrap cpp file
+[HowTo](../../data/js/readme.md)
+
 When you get the autogen file, you should check,
 1. if tab postion wrong, bad news!
 2. check each methods, if C using same method, different args, it should be merge into one, by check arg_cnt, or using differnet method name.

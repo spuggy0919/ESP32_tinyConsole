@@ -47,6 +47,8 @@ let touch = require('touch');
 let wifi = require('wifi');
 let process = require('process');
 
+
+
 function getuser(process){
     process.usrInput = (sio.readline()).slice(0,-1); // delete linefeed
 }

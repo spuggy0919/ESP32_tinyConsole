@@ -24,11 +24,26 @@ int repl_command_check(jerry_char_t *line_p){
   } 
   cmd =  cmd.substring(0, cmd.length() - 1);
   if (line_p[0]=='.'){
-    //  wsTextPrintf("[REPL]:'.' cmd (%s)found\n",line_p);
-     if (String(".exit").startsWith(cmd)) {
-       wsTextPrintf("\n[repl]:.exit(%d)",REPL_EXIT);
-       return REPL_EXIT; 
-     }
+    int argc;
+    char** argv;
+      InterpreterArgvList(&cmd,&argc,&argv); // prepare argVlist
+      for(int i=0;i<argc;i++)
+          wsTextPrintf("[REPL]:argv[%d]=%s\n",i,argv[i]);
+      if (String(".exit").startsWith(argv[0])) {
+        wsTextPrintf("\n[repl]:.exit(%d)\n",REPL_EXIT);
+        return REPL_EXIT; 
+      }else if (String(".run").startsWith(argv[0])) {
+        int ret = execScriptsFile(argv[1]);
+        wsTextPrintf("\n[repl]:.run(%d)\n",ret);
+      }else if (String(".parser").startsWith(argv[0])) {
+        int ret = parserRunScriptsFile(argv[1]);
+        wsTextPrintf("\n[repl]:.parser (%d)\n",ret);
+      }else{ // try run shell cmd
+        int ret = execShellCmd((const char*)&line_p[1]);
+        if (ret!=0) {
+            wsTextPrintf("\n[repl]:.shell error(%d)\n",ret);
+        }
+      }
   }
   return REPL_NORMAL;
 }
@@ -51,7 +66,7 @@ jerryx_repl_with_cmd (const char *prompt_p,int argc,char* argv[])
               return;
           }
       }
-      if (ParserRunScriptsFile(argv[1])) {
+      if (parserRunScriptsFile(argv[1])) {
           wsTextPrintf("ParserRun Load(%s)\n",argv[1]);
       }
   }
@@ -148,6 +163,8 @@ int cmd_JerryScript_Repl(int argc,char* argv[]) {
   /* Read Evaluate Print Loop */
   jerryx_repl_with_cmd("js>",argc,argv);
 
+  /* Cleanup tinyconsole resource */
+  jerryxx_free_library();
   /* Cleanup engine */
   jerry_cleanup ();
   return 0;

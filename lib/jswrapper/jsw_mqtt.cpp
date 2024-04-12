@@ -26,6 +26,7 @@
 
 #ifdef _LANG_JERRYSCRIPT_
 #ifdef CMD_MQTT
+#include <WiFi.h>
 #include "PubSubClient.h"
 extern WiFiClient espClient; //in cmd_mqtt
 extern PubSubClient client; //in cmd_mqtt
@@ -92,7 +93,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     // jerry_value_t callback_fn_copy = jerry_value_copy (jerry_mqtt_callback_fn);
     // jerry_value_t global_obj_val = jerry_current_realm ();
     jerry_value_t result_val = jerry_call (jerry_mqtt_callback_fn, jerry_undefined(), args, 3);
-    // jerry_value_free (result_val);
+    jerry_value_free (result_val);
     // jerry_value_free (global_obj_val);
     // jerry_value_free (args[0]);
     // jerry_value_free (args[1]);

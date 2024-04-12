@@ -33,6 +33,7 @@ String WifiLocalIP();
 String WifiSSID();
 long WifiRSSI();
 int WifiMode();
+extern String CurrntClientIP;
 
 
 #endif

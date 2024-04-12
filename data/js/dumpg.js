@@ -45,7 +45,7 @@ function listObjProps(obj){ //move to module.js
   }
 } 
 
-let nativeobjs=[this,wsSerial,File,wifi,Touch,Canvas,dht,console,MqttClient];
+let nativeobjs=[this,wsSerial,File,wifi,Touch,Canvas,dht,console];
 nativeobjs.forEach(element => {
   // print(element);
   listObjProps(element);

@@ -55,6 +55,7 @@ void eventDownloadFile(String msg);
 
 
 void interpreterInit();
+int InterpreterArgvList(String *cmd, int* argc, char** argv[]);
 int InterpreterExcute(String *cmd);
 
 bool interpreterCheckReceiveCmd(String cmd);

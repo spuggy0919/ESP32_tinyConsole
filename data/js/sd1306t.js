@@ -1,0 +1,89 @@
+let esio = require('esio');
+const  OLED_RESET = 4;
+const  SSD1306_WHITE = 1;
+const  SSD1306_BLACK = 0;
+const  SSD1306_INVERSE = 2;
+const SSD1306_SWITCHCAPVCC = 2;
+let  display = new Adafruit_SSD1306(OLED_RESET);   
+const 現 =[	//現
+0x00,0x08,0x01,0xFC,0xFD,0x08,0x11,0x08,0x11,0xF8,0x11,0x08,0x11,0x08,0x7D,0xF8,
+0x11,0x08,0x11,0x08,0x11,0xF8,0x1D,0x48,0xF0,0xA0,0x41,0x22,0x02,0x22,0x0C,0x1E
+];
+const 在=[	//在
+0x02,0x00,0x02,0x00,0x02,0x04,0xFF,0xFE,0x04,0x00,0x04,0x40,0x08,0x40,0x08,0x48,
+0x13,0xFC,0x30,0x40,0x50,0x40,0x90,0x40,0x10,0x40,0x10,0x44,0x17,0xFE,0x10,0x00
+];
+const 時=[	//時
+0x00,0x20,0x04,0x20,0x7E,0xF8,0x44,0x20,0x44,0x20,0x45,0xFC,0x44,0x10,0x7C,0x10,
+0x47,0xFE,0x44,0x10,0x44,0x90,0x44,0x50,0x7C,0x50,0x44,0x10,0x00,0x50,0x00,0x20
+];
+const 間=[		//間
+0x00,0x08,0x7C,0xFC,0x44,0x88,0x7C,0xF8,0x44,0x88,0x7C,0xF8,0x40,0x08,0x4F,0xC8,
+0x48,0x48,0x4F,0xC8,0x48,0x48,0x4F,0xC8,0x48,0x48,0x40,0x08,0x40,0x28,0x40,0x10
+];
+const logo_bmp = createlogbmp('在');
+
+const LOGO_HEIGHT  = 16;
+const LOGO_WIDTH  =  16;
+
+sd1306_setup();
+testdrawbitmap();
+while(!esio.escape()) {
+    printtime();
+}
+
+function createlogbmp(key){
+    // Create an ArrayBuffer with a length of 32 bytes
+  let buffer = new ArrayBuffer(32);
+  
+  // Create a typed array view (Uint8Array) to manipulate the buffer
+  let view = new Uint8Array(buffer);
+  
+  
+  
+    // Assign the binary data to the buffer using the view
+    // let bmpname = [binaryData, 現,在,時,間];
+    let data = key;
+    for (let i = 0; i < data.length; i++) {
+      view[i] = data[i];
+    }
+  
+  // Now the buffer contains the specified binary data
+  // console.log(view);
+      return buffer;
+  }
+  function sd1306_setup(){
+      display.begin(SSD1306_SWITCHCAPVCC, 0x3c);  
+      // Clear the buffer.
+      display.clearDisplay();
+  
+
+  
+    // Show the display buffer on the screen. You MUST call display() after
+    // drawing commands to make them visible on screen!
+    display.display();
+}
+function testdrawbitmap() {
+    var key =[現,在,時,間];
+    let org = 16;
+    for(let i =0;i<key.length;i++){
+      let 字= createlogbmp(key[i]);
+
+      display.drawBitmap(
+        org,
+        0,
+        字, LOGO_WIDTH, LOGO_HEIGHT, 1,0);
+      org+=LOGO_WIDTH+2; 
+
+    }
+    display.display();
+}
+function printtime() {
+    var now = new Date();
+    display.drawFillRect(0,16,128,16,0);    
+    display.setTextSize(2);    
+    display.setCursor(16,16);
+    display.setTextColor(1,0);
+    display.println(now.toString().slice(17,25));
+    display.display();
+}

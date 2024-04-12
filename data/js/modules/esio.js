@@ -1,28 +1,24 @@
-let sio = require('sio');
-const esio ={
+const esio = Object.assign({},wsSerial,{
     kbhit:function (){ // by esc, control-c, q, Q
         let b = false;
         while(!b) {
-            b=sio.escape();
+            b=wsSerial.escape();
         }
         return b;
     },
     getc :function(){ // now wsSerial is sent line base, should be enter then sent out
-        let c=sio.getchar();
+        let c=wsSerial.getchar();
         return c;
     },
 
     getline : function (){
-        let s=sio.readline();
+        let s=wsSerial.readline();
         return s;
-    },
- 
-
+    },    
     writeline : function writeline(s){ //wsSerial.write write string to ws tx queue buffer
-        return sio.writestring(s);
+        return wsSerial.writestring(s);
     }
-}
-
+});
  
 if (typeof module === 'undefined') {
     print("Hit by key testing(esc,ctrl-c,'q','Q')...\n");

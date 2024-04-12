@@ -23,6 +23,7 @@
  */
 
 #include "jswrap_tc.h"
+#include "wsSerial.h"
 // class WebSocketSerial {  // no inherits from arduino print : sccording virtual public Print
 // public:
 //     WebSocketSerial();

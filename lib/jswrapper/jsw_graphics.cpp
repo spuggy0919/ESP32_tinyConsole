@@ -22,6 +22,7 @@
  *	Author: spuggy0919, spuggy0919@gmail.com
  */
 #include "jswrap_tc.h"
+#include "ESP32inc.h"
 
 // int drawText(String text,int x, int y,float deg) { 
 //     char vbuf[80]; 

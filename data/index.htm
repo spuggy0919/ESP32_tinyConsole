@@ -587,7 +587,7 @@
                 var textlog = document.getElementById(id);
                 var txtValue = textlog.value + txt;
                 var txtlines = txtValue.split('\n');
-                const MaxLines = 256;
+                const MaxLines = 1024;
                 var removelines = 0;
                 if (txtlines.length>MaxLines) removelines = txtlines.length-MaxLines;
                 txtValue = txtlines.slice(removelines).join('\n');
@@ -653,7 +653,7 @@
 
  
 //  Server Sent Event (SSE) Listener Handle      
-          if (!!window.EventSource) {
+          if (window.EventSource) {
           var source = new EventSource('/events');
   
           source.addEventListener('Eventdoownload', function(e) {

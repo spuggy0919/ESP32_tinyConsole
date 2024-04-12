@@ -27,9 +27,9 @@ id10 = setTimeout(f10,15000);
 print(kbhit(),'stop id1=',id1);
 clearInterval(id1);
 print(kbhit(),'stop id2=',id2);
-clearInterval(id2);
+// clearInterval(id2); // test auto clear by jswrap_tc
 print(kbhit(),'stop id3=',id10);
-clearInterval(id10);
+// clearInterval(id10); // auto clear by jswrap_tc
 // id2 = setInterval(f2,2000);
 // id10 = setTimeout(f10,10000);
 // iddel = setTimeout(delt,30000);

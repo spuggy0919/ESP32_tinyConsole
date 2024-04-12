@@ -102,6 +102,7 @@ function cmd_mqtt(){
               client.publish("outTopic", msg);
           }
       }; 
+      client.setCallback(0); // free callback
       client.disconnect(); // stop to avoid native object call jerry callback cause crash
       console.log('disconnecting...');
       
