@@ -21,11 +21,11 @@ if (statemachine !=-1 ) return;
 #ifdef ESP32
   Serial.printf("PWM init...done!\r\n");
   ledcSetup(PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOUTION);
-  ledcAttachPin(LED_ONBOARD, PWM_CHANNEL);
+  ledcAttachPin(LED_BUILTIN, PWM_CHANNEL);
 #else
     // Set GPIO 2 as an OUTPUT
-    pinMode(LED_ONBOARD, OUTPUT);
-    digitalWrite(LED_ONBOARD, HIGH);
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
 #endif
   statemachine = 999; // stoping 
 }

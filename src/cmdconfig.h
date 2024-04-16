@@ -19,9 +19,11 @@
 #ifdef _LANG_JERRYSCRIPT_
 #include "JerryScript_tc.h"
 // Below define is wrapper library, if need turnon, othwise for saving program size
+#define _LIB_ESPCLASS_
 #define _LIB_LIQUIDCRYSTAL_I2C_    // need ARDUINO WIRE support
 #define _LIB_ADAFRUIT_SSD1306_ 
 #undef  _LIB_SPI_     			   // ARDUINO SPI support
+#define _LIB_TWOWIRE_			   // WIRE
 // jerryscript c++ wrapper
 #undef  _CLASSOBJ_EXAMPLE_ // same as RECtANGLE maunal 
 // autogenerator wrapper test & CMD_example

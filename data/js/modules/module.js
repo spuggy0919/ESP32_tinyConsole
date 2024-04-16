@@ -137,7 +137,7 @@ const jsFiles = {
 
 const nativeModules = {
   // module: 'module', load by native cached
-  esp: esp32,
+  // **WARNING** if wrong, the require statement will not work! native object will not cache
   fs: File,
   wifi: wifi,
   sio: wsSerial,
@@ -145,7 +145,8 @@ const nativeModules = {
   touch: Touch,
   dht: dht,
   mqtt: MqttClient,
-  // wire:TwoWire, //I2C
+  esp: EspClass,
+  wire:TwoWire //I2C
 };
 
   Object.entries(nativeModules).forEach(([moduleName, obj]) => {

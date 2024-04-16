@@ -9,7 +9,7 @@ let esp = require('esp');
 
 
 // var _mqtt_server = "broker.mqtt-dashboard.com";
-var _mqtt_serverip = "192.168.1.102"; //"18.198.222.5";
+var _mqtt_serverip = "192.168.1.106"; //"18.198.222.5";
 var value = 0;
 var lastMsgTime = 0;
 var msg;

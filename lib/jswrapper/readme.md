@@ -17,7 +17,7 @@ When you get the autogen file, you should check,
 2. check each methods, if C using same method, different args, it should be merge into one, by check arg_cnt, or using differnet method name.
 3. callback wrapper function, should be created. This generator does not generator.
 4. non method property, need to set/get, it is function type.
-5. bytes array no idea, how to mapping.
+5. bytes arraybuffer, reference my gfx.drawBitmap function in js_ssd1306.cpp , ugly but useful.
    
 #### Where does the bridge come from ?
 1. iot.js has its own bridge, he build a lot of iotjs_modules-XXX in C language, these become MCU IO layer API, then iotjs integrate JerryScript and porting. A lot of js objects are defined as IO libraries, i.e. gpio, adc, ble, ...

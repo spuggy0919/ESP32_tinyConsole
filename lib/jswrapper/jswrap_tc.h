@@ -36,6 +36,41 @@
           const jerry_value_t args_p[], /**< function arguments */          \
           const jerry_length_t args_cnt) /**< number of function arguments */
 
+jerry_value_t
+jerryx_arg_transform_arraybuffer (jerryx_arg_js_iterator_t *js_arg_iter_p, /**< available JS args */
+                              const jerryx_arg_t *c_arg_p); /**< the native arg */
+jerry_value_t
+jerryx_arg_transform_arraybuffer_strict (jerryx_arg_js_iterator_t *js_arg_iter_p, /**< available JS args */
+                              const jerryx_arg_t *c_arg_p); /**< the native arg */
+
+jerry_value_t 
+jerryx_arg_transform_arraybuffer_optional (jerryx_arg_js_iterator_t *js_arg_iter_p, \
+                                                        const jerryx_arg_t *c_arg_p);            \
+// arg mapping 
+/**
+ * Create a validation/transformation step (`jerryx_arg_t`) that expects to
+ * consume one `arraybuffer` JS argument and stores it into a C `uint8_t*`.
+ *
+ * @return a jerryx_arg_t instance.
+ */
+static inline jerryx_arg_t
+jerryx_arg_arraybuffer (uint8_t **dest, /**< points to the native bool */
+                    jerryx_arg_optional_t opt_flag) /**< whether the argument is optional */
+{
+  jerryx_arg_transform_func_t func;
+
+
+    if (opt_flag == JERRYX_ARG_OPTIONAL)
+    {
+      func = jerryx_arg_transform_arraybuffer_optional;
+    }
+    else
+    {
+      func = jerryx_arg_transform_arraybuffer_strict;
+    }
+
+  return (jerryx_arg_t){ .func = func, .dest = (void *) dest };
+} /* jerryx_arg_boolean */
 /* sheel interpreter function */
 int InterpreterArgvList(String *cmd, int* argc, char** argv[]);
 int InterpreterExcute(String *cmd);
@@ -65,9 +100,11 @@ jerry_value_t register_fs_module();
 //wifi
 bool js_wifi_classobj_wraper(); //1
 
-//esp32 
-bool js_esp32_classobj_wraper();
 //Wire
+#ifdef _LIB_TWOWIRE_
+bool js_twowire_classobj_wrapper();
+#endif //_LIB_TWOWIRE_
+
 #ifdef  _LIB_ADAFRUIT_SSD1306_
 bool js_sd1306_classobj_wrapper(); 
 #endif //_LIB_ADAFRUIT_SSD1306_
@@ -80,6 +117,10 @@ bool js_liquidlcd_classobj_wrapper();
 #ifdef _CLASSOBJ_EXAMPLE_
 bool js_cobj_classobj_wraper(); //1 a)modified func name and b) define in .h c) call by jswwrap_tc
 #endif 
+// ESP.h
+#ifdef _LIB_ESPCLASS_
+bool js_espclass_classobj_wrapper();
+#endif
 // autogen
 #ifdef _LIB_RECTANGLE_
 bool js_rectangle_classobj_wraper();

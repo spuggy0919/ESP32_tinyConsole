@@ -68,7 +68,8 @@ void createChar(uint8_t , uint8_t* );", // error, argvar name miss
 "void getTextBounds(char* str, int16_t x, int16_t y, int16_t* x1, int16_t* y1, uint16_t* w, uint16_t* h);", // char* map to jerryx_arg_string, int16_t* x1 to int16 "void createChar(uint8_t c, uint8_t* buf);", // corrcet, uint8_t* will mapping to jerryx_arg_array
 
 ```
-## arg mapping from arg type to js type defined in, ignore should be modified as GFX drawbitmap, to get arraybuffer_data. 
+## C Arguments mapping to JS 
+It onverts from C arg type to js type defined in argMappings_C_to_JS. There are some exceptions,ignore, function, native_pointer, and custom should be coded by yourself. 
 ```
 function definedConstArg(){
         const argMappings_C_to_JS = { // TODO for arg_type mappings type 
@@ -86,14 +87,14 @@ function definedConstArg(){
         "uint8_t": "uint8",
         "uint16_t": "uint16",
         "uint32_t": "uint32",
-        "uint_t*": "ignore",
-        "uint8_t*": "ignore",
-        "uint16_t*": "ignore",
-        "uint32_t*": "ignore",
-        "int_t*": "ignore",
-        "int8_t*": "ignore",
-        "int16_t*": "ignore",
-        "int32_t*": "ignore",        
+        "uint_t*": "arraybuffer",
+        "uint8_t*": "arraybuffer",
+        "uint16_t*": "arraybuffer",
+        "uint32_t*": "arraybuffer",
+        "int_t*": "arraybuffer",
+        "int8_t*": "arraybuffer",
+        "int16_t*": "arraybuffer",
+        "int32_t*": "arraybuffer",        
         "char*": "string", // possible use string_sz
         "char": "uint8",
         "char*": "string",
@@ -108,7 +109,8 @@ function definedConstArg(){
     return argMappings_C_to_JS;
 }
 ```
-## return type mapping from c return type to js type defined in 
+## JS return type 
+This mapping converts from c return type to js type defined in retMappings_C_to_JS. The object return type is not supported now.
 ```
 function definedConstRet(){
     const retMappings_C_to_JS = { // TODO for return js type 
@@ -141,6 +143,7 @@ function definedConstRet(){
 }  
 ```
 ```
+%cd /js/jswmgen
 %js  jswmgen rectangle.json jsw_rectangle.cpp
 %cat jsw_rectangle.cpp
 #then select copy and paste to your files

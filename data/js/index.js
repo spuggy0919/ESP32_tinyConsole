@@ -90,7 +90,7 @@ if (wifi.getmode() == wifi.WIFI_STA) {
     console.log("hostIP  ",wifi.localIP());
     console.log("clientIP",wifi.clientIP());
     console.log("status",wifi.status());
-    fs.cd('/js');
+    fs.cd('/js/');
 }else{
     console.log("WIFI_AP");
     console.log("config your ssid,password");
@@ -98,7 +98,7 @@ if (wifi.getmode() == wifi.WIFI_STA) {
     console.log("%export password 12345678 [enter]");
 }
 console.log("Autorun cmd arglist");
-console.log("cwd=",process.cwd);
+console.log("cwd=",process.cwd());
 console.log("argc=",process.argv.length);
 let i=0;
 process.argv.forEach(function(element){

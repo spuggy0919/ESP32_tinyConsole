@@ -80,10 +80,11 @@ function testdrawbitmap() {
 }
 function printtime() {
     var now = new Date();
-    display.drawFillRect(0,16,128,16,0);    
+    // display.drawFillRect(0,16,128,31);    
+
     display.setTextSize(2);    
     display.setCursor(16,16);
     display.setTextColor(1,0);
-    display.println(now.toString().slice(17,25));
+    display.println(now.toString().slice(16,25));
     display.display();
 }

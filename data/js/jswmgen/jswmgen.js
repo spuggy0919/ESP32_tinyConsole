@@ -1,7 +1,41 @@
 /*
+ * This file is part of ESP32_TinyConsole.
+ *
+ *  Copyright (c) 2024 spuggy0919
+ *
+ * ESP32_TinyConsole is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * ESP32_TinyConsole is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with ESP32_TinyConsole.  If not, see 
+ *
+ *	https://github.com/spuggy0919/ESP32_WEB_CONTROL/blob/espcontrol/LICENSE
+ *    GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+ *
+ *	Author: spuggy0919, spuggy0919@gmail.com
+ */
+/*
+ *
+ */
+/*
+ * @file  jswmgen.js
+ * @brief C++ class wrapper generator
+ * 
+ * @details
+ *   run this script parser a json file to generate wrapper source code
+ *   %js jswmgen [methods.json [output.cpp]]
+ 
+ *   readme to add into * 
  * this generator for method property , check mapping arglist and call obj method
  * TODO callback setting is not generator, need manual dirty work 
- * TODO Byte* array mapping still confuse for jerryx_arg mapping 
+ * Byte* array mapping use arraybuffer
  * How to use
  * 1. fill the need field in methods
  *    classObj your objname , for example 'rect'
@@ -10,33 +44,38 @@
  * 2. upload to tinyconsole
  * 3. js jswmgen [enter]
  * 4. select, copy and paste to file.
+ *    Example rectangle
+ *    %js jswmgen rectangle.json rect.cpp
+ *    %cat rect.cpp       #select copy and past 
+ ** @classname None
+ * @instance none
+ * 
+ * @date Apirl 15, 2024
  */
 
 // TODO for command line mode
 // TODO usage js jswmgen methos.json file.cpp 
 // todo method prototype array using Object.array.forEach to generate all method handles
-// Example rectangle
-// %js jswmgen rectangle.json rect.cpp
-// %cat rect.cpp
-//  select copy and past 
-//   readme to add into
+
 
 /* main */
     // type mapping (c_arg_type->js_arg_type) (cret->jsrettype)
     // maybe need to correction
 
 let process = require('process');   
+console.log(process.cwd());
 const version = '0.9.0';
 const app = process.argv[1];
 let fs = require('fs');  
-let jsonFileName='/js/rectangle.json';
-let outFileName='';
+let jsonFileName='/js/jswmgen/esp.json';
+let outFileName='/js/jswmgen/esp.cpp';
 var methods;
 var cobj;
+var lines = 0;
 
 if (process.argv.length>2) {
-    jsonFileName = process.cwd+process.argv[2];
-    if (process.argv.length==4) outFileName=process.cwd+process.argv[3];
+    jsonFileName = process.cwd()+process.argv[2];
+    if (process.argv.length==4) outFileName=process.cwd()+process.argv[3];
 }
 const [argMappings_C_to_JS,retMappings_C_to_JS] = definedConst();
 [methods,cobj] = loadJsonFile(jsonFileName);
@@ -44,6 +83,7 @@ dumpMethods(jsonFileName,outFileName,methods);
 pass1CheckMethods(jsonFileName,outFileName,methods);
 
 jswGenerator(methods);
+if (outFileName!='') console.log(`Total ${lines} lines`);
 
 /* load method Object which is defined in JSON file */
 function loadJsonFile(jsonFile){
@@ -53,7 +93,8 @@ let methods={ // default
     prototypesArray : [
         "int getSize();",
         "int getLength();",
-        "int getWidth();"
+        "int getWidth();",
+        "int getBuffer(uint8_t* buf, size_t length);" // test arraybuffer
     ],
     className :"",
     methodNames:[]    
@@ -64,14 +105,11 @@ let methods={ // default
         console.log('Error: JSAON Parser');
     }
     let cobj = constructorPrototypeParser(methods.classObj,methods.constructorPrototype);
-    methods.className = cobj.className;
+    // methods.className = cobj.className;
     methods.methodNames=[];
     return [methods,cobj]; 
 }
-function writeln(outFile,msg){
-    fs.appendFile(outFile,msg);
-    fs.appendFile(outFile,"\n");
-}
+
 function dumpMethods(jsonFile,outFile,methods){
     console.log('//Json:',jsonFile);
     console.log('//File:',outFile);
@@ -103,24 +141,29 @@ function dumpMethods(jsonFile,outFile,methods){
 function pass1CheckMethods(jsonFile,outFile,methods){
 
     methods.prototypesArray.forEach(element => {
-        // print(element);
+        console.log('pass1CheckMethods:',element);
         methodParserCheckeer(element);
     });
 }
 function methodParserCheckeer(methodPrototype) {
     let methodElementsC = extractMethodElements(methodPrototype);
     let methodName = methodElementsC.methodName;
-    let argvtype = methodElementsC.argvtypeArray;
-    let argvname = methodElementsC.argvnameArray;
     let returnctype = methodElementsC.rettype;
     //TODO retMappings_C_to_JS[returnctype];
     //TODO concerns call method arg typecast
+
     let returnjstype = retMappings_C_to_JS[returnctype];//methodElementsJS.rettype;
+    
+    let argvCnt = methodElementsC.argvCnt;
+
     try {
         if (typeof returnjstype === 'undefined' || returnjstype === ''){
             returnjstype = 'undefined';
             throw new Error(`Exception retType ${returnctype}, js is null`);
         }
+        if (argvCnt == 0) return;
+        let argvtype = methodElementsC.argvtypeArray;
+        let argvname = methodElementsC.argvnameArray;
         argvtype.forEach(element => {
             let argCtype = argMappings_C_to_JS[element]; // print(element);
             if (typeof returnjstype === 'undefined' || argCtype === ''){
@@ -152,6 +195,11 @@ function outputFileBoth(statements){
     }
     if (statements.length>10) console.log(statements," Done!");
 }
+function writeln(outFile,msg){
+    fs.appendFile(outFile,msg);
+    fs.appendFile(outFile,"\n");
+    lines++;
+}
 function definedConst(){
     return [definedConstArg(),definedConstRet()];
 }
@@ -171,14 +219,14 @@ function definedConstArg(){
         "uint8_t": "uint8",
         "uint16_t": "uint16",
         "uint32_t": "uint32",
-        "uint_t*": "ignore",
-        "uint8_t*": "ignore",
-        "uint16_t*": "ignore",
-        "uint32_t*": "ignore",
-        "int_t*": "ignore", // ignore part should be modified as GFX drawbitmap
-        "int8_t*": "ignore",
-        "int16_t*": "ignore",
-        "int32_t*": "ignore",        
+        "uint_t*": "arraybuffer",
+        "uint8_t*": "arraybuffer",
+        "uint16_t*": "arraybuffer",
+        "uint32_t*": "arraybuffer",
+        "int_t*": "arraybuffer", // ignore part should be modified as GFX drawbitmap
+        "int8_t*": "arraybuffer",
+        "int16_t*": "arraybuffer",
+        "int32_t*": "arraybuffer",        
         "char*": "string", // possible use string_sz
         "char": "uint8",
         "char*": "string",
@@ -213,7 +261,7 @@ function definedConstRet(){
         "uint32_t": "number",
         "uint8*": "string",
         "uint8_t*": "string",
-        "char*": "string_sz",
+        "char*": "string",
         "char": "number",
         "bool": "boolean",
         "void": "void"   // undefined is keywordmaybe transfer in functions
@@ -257,7 +305,6 @@ function methodGenerator(className,classObj,prototypeC) {
     //TODO retMappings_C_to_JS[returnctype];
     //TODO concerns call method arg typecast
     let returnjstype = retMappings_C_to_JS[returnctype];//methodElementsJS.rettype;
-    
     if (typeof returnjstype === 'undefined' || returnjstype === ''){
         returnjstype = 'undefined';
         throw new Error(`Exception retType ${returnctype}, js is null`);
@@ -309,8 +356,10 @@ function genFunctionTailPop(){
 }
 function parserMatch(match) {
     // Extracted elements
-    const rettype = match[1];
-    const methodName = match[2];
+    const rettype = match[1].trim();
+    const methodName = match[2].trim();
+    // console.log(rettype,retMappings_C_to_JS[rettype]);
+    // console.log(methodName);    
     // Check if the argument list is empty
     if (match[3] === '') {
         // Handle the case of an empty argument list
@@ -318,6 +367,8 @@ function parserMatch(match) {
         const argvtypeArray = [];
         const argvnameArray = [];
 
+        // console.log(argCnt);
+        
         // Return the extracted elements as an object
         return {
             rettype,
@@ -352,7 +403,7 @@ function parserMatch(match) {
 }
 function extractMethodElements(methodPrototype) {
     // Regular expression pattern to match the method prototype syntax
-    const pattern = /^(\w+)\s+(\w+)\((.*?)\);?$/;
+    const pattern = /^(\w+\*?)\s+(\w+)\((.*?)\);?$/;
     // Execute the regular expression on the method prototype
     const match = methodPrototype.match(pattern);
     if (match) {
@@ -408,12 +459,15 @@ function mappingEntry_coerce_required(argvname,argvtype){
 function mappingEntry_coerce_optional(argvname,argvtype){
     outputFile(`${' '.repeat(level * 4)}jerryx_arg_${argvtype}(&${argvname},  JERRYX_ARG_NO_COERCE, JERRYX_ARG_OPTIONAL),`);
 }
+function mappingEntry_arraybuffer(argvname,argvtype){
+    outputFile(`${' '.repeat(level * 4)}jerryx_arg_${argvtype}(&${argvname},   JERRYX_ARG_REQUIRED),`);
+}
 function mappingEntry_ignore(argvname,argvtype){
     outputFile(`${' '.repeat(level * 4)}jerryx_arg_ignore (void), // *TODO*ignore should be modified as GFX drawbitmap, to get arraybuffer_data`);
 }
 function mapping(argvtype,argvname){
     if (typeof argvtype=== 'undefined' || argvtype.length == 0) return 0;
-    outputFile(`\n${' '.repeat(level * 4)}const jerryx_arg_t mapping[] ={`);
+    outputFile(`\n${' '.repeat(level * 4)}const jerryx_arg_t mapping[] ={`); lines++; // for newline
     pushblock(`${' '.repeat(level * 4)}};`);
     let i=0;
     for(i=0;i<argvtype.length;i++) {
@@ -437,6 +491,9 @@ function mapping(argvtype,argvname){
         case 'uint32': 
             mappingEntry_int(argvname[i],jsargtype);
             break;
+        case 'arraybuffer': 
+            mappingEntry_arraybuffer(argvname[i],jsargtype);
+            break;
         case 'function': 
             mappingEntry_function(argvname[i],jsargtype);
             break;
@@ -446,6 +503,7 @@ function mapping(argvtype,argvname){
             mappingEntry_ignore(argvname[i],jsargtype);
             break;
         default:
+            console.log('ERROR ',argvtype[i],argvname[i],'for arg Mapping()');
             throw new Error(`Exception Type ${argvtype[i]}, ${argvname[i]} for arg Mapping()`);
         }
     }
@@ -464,7 +522,7 @@ function transform(argvtype){
     outputFile(`${' '.repeat(level * 4)}JERRYXX_ON_ARGS_COUNT_THROW_ERROR_SYNTAX(args_cnt != ${argvtype.length}, "Wrong arguments count");`);
 }
 function getNativePtr(classObj){
-    outputFile(`\n${' '.repeat(level * 4)}void *native_pointer = NULL;`);
+    outputFile(`\n${' '.repeat(level * 4)}void *native_pointer = NULL;`); lines++; // for newline
     outputFile(`${' '.repeat(level * 4)}native_pointer = jerry_object_get_native_ptr(call_info_p->this_value, &${classObj}_info);`);
 }
 function callClassObjMethodArgs(methodName,argvname,argvtype){
@@ -486,7 +544,7 @@ function callClassObjMethodArgs(methodName,argvname,argvtype){
 function callClassObjMethod(className,classObj,returnjstype,methodName,argvname,argvtype,argvCtype){
     let rettype  = returnjstype;
 
-    outputFile(`\n${' '.repeat(level * 4)}if(native_pointer) {`);
+    outputFile(`\n${' '.repeat(level * 4)}if(native_pointer) {`); lines++; // for newline
     pushblock(`${' '.repeat(level * 4)}}`);
     outputFile(`${' '.repeat(level * 4)}${className}* ${classObj} = (${className}*)native_pointer;`);
     let callmethod = callClassObjMethodArgs(methodName,argvname,argvtype);
@@ -521,10 +579,16 @@ function constructorPrototypeParser(classObjName,prototype) {
     cobj.className = prototype.split('::')[0].trim();
 
     // Extract argument types and argument names
+    let pattern =/\(\s*\)/; //void 
+    if (prototype.match(pattern)){
+        cobj.argvCnt = 0;
+        return cobj;
+    }
     var argsPart = prototype.split('(')[1].split(')')[0];
     var argsList = argsPart.split(',');
     // Extract argument types and names
-    if (typeof argsList === 'undefined' ){
+    console.log(typeof argsPart, typeof argsList);
+    if (typeof argsList === 'undefined' || argsPart =='' ){
         cobj.argvCnt = 0;
         return cobj;
     }

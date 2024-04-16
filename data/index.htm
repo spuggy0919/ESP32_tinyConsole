@@ -676,7 +676,46 @@
               document.getElementById("terminal").scrollTop = document.getElementById("terminal").scrollHeight;
             }
           }, false);
+
+
+        // Get the drop area element
+        const dropArea = document.getElementById('terminal');
+
+        // Prevent default behavior to allow drop
+        dropArea.addEventListener('dragover', (e) => {
+          e.preventDefault();
+        });
+
+        // Handle file drop
+        dropArea.addEventListener('drop', (e) => {
+          e.preventDefault();
+          
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+              const file = files[i];
+              formData.append('files[]', file);
+            }
+            
+            // Send the files to the server using XMLHttpRequest
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/upload', true);
+            xhr.onload = function() {
+              if (xhr.status === 200) {
+                console.log('Files uploaded successfully.');
+              } else {
+                console.error('Error uploading files:', xhr.statusText);
+              }
+            };
+            xhr.send(formData);
+          }
+        });
+
+
+
         }
+
         // SSE end
   </script>
   <script src=".js/keymouse.js"></script>

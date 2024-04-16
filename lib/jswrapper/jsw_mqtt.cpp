@@ -57,7 +57,7 @@ JERRYXX_DECLARE_FUNCTION(mqttclient_setserver){ //1
 } /*js_mqttclient_setserver*/ //6
 
 static jerry_value_t jerry_mqtt_callback_fn = 0; //2
-#define CMD_MQTT_TEST_WITH_C_CALLBACK
+#undef CMD_MQTT_TEST_WITH_C_CALLBACK
 #ifdef CMD_MQTT_TEST_WITH_C_CALLBACK
 void mqtt_test(char* topic, byte* payload, unsigned int length) {
   wsTextPrintf("Message arrived [");
@@ -78,7 +78,7 @@ void mqtt_test(char* topic, byte* payload, unsigned int length) {
   }
 }
 #endif
-void mqtt_callback(char* topic, byte* payload, unsigned int length) {
+void mqtt_callback(char* topic, uint8_t* payload, unsigned int length) {
 #ifdef CMD_MQTT_TEST_WITH_C_CALLBACK
     mqtt_test(topic,payload,length);
     return;
@@ -87,7 +87,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     // *setup argp argc
   jerry_value_t args[] = {
     jerry_string_sz (topic),
-    jerry_string ((const unsigned char *)payload,length,JERRY_ENCODING_UTF8),
+    jerry_arraybuffer_external ((uint8_t *)payload,length,NULL),
     jerry_number (length),
   };
     // jerry_value_t callback_fn_copy = jerry_value_copy (jerry_mqtt_callback_fn);
@@ -95,10 +95,9 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     jerry_value_t result_val = jerry_call (jerry_mqtt_callback_fn, jerry_undefined(), args, 3);
     jerry_value_free (result_val);
     // jerry_value_free (global_obj_val);
-    // jerry_value_free (args[0]);
-    // jerry_value_free (args[1]);
-    // jerry_value_free (args[2]);
-    // jerry_value_free (args);
+    jerry_value_free (args[0]);
+    jerry_value_free (args[1]);
+    jerry_value_free (args[2]);
     // jerry_value_free (callback_fn_copy);            // Perform the periodic operation here
     return;
 }

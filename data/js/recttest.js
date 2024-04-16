@@ -15,9 +15,10 @@ view.setUint8(4, 0x4);
 view.setUint8(5, 0x5);
 view.setUint8(6, 0x6);
 view.setUint8(7, 0x7);
-rect.getBuffer(tbuf,4);
-rect.getBuffer(abuf,4);
+rect.getBuffer(tbuf,4); // typearray test
+rect.getBuffer(abuf,4); // arraybuffer test
 // Create a buffer with 8 bytes (64 bits)
+console.log(view);
 
 let typedata = new Uint8Array(abuf);
 console.log(tbuf);

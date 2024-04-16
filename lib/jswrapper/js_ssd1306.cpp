@@ -902,20 +902,14 @@ JS_METHOD(sd1306_drawBitmap)
         jerryx_arg_uint16(&color, JERRYX_ARG_CEIL, JERRYX_ARG_NO_CLAMP, JERRYX_ARG_NO_COERCE, JERRYX_ARG_REQUIRED),
         jerryx_arg_uint16(&bg, JERRYX_ARG_CEIL, JERRYX_ARG_NO_CLAMP, JERRYX_ARG_NO_COERCE, JERRYX_ARG_OPTIONAL),
     };
-    jerry_value_t rv = jerryx_arg_transform_args(args_p, 2, mapping, 2);
+    jerry_value_t rv = jerryx_arg_transform_args(args_p, 7, mapping, 7);
     if (jerry_value_is_exception(rv)){
         WSDEBUG_TPRINTF("[sd1306] drawBitmap mapping Error argc(%d) %x\n",args_cnt,rv);
         WSDEBUG_TPRINTF("[sd1306] x%d y%d w%d h%d color%d bg%d \n",x,y,w,h,color,bg);
 
         return rv;
     }
-     rv = jerryx_arg_transform_args(&args_p[3], 4, &mapping[3], 4);
-    if (jerry_value_is_exception(rv)){
-        WSDEBUG_TPRINTF("[sd1306] drawBitmap mapping Error argc(%d) %x\n",args_cnt,rv);
-        WSDEBUG_TPRINTF("[sd1306] x%d y%d w%d h%d color%d bg%d \n",x,y,w,h,color,bg);
 
-        return rv;
-    }
     // JERRYXX_ON_ARGS_COUNT_THROW_ERROR_SYNTAX(!(args_cnt == 6||args_cnt == 7), "Wrong arguments count");
     /* process bitmap with ArrayBuffer*/
     if (jerry_value_is_arraybuffer(args_p[2])) {

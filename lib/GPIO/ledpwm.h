@@ -2,8 +2,15 @@
 #define __LEDPWM__H__
 #include <Arduino.h>
 //#define _PWM_IO_
-#define LED_ONBOARD 2
-
+#ifdef ESP32
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 2
+#endif
+#else
+#endif
+// ESP32-CAM
+// #define LED_ONBOARD 4
+// #define LED_BUILTIN 4
 extern bool pwmledChange;
 extern String pwmledState;
 

@@ -26,6 +26,78 @@
 
 
 #include "jswrap_tc.h"
+// arg mapping 
+/**
+ * Define transformer for optional argument.
+ */
+jerry_value_t
+jerryx_arg_transform_arraybuffer (jerryx_arg_js_iterator_t *js_arg_iter_p, /**< available JS args */
+                              const jerryx_arg_t *c_arg_p); /**< the native arg */
+#define JERRYX_ARG_TRANSFORM_OPTIONAL(type)                                                      \
+  jerry_value_t jerryx_arg_transform_##type##_optional (jerryx_arg_js_iterator_t *js_arg_iter_p, \
+                                                        const jerryx_arg_t *c_arg_p)             \
+  {                                                                                              \
+    return jerryx_arg_transform_optional (js_arg_iter_p, c_arg_p, jerryx_arg_transform_##type);  \
+  }
+JERRYX_ARG_TRANSFORM_OPTIONAL (arraybuffer)
+#undef JERRYX_ARG_TRANSFORM_OPTIONAL                                                    \
+
+
+jerry_value_t
+jerryx_arg_transform_arraybuffer (jerryx_arg_js_iterator_t *js_arg_iter_p, /**< available JS args */
+                              const jerryx_arg_t *c_arg_p) /**< the native arg */
+{
+  jerry_value_t js_arg = jerryx_arg_js_iterator_pop (js_arg_iter_p);
+  uint8_t** dest = (uint8_t**)c_arg_p->dest;
+  uint8_t* buffer;
+  if (jerry_value_is_arraybuffer (js_arg)) {
+    buffer = jerry_arraybuffer_data (js_arg);
+    // WSDEBUG_TPRINTF("[transform] ArrayBuffer is %x\n",buffer);
+  }else if (jerry_value_is_typedarray (js_arg)) { // typedarray
+    size_t tlength = jerry_typedarray_length(js_arg);
+    size_t ttype = jerry_typedarray_type(js_arg);
+    jerry_length_t byteOffset=0;
+    jerry_length_t byteLength=0;
+    jerry_value_t abuffer = jerry_typedarray_buffer(js_arg,&byteOffset,&byteLength);
+    buffer = jerry_arraybuffer_data (abuffer);
+    // WSDEBUG_TPRINTF("[transform] typedarrayis %x araybuf is %x\n",abuffer,buffer);
+    jerry_value_free(abuffer);
+  }
+  *dest = buffer;
+  return jerry_undefined ();
+} /* jerryx_arg_transform_arraybuffer */
+
+// arg mapping 
+jerry_value_t
+jerryx_arg_transform_arraybuffer_strict (jerryx_arg_js_iterator_t *js_arg_iter_p, /**< available JS args */
+                              const jerryx_arg_t *c_arg_p) /**< the native arg */
+{
+  jerry_value_t js_arg = jerryx_arg_js_iterator_pop (js_arg_iter_p);
+  if (!jerry_value_is_arraybuffer (js_arg)&&!jerry_value_is_typedarray (js_arg))
+  {
+    return jerry_throw_sz (JERRY_ERROR_TYPE, "It is not a arraybuffer and not typedarray.");
+  }
+  uint8_t** dest = (uint8_t**) c_arg_p->dest;
+  uint8_t* buffer;
+  if (jerry_value_is_arraybuffer (js_arg)) {
+    buffer = jerry_arraybuffer_data (js_arg);
+  }else if (jerry_value_is_typedarray (js_arg)) { // typedarray
+    size_t tlength = jerry_typedarray_length(js_arg);
+    size_t ttype = jerry_typedarray_type(js_arg);
+    jerry_length_t byteOffset=0;
+    jerry_length_t byteLength=0;
+    jerry_value_t abuffer = jerry_typedarray_buffer(js_arg,&byteOffset,&byteLength);
+    buffer = jerry_arraybuffer_data (abuffer);
+    jerry_value_free(abuffer);
+  }
+  *dest = buffer;
+  return jerry_undefined ();
+} /* jerryx_arg_transform_arraybuffer */
+
+
+
+
+
 String checkExtension(const char *filename){
         String fname = String(filename);
         String dot =".";
@@ -96,9 +168,12 @@ void jerryxx_register_arduino_library(){
      js_tcfilelib_classobj_wraper();
      /*wifi obj*/
      js_wifi_classobj_wraper(); //1
-     /*esp32 info obj*/
-     js_esp32_classobj_wraper();
 
+#ifdef _LIB_ESPCLASS_
+     /*esp32 info obj*/
+// ESP.h
+     js_espclass_classobj_wrapper();
+#endif
 #ifdef _LIB_LIQUIDCRYSTAL_I2C_
 // LiquidCrystal_I2C.h
       js_liquidlcd_classobj_wrapper(); // register 
@@ -107,7 +182,9 @@ void jerryxx_register_arduino_library(){
 #ifdef  _LIB_ADAFRUIT_SSD1306_
       js_sd1306_classobj_wrapper(); 
 #endif //_LIB_ADAFRUIT_SSD1306_
-
+#ifdef _LIB_TWOWIRE_
+      js_twowire_classobj_wrapper();
+#endif //_LIB_TWOWIRE_
 #ifdef _CLASSOBJ_EXAMPLE_
      js_cobj_classobj_wraper(); //1 a)modified func name and b) define in .h c) call by jswwrap_tc
 #endif 
