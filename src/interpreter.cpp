@@ -243,7 +243,7 @@ int cmd_option(int argc, char *argv[]){
               wsTextPrintln(String(commandTable[InterpreterCmdIndex].description));
               break;
           case 'v':
-              wsTextPrint("ESP CONSOLE: version "+ HTTP_CONSOLE_Version);
+              wsTextPrintln("ESP CONSOLE: version "+ HTTP_CONSOLE_Version);
               break;
           case 'r':
           case 'R':

@@ -53,5 +53,6 @@
 #define CMD_DHT
 #undef  CMD_MESH
 #define CMD_TIME
+#define CMD_MPI    // for esp32 call mdnsqueryservices to find others nodes in LAN
 
 #endif //__LANGSCONFIG_H__

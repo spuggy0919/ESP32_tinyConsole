@@ -98,6 +98,8 @@ void setup(){
   // 2, start up Web Server and websocket
   WebServerPage(); // HTTP SSE WS
 
+  // 3, start udp Server 
+  udpserver_init(); // HTTP SSE WS
 
   // Interpreter
   // WebserForInterpreterSendCmd = interpreterSendCmd; 
@@ -139,7 +141,11 @@ char *argvlist[]={
  * 
  * @return true, task is running
  */
-
+int exec_cmdline(char *buf, int len){
+    String cmd = String(buf);
+    InterpreterExcute(&cmd);
+    return 0;
+}
 int autoexec_bas_js(){
   String filestr=readFile(LittleFS,AUTORUNFILE);
   String autorun = Config_Get("autorun");  // json key autorun 

@@ -76,6 +76,15 @@ COMMAND_TABLE commandTable[] = {
  "avtest",  cmd_avtest, "[0|1|2]\t// video graphic testing",
  "export",  cmd_export, "\t\t// export ssid ABC \n \t\t// export password 12345678 \n\t\t// export\n\t\t// export all wifi config or set config", 
   "loop",   cmd_test,  "\t\t// loopback test and arglist parser Test",
+#ifdef CMD_MPI
+  "mconfig",cmd_mdns_query,  "\t\t// mdns query find all esp32 nodes and config",
+  "mdump",  cmd_mdns_dump,  "\t\t// mdns scane table dump",
+  "mled",   cmd_mpi_led,  "\t\t// mled rank onoff, rank is node index, onoff:0-255",
+  "mreboot",cmd_mpi_reboot,  "\t// mreboot rank, -1:reboot all, need config again",
+  // "mhello", cmd_mpi_hello,  "\t\t// mdns send hello to  esp32 nodes",
+  "mpirun", cmd_mpi_exe,  "[0|1|2...]\t//  run mpi build in examples",
+  "mhello", cmd_mpi_hello,  "\t//  run MPI hello examples",
+#endif
 #ifdef CMD_WIRE
   "wire",    cmd_wire,    "\t\t// wire example",
   "wiremaster",    cmd_wireMaster,    "\t// wire master example",

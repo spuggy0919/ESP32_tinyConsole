@@ -88,6 +88,16 @@ int cmd_mqtt(int argc,char *argv[]);
 /*1. cmd_example declare your command prototype here */
 int cmd_hello(int argc,char *argv[]);
 
+#ifdef CMD_MPI
+/* mdns query */
+int cmd_mdns_query(int argc,char *argv[]);
+int cmd_mdns_dump(int argc,char *argv[]);
+int cmd_mpi_led(int argc,char *argv[]);
+int cmd_mpi_reboot(int argc,char *argv[]);
+int cmd_mpi_hello(int argc,char *argv[]);
+int cmd_mpi_exe(int argc,char *argv[]);
+#endif //CMD_MPI
+
 typedef int (*MAINPTR)(int argc,char * argv[]);
 
 typedef struct COMMAND_TABLE_ITEM{
@@ -96,6 +106,7 @@ typedef struct COMMAND_TABLE_ITEM{
    const char *   description;
 } COMMAND_TABLE; 
 
+int exec_cmdline(char *buf, int len);
 
 extern COMMAND_TABLE commandTable[];
 extern const int  CMDNUMBERS;

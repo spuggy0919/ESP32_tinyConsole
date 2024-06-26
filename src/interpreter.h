@@ -21,11 +21,11 @@
  */
 #define __INTEPRETER_H__
 #ifdef __INTEPRETER_H__
-#define  HTTP_CONSOLE_Version (String("Version 0.2"))
 #include "ESP32inc.h"
 
 #include "command.h"
 #include "version.h"
+#define  HTTP_CONSOLE_Version (String(TINYCONSOLEVSTR))
 
 #include "dumphex.h"
 #include "testmain.h"

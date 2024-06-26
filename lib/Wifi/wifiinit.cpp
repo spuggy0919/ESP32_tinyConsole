@@ -25,9 +25,9 @@ String _password = PASSWORD; // modfied for STA mode
 String ip = LOCAL_IP; // modfied for STA static ip mode
 String gateway = GATEWAY; // modfied for STA static ip mode
 
-IPAddress local_IP(192,128,1,200); // modfied for STA static ip mode
+IPAddress local_IP(192,128,0,200); // modfied for STA static ip mode
 // Set your Gateway IP address
-IPAddress local_Gateway(192, 168, 1, 1); // modfied for STA static ip mode
+IPAddress local_Gateway(192, 168, 0, 1); // modfied for STA static ip mode
 //IPAddress localGateway(192, 168, 1, 1); //hardcoded
 IPAddress subnet(255, 255, 255, 0);
 
@@ -36,7 +36,7 @@ unsigned long previousMillis = 0;
 const long interval = 20000;  // interval to wait for Wi-Fi connection (milliseconds)
 
 #define MACLASTFOUR(mac) (mac.substring(12,14)+mac.substring(15,17))
-#define WIFIAPACTUALNAME(mac) (WIFIAPNAME+mac.substring(12,14)+mac.substring(15,17))
+#define WIFIAPACTUALNAME(mac) (String(WIFIAPNAME)+mac.substring(12,14)+mac.substring(15,17))
 
 bool WiFiInit(int mode,...)
 {
@@ -89,9 +89,9 @@ bool WiFiSTAStaticIP(String ssid,String pass,String ip, String gateway) {
     return false;
   }
 
-  WiFi.mode(WIFI_STA);
   if (ip!="" && gateway!="" ) {
 //   for Fixed IP
+    WiFi.mode(WIFI_STA);
     Serial.println("Config as Static IP");
 
     local_IP.fromString(ip.c_str());
@@ -135,9 +135,14 @@ bool WiFiSTAStaticIP(String ssid,String pass,String ip, String gateway) {
   Serial.println(WiFi.localIP());
   return true;
 }
+const char* service_name = "esp_tinyconsole";
+const char* service_type = "_http";  // or any other type
+const char* service_protocol = "_tcp";  // or any other type
+const uint16_t service_port = 80;
+String mac = WiFi.macAddress();
+String mdnsName=WIFIAPACTUALNAME(mac);
 
 bool WiFiAP() {
-  String mac = WiFi.macAddress();
 
   Serial.println("Initialize Wifi as AP");
   // Serial.println("Warning:This mode will lost some internet hyperlink!");
@@ -145,26 +150,41 @@ bool WiFiAP() {
   // WiFi.disconnect();
   if (!WiFi.softAPConfig(local_Gateway, local_Gateway, subnet)) return false;
 
-  if (!WiFi.softAP((WIFIAPACTUALNAME(mac)).c_str(), _password)) return false;
+  if (!WiFi.softAP(mdnsName.c_str(), _password)) return false;
 
   IPAddress IP = WiFi.softAPIP();
-  Serial.println("AP:"+WIFIAPACTUALNAME(mac));
+  Serial.println("AP:"+mdnsName);
   Serial.println("mac:"+mac);
   Serial.print("AP IP address: ");
   Serial.println(IP);
   return true;
 }
+
+
 bool WiFimDNS() 
 {
 String mac = WiFi.macAddress();
  // Initialize mDNS
-  if (!MDNS.begin(WIFIAPACTUALNAME(mac))) {   // Set the hostname to "esp32.local"
+
+  if (!MDNS.begin(mdnsName)) {   // Set the hostname to "esp32.local"
     Serial.println("Error setting up MDNS responder!");
     return false;
   }
+  Serial.println("mdns:"+mdnsName);
+   // Advertise service
+  MDNS.addService(service_type, service_protocol, service_port);
   return true;
 }
 
+int WiFimDNSQuery() 
+{
+ // Query for services
+  int n = MDNS.queryService(service_type, service_protocol); // Query for TCP services
+  return n;
+}
+String WifimDNSName(){
+  return mdnsName;
+}
 String WifiLocalIP(){
     return  WiFi.localIP().toString();
 }

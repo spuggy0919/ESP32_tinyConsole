@@ -1,15 +1,15 @@
-var fs;
-if (typeof fsio === 'undefined'){
-    console.log('load fs module\n');
-    fs = require('fs');
-}else{
-    fs=fsio;
-}
+let fs = require('fs');
+// if (fs.id !== 'fs'){
+//     console.log('load fs module\n');
+//     fs = require('fs');
+// }else{
+//     fs=fsio;
+// }
 const Nodefs = Object.assign({},fs,{
 
     checkNodeJS :function(){
         var platform='TINYCONSOLE'
-        if (typeof fsio === 'undefined') {
+        if (typeof fs.id === 'undefined') {
             // maybe mac node.js environment
             platform = 'NODEJS'
         }
