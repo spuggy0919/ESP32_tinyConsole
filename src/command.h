@@ -95,7 +95,8 @@ int cmd_mdns_dump(int argc,char *argv[]);
 int cmd_mpi_led(int argc,char *argv[]);
 int cmd_mpi_reboot(int argc,char *argv[]);
 int cmd_mpi_hello(int argc,char *argv[]);
-int cmd_mpi_exe(int argc,char *argv[]);
+int cmd_mpi_msg(int argc,char *argv[]);
+int cmd_mpi_run(int argc,char *argv[]);
 #endif //CMD_MPI
 
 typedef int (*MAINPTR)(int argc,char * argv[]);

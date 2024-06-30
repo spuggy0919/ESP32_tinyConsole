@@ -9,7 +9,8 @@
 extern ESP32Time rtc;
 void timerSetTest();
 String timerCurrent();
-String timerGetEpoch();
+// String timerGetEpoch();
+unsigned long timerGetEpoch();
 String timerDate();
 void timerSetEpoch(unsigned long epoch);
 void getftime(struct timeb *tm);
@@ -17,7 +18,8 @@ void getftime(struct timeb *tm);
 #else
 void timerSetTest();
 String timerCurrent();
-String timerGetEpoch();
+// String timerGetEpoch();
+unsigned long timerGetEpoch();
 void timerSetEpoch(unsigned long epoch);
 extern ESP32Time rtc; // UTC+8
 #endif

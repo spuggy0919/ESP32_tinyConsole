@@ -117,7 +117,12 @@ void Banner_Tc(){
         wsSerial.getChar();
 }
 void tc_Prompt(){
-        wsSerial.write("\n%%",2); // prompt
+        // prompt should be only one, otherwise it will infinit loop  of Interpreter ReadLine wait
+        // the problem is casue by js textarea echo by itself, not implement as real echo behavios
+        // to reduce websocket traffic load
+        // wsSerial.push("\n",1); //BUG infinite
+        wsSerial.write("\n%%",2); // prompt type 1 async
+        // wsTextPrintf("\n%%"); //prompt type 2 sync but priority side effect
 }
 void tc_Banner(){
         Banner_Tc();

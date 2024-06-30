@@ -115,8 +115,8 @@ const static jerry_object_native_info_t timer_info = {
         if (taskArray[taskid].params==NULL) return;
         pTimer_t p = (pTimer_t)taskArray[taskid].params;
         Serial.printf("[timer][clearInterval]:exit(%d)\n",p->timerID);
-        if (xSemaphoreTake(p->mutex,portMAX_DELAY)==pdTRUE){
-            xTimerStop(p->handle,0);//p->delay);
+        if (xSemaphoreTake(p->mutex,portMAX_DELAY)==pdTRUE){ // xSemaphoreTake try to safe delete timer
+            xTimerStop(p->handle,0);//p->delay);            // TODO timer exit sometime will fail 
             xTimerDelete(p->handle,0);
             vSemaphoreDelete(p->mutex);
             jerry_value_free (p->func); 

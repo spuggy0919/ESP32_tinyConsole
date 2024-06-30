@@ -15,7 +15,7 @@
 #include "fileio.h"    // LittleFS
 #include "wifiinit.h"       // Wifi
 #include "WebServer.h"      // ESPASYNCWEBServer
-#include "MPI.h"      // AsyncUDP MPI
+// #include "MPI_lw.h"      // AsyncUDP MPI
 #include "devices.h"          // mouse touch video audio
 #include "config.h"          // video graphics by winsocket 
 #endif  //__ESP32INC__H__

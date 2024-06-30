@@ -31,8 +31,11 @@ String timerCurrent(){
 String timerDate(){
     return rtc.getDate();          //  (String) 15:24:38
 }
-String timerGetEpoch(){
-    return String(rtc.getEpoch());          //  (String) 15:24:38
+// String timerGetEpoch(){
+//     return String(rtc.getEpoch());          //  (String) 15:24:38
+// }
+unsigned long timerGetEpoch(){
+    return rtc.getEpoch();          //  (String) 15:24:38
 }
 void timerSetEpoch(unsigned long epoch){
   //  if (ESPHW_powerloss()){

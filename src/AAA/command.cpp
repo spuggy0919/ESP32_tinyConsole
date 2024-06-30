@@ -77,12 +77,13 @@ COMMAND_TABLE commandTable[] = {
  "export",  cmd_export, "\t\t// export ssid ABC \n \t\t// export password 12345678 \n\t\t// export\n\t\t// export all wifi config or set config", 
   "loop",   cmd_test,  "\t\t// loopback test and arglist parser Test",
 #ifdef CMD_MPI
-  "mconfig",cmd_mdns_query,  "\t\t// mdns query find all esp32 nodes and config",
-  "mdump",  cmd_mdns_dump,  "\t\t// mdns scane table dump",
+  "mscan",  cmd_mdns_query,  "\t\t// mdns scan ",
+  // "mdump",  cmd_mdns_dump,  "\t\t// mdns scan table dump",
   "mled",   cmd_mpi_led,  "\t\t// mled rank onoff, rank is node index, onoff:0-255",
-  "mreboot",cmd_mpi_reboot,  "\t// mreboot rank, -1:reboot all, need config again",
+  "mrestart",cmd_mpi_reboot,  "\t// mreboot rank, -1:reboot all, need config again",
   // "mhello", cmd_mpi_hello,  "\t\t// mdns send hello to  esp32 nodes",
-  "mpirun", cmd_mpi_exe,  "[0|1|2...]\t//  run mpi build in examples",
+  "mpimsg", cmd_mpi_msg,  "LED 0 255\t//  general message pass command",
+  "mpirun", cmd_mpi_run,  "[0|1|2...]\t//  run mpi build in examples",
   "mhello", cmd_mpi_hello,  "\t//  run MPI hello examples",
 #endif
 #ifdef CMD_WIRE

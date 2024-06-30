@@ -1,20 +1,54 @@
-#ifndef __ASYNC_H__
-#define __ASYNC_H__
+#ifndef __MPI_LW_H__
+#define __MPI_LW_H__
 
 #include <Arduino.h>
-#include <AsyncUDP.h>
-#include <Wifi.h>
+#ifdef ESP32
+  #include <WiFi.h>
+  #include <AsyncUDP.h>
+#else
+  #include <ESP8266WiFi.h>
+  #include <WiFiUdp.h>
+#endif
+#include <ESPmDNS.h>
+#include <mutex>
+#include <queue>
 #include "MPI_Debug.h"
 
 
 
+/*---------------------------------------------------------------------------*/
+/* WiFi mDNS layer  for ESP32 node discovery                                 */
+/*---------------------------------------------------------------------------*/
+#define ESPCONSOLE  ("ESPCONSOLE-")       // ESPCONSOLE-XXXX for AP will appen four mac chars
+bool WiFimDNS_init();
+String WifimDNSName();
+int WiFimDNSQuery();
+IPAddress WifimDNSLocalIP();
 
+String MDNS_hostname(int i);
+IPAddress MDNS_IP(int i);
+
+/*---------------------------------------------------------------------------*/
+/* MPI_Iot function                                                          */
+/*---------------------------------------------------------------------------*/
+int MPI_Iot_LED(int pwmvalue);
+int MPI_Iot_LED_Blink(int n);
+int MPI_Iot_Restart(int shutdown);
+int MPI_Iot_MPICH(const char *cmd);
+void MPI_Iot_SetEpoch(unsigned long  Epoch);
+unsigned long MPI_Iot_GetEpoch();
+
+/*---------------------------------------------------------------------------*/
+/* ESP32 MPI testing                                                         */
+/*---------------------------------------------------------------------------*/
 // MPI possible public
-#define MAX_NODES 10
-#define HOSTNAMESIZE 16
-#define IPV4SIZE     16
+#define MPI_TUTORIALS 0
+#define MPI_MAX_NODES 10
+#define MPI_HOSTNAMESIZE 16
+#define MPI_IPV4SIZE     16
+#define MPINODE_STATUS_NORESPONE (1<<0)
 typedef struct {
-    char       hostname[HOSTNAMESIZE]; //ESPCONSOLE-XXXX
+    char       hostname[MPI_HOSTNAMESIZE]; //ESPCONSOLE-XXXX
     IPAddress  ip;       // 192.168.001.002
     int        status;
 }MPI_NODE;
@@ -22,18 +56,22 @@ typedef struct {
 /* udp layer                                                                 */
 /*---------------------------------------------------------------------------*/
 bool udpserver_init();
-size_t udp_Block_Sent(int rank, uint8_t* data, int length, int statusBits);
+size_t udp_Block_Send(uint8_t* data, int length);
 /*---------------------------------------------------------------------------*/
 /* MPI MSG  API  (format MSG packet, decode, and io function)                */
 /*---------------------------------------------------------------------------*/
+// RX MSG
 bool MPI_MSG_Packet_Dispatch(uint8_t *buffer, int len);
-int  MPI_MSG_Scan_And_Config(); // mdns query
-bool MPI_MSG_Config_Broardcast( MPI_NODE nodes[], int nodeCount);
-int  MPI_MSG_Config_Parser(uint8_t* data, int dataSize);
+int  MPI_MSG_Config_Parser(uint8_t* data, int len);
+// bool MPI_MSG_Ack_Or_Not(AsyncUDPPacket packet);  // RX CHECK to respone ACK
+// TX MSG
+int  MPI_MSG_Sent_CMD(const char* XXX, ...); //send message packet 
+int  MPI_MSG_Scan_And_Config(); // mdns query broad cast 
 int  MPI_MSG_Sent_LED(int rank,int onoff); //turn on led on/off
-int  MPI_MSG_Sent_RST(int rank); // reboot rabk
-int  MPI_MSG_Sent_EXE(int example); // run example on all node
-bool MPI_MSG_Ack_Or_Not(AsyncUDPPacket packet);
+int  MPI_MSG_Sent_RST(int rank,int timeout); // reboot rabk
+int  MPI_MSG_Sent_RUN(int rank, int example); // run example on all node
+int  MPI_MSG_Sent_PIN(int rank); // ping 
+int  MPI_MSG_Sent_PON(int rank); // pong 
 
 typedef int MPI_Status;
 #define MPI_SUCCESS 0
@@ -45,6 +83,7 @@ typedef int MPI_Op;
 /* MPI_Constant                                                             */
 /*---------------------------------------------------------------------------*/
 #define MPI_MAX_PROCESSOR_NAME 32
+#define BROADCAST_RANK 255
 
 /*---------------------------------------------------------------------------*/
 /* MPI_Datatype                                                              */

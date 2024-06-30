@@ -38,6 +38,7 @@
 #include "interpreter.h"
 #include "WifiSetting.h"
 #include "cmdconfig.h"
+#include "MPI_lw.h"
 
 #undef LOOP_SSE_TEST
 
