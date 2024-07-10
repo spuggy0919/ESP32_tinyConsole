@@ -234,8 +234,8 @@ int udp_sendPacket(MPI_Packet *packet){
 void udp_logMpiPacket(const char *str,MPI_Packet *mpipkt){
         String msg=String(str)+"("+String(mpipkt->pmsg)+")\n\t";
         MPI_DBG_UDP_PRINTF(msg.c_str());
-        MPI_DBG_UDP_PRINTF("time%ld:seqno%d:len:%d)  from(%d,%d) ip(%x) mask(%x)\n",\
-         mpipkt->timeStamp,mpipkt->seqno,mpipkt->length,mpipkt->from,mpipkt->to,mpipkt->remoteip,mpipkt->ackmask);
+        MPI_DBG_UDP_PRINTF("&%x:time%ld:seqno%d:len:%d)  from(%d,%d) ip(%x) mask(%x)\n",\
+         mpipkt,mpipkt->timeStamp,mpipkt->seqno,mpipkt->length,mpipkt->from,mpipkt->to,mpipkt->remoteip,mpipkt->ackmask);
 }
 
 MPI_AckContext* udp_addRequestToOutstanding(MPI_Packet *packet) {
@@ -257,12 +257,12 @@ MPI_AckContext* udp_addRequestToOutstanding(MPI_Packet *packet) {
 
 // call by udp_Block_Sent_Wait_Ack to free Send outstanding packet
 
-int udp_checkAndFreeActContext(MPI_AckContext *ackctx) {
+int udp_checkAndFreeAckContext(MPI_AckContext *ackctx) {
     std::lock_guard<std::mutex> lock(outpacketMutex);
     int state = ackctx->ackstate;
     if (state & (MSG_STATE_TIMEOUT|MSG_STATE_ACK_PON)) {
         MPI_Packet *pkt = ackctx->pkt;
-        udp_logMpiPacket("udp_checkAndFreeActContext",pkt);
+        udp_logMpiPacket("udp_checkAndFreeAckContext",pkt);
         outstandingPackets.remove(ackctx);
         // udp_FreeMpiPacket(ackctx->pkt);
         free(ackctx);
@@ -828,7 +828,7 @@ int udp_Block_Sent_Wait_Ack(MPI_AckContext *ackctx){
         MPI_Packet *packet = ackctx->pkt;
         MPI_DBG_UDP_PRINTF("udp_Block_Sent_Wait_Ack(%s:len:%d)  from(%d,%d) ret(%x)\n",\
                 packet->pmsg,packet->length,packet->from,packet->to,ackctx->ackstate);
-        int state = udp_checkAndFreeActContext(ackctx);
+        int state = udp_checkAndFreeAckContext(ackctx);
         return state;
     }
     return MSG_STATE_TIMEOUT;
@@ -943,7 +943,7 @@ int udp_Test(MPI_Request *request, int *flag, MPI_Status *status){
         if (matchstatus == MSG_STATE_ACK_PON) *status = MPI_SUCCESS;
         if (matchstatus == MSG_STATE_TIMEOUT) *status = MPI_FAIL;
         if (*flag) {
-            udp_checkAndFreeActContext((MPI_AckContext *)recvctx);
+            udp_checkAndFreeAckContext((MPI_AckContext *)recvctx);
             *request = 0;
         }
     }

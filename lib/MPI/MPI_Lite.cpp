@@ -398,8 +398,9 @@ bool MPI_MSG_Packet_Dispatch(MPI_Packet *packet){
            memcpy(_recvbuf,packet->payload, bufsize);            
     } else if (strncmp(packet->pmsg, "RXT", PACKET_TYPE_SIZE) == 0) {
            int ptr;
-           memcpy(&ptr, packet->payload, sizeof(uint8_t *)); 
+           memcpy(&ptr, packet->payload, sizeof(int)); 
            _recvbuf = (uint8_t *)ptr;
+           MPI_DBG_MSG_PRINTF("RXT(ptr:%x) %x %c\n",ptr, _recvbuf, _recvbuf[0]); 
     } else if (strncmp(packet->pmsg, "LED", PACKET_TYPE_SIZE) == 0) {
         int onoff;
         memcpy(&onoff, packet->payload, sizeof(int)); 
@@ -759,7 +760,7 @@ MPI_Packet* MPI_MSG_Create_Packet(const char* XXX, ...) { //send message packet
             MPI_DBG_MSG_PRINTF("[MSG]txt(typesize:%d)\n",mpi_type.typesize);
             // 5.buffer
             buf = (uint8_t *)va_arg(args, char *);
-            MPI_DBG_MSG_PRINTF("[MSG]txt(buf:%s)at address%x\n",buf,&buf);
+            MPI_DBG_MSG_PRINTF("[MSG]txt(buf:%c)at address%x\n",buf[0],&buf[0]);
             if (udp_isMsgPacket(packet,"TXD") || udp_isMsgPacket(packet,"TXT") ) {
                 MPI_DBG_MSG_PRINTF("[MSG]txt(msg:%s)\n",packet->pmsg);
                 if ( mpi_type.typesize  > pmsg->size){
@@ -773,7 +774,9 @@ MPI_Packet* MPI_MSG_Create_Packet(const char* XXX, ...) { //send message packet
                 }
             }else if (udp_isMsgPacket(packet,"RXD") || udp_isMsgPacket(packet,"RXT")) {
                 //  copy buffer pointer into packet for later grabe data
-                memcpy(buffer + offset, (uint8_t *)&buf, sizeof(uint8_t *));  offset+=sizeof(uint8_t *);
+                int  ptr = (int) &buf[0];
+                MPI_DBG_MSG_PRINTF("[MSG]txt(buf:%c)at address%x\n",((uint8_t*)ptr)[0],ptr);
+                memcpy(buffer + offset, (uint8_t *)&ptr, sizeof(uint8_t *));  offset+=sizeof(uint8_t *);
             }
             mpi_type.typesize = -1; // reset type size to avoid memcpy
             break;

@@ -185,11 +185,12 @@ int cmd_mpi_msg(int argc,char *argv[]){  //mpi
         // TXT rank com tag  loopback test
         // int typecode = (int)strtol(argv[6],NULL,16);
         //                              TXT     rank      tag       comm      count typcode  buffer
-        MPI_PRINTF("RXT recbuf register \n"); 
+        MPI_PRINTF("RXT recbuf register %s ,%x  %x %c\n",recvbuf,&recvbuf,&(recvbuf[0]),*(&(recvbuf[0]))); 
         packet = MPI_MSG_Create_Packet("RXT",argint[0],    12,      123,       16, MPI_CHAR, recvbuf); 
         int status = udp_Block_Send(packet);
-        MPI_PRINTF("TXT send string data %s \n"); 
-        MPI_MSG_Free_Packet(packet);    packet = MPI_MSG_Create_Packet("TXT",argint[0],    12,      123,       strlen(sentbuf)+1, MPI_CHAR, sentbuf); 
+        MPI_PRINTF("TXT send string data %s \n",sentbuf); 
+        MPI_MSG_Free_Packet(packet);    
+        packet = MPI_MSG_Create_Packet("TXT",argint[0],    12,      123,       strlen(sentbuf)+1, MPI_CHAR, sentbuf); 
         status = udp_Block_Send(packet);
         MPI_MSG_Free_Packet(packet);
         MPI_PRINTF("recbuf got %s status(%x)\n",recvbuf,status); 
