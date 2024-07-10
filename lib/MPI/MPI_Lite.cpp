@@ -29,7 +29,7 @@ uint32_t mpi_comm_size = 0;
 #define RANK_INIT 0 // initial config for node
 uint32_t mpi_comm_rank = RANK_INIT;
 
-uint16_t MPI_debugLevel = MPI_DBG_MSG; //MPI_DBG_UDPDUMP| MPI_DBG_ERROR  | MPI_DBG_WARNING | MPI_DBG_PINGPONG | MPI_DBG_MSG;//| MPI_DBG_UDP ;//| MPI_DBG_INFO  | MPI_DBG_MSG ;//| MPI_DBG_UDP| MPI_DBG_MSG| MPI_DBG_API; // Enable error and warning messages
+uint16_t MPI_debugLevel = 0; //MPI_DBG_UDPDUMP| MPI_DBG_ERROR  | MPI_DBG_WARNING | MPI_DBG_PINGPONG | MPI_DBG_MSG;//| MPI_DBG_UDP ;//| MPI_DBG_INFO  | MPI_DBG_MSG ;//| MPI_DBG_UDP| MPI_DBG_MSG| MPI_DBG_API; // Enable error and warning messages
 
 
 
@@ -393,9 +393,12 @@ bool MPI_MSG_Packet_Dispatch(MPI_Packet *packet){
         return false;
         // Implement logic for "Run" packet
 #endif
+    } else if (strncmp(packet->pmsg, "PRT", PACKET_TYPE_SIZE) == 0) {
+           packet->payload[packet->length-1]=0;
+            MPI_PRINTF((const char *)(packet->payload)); // redirect IO to root
     } else if (strncmp(packet->pmsg, "TXT", PACKET_TYPE_SIZE) == 0) {
            int bufsize =  packet->length - sizeof(MPI_Packet); 
-           memcpy(_recvbuf,packet->payload, bufsize);            
+           memcpy(_recvbuf,packet->payload, bufsize);                         
     } else if (strncmp(packet->pmsg, "RXT", PACKET_TYPE_SIZE) == 0) {
            int ptr;
            memcpy(&ptr, packet->payload, sizeof(int)); 
