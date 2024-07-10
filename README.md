@@ -19,7 +19,8 @@ Now, JerryScript Interpreter is option.
 10. play (MP3)，Touch，Mouse Event is demo only。
 TinyBasic is ported from slviajero/tinybasic. 
 Currently, tinyConsole only supports DigitIO, Timer, FileIO, and WebSocket Serial IO.
-
+11. mpi library support basic command to say hello
+    
 ## TinyBasic LICENSE:
 
  [https://github.com/slviajero/tinybasic](https://github.com/slviajero/tinybasic) for copyright/left.
@@ -105,6 +106,7 @@ You also can set it in console mode, use export command.
 ```
 Or later use CONSOLE command "export" to setup to STA mode. For example, below SSID ABCD password 12345678
 **NOTICE** config.json should be located at root directory, before export, make sure your working directory.
+
 ```
 %cd /                       // check it is root
 /
@@ -112,6 +114,19 @@ Or later use CONSOLE command "export" to setup to STA mode. For example, below S
 %export password 12345678   // set password
 %export                     // get settings
 ```
+
+### AUTORUN
+In config.json, use autorun Key to replace Interpreter, you can customize power on, system default check "autoexec.bas" for tinybasic or "index.js" for Jerryscript, or use config autorun key。
+```
+// for Tinybasic 
+%export autorun "tb /basic/autoexec.bas" // run basic use absolute path
+// for Tinybasic 
+%export autorun "js /js/41graphics.js"   // js start up run scripts
+%export                                  // view exports
+```
+setup autorun key, user can select and execute the startup program, at /js/examples has a startup example, user can check websocket connect and wait esp32 boot, run a index.js program.
+copy config.json to root, copy index.js to /js, then reset esp32. 
+
 ![Help](png/exports.jpeg)# upload file system, and need to push EN button.
  It will upload data folder to partition SPIFFS, it is OK.
  Click the pio tool bar terminal icon, then cli terminal will display, make sure path with your data then run command in terminal.
@@ -132,6 +147,8 @@ Connecting to WiFi...
 stdioRedirector
 WebServerGPIOControl Starting...
 ```
+
+
 ###  Login Console, Copyright Notices.
 ![login](png/login.png)
 
@@ -194,15 +211,7 @@ Blink example
 % js 0time.js       // run js file Date object
 % je [enter]        // JS REPL mode
 ```
-### AUTORUN
-use autorun to replace Interpreter，you can customize power on，system default check "autoexec.bas" for tinybasic or "index.js" for Jerryscript, or use config autorun key。
-```
-// for Tinybasic 
-%export autorun "tb /basic/autoexec.bas" // run basic use absolute path
-// for Tinybasic 
-%export autorun "js /js/41graphics.js"   // js start up run scripts
-%export                                  // view exports
-```
+
 ## Demo & graphics
 ![graphics](png/graphics.jpeg)
 ![graphics](png/circle.jpeg)

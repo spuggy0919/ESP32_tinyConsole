@@ -80,16 +80,22 @@ int Config_Init()
     }
 
     // Access JSON elements
+    String mode = Config_Get(String("wifimode"));
     String ssid = Config_Get(String("ssid"));
     String password = Config_Get(String("password"));
+    String ip = Config_Get(String("ip"));
+    String gw = Config_Get(String("gw"));
+    int wifimode = WIFI_STA_AUTO_MODE;
+    mode.toLowerCase();
+    if (mode == String("ap")) wifimode = WIFI_AP;
+    if (mode ==  String("static")) wifimode = WIFI_STA_STATIC_MODE;
 
-
-    if (!ssid.isEmpty() && !password.isEmpty()){ // ssid found try Wifi STA
-         Serial.printf("SSID: %s, Password: %s\n", ssid, password);
-         if (!WiFiInit(WIFI_STA_AUTO_MODE,ssid,password)){
+    if (!ssid.isEmpty() ){ // ssid found try Wifi STA //|| !password.isEmpty()
+         Serial.printf("mode:%d SSID: %s, Password: %s, ip: %s, gw: %s\n",wifimode, ssid.c_str(), password, ip, gw);
+         if (!WiFiInit(wifimode,ssid.c_str(),password.c_str(),ip.c_str(),gw.c_str())){
             Serial.println("Error:Wifi fail, Please reconfig(ssid,password)");
-            Config_Remove("ssid");
-            Config_Remove("password");
+            // Config_Remove("ssid");
+            // Config_Remove("password");
             return -2; 
         }  
     }else{

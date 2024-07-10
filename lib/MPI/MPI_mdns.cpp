@@ -1,5 +1,5 @@
 
-#include "MPI_lw.h"
+#include "MPI_Lite.h"
 
 bool WiFimDNS_init();
 String WifimDNSName();
@@ -18,7 +18,7 @@ bool WiFimDNS_init()
 
 String mac = WiFi.macAddress();
  // Initialize mDNS
-    MPI_DBG_UDP_PRINTF("[WiFimDNS_init](mac:%s,mdns=%s)\n",mac.c_str(),mdnsName.c_str()); 
+    Serial.printf("[WiFimDNS_init](mac:%s,mdns=%s)\n",mac.c_str(),mdnsName.c_str()); 
 
   if (!MDNS.begin(mdnsName)) {   // Set the hostname to "esp32.local"
     MPI_DBG_ERROR_PRINTF("Error setting up MDNS responder!");

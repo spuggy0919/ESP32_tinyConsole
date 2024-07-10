@@ -97,6 +97,8 @@ int cmd_mpi_reboot(int argc,char *argv[]);
 int cmd_mpi_hello(int argc,char *argv[]);
 int cmd_mpi_msg(int argc,char *argv[]);
 int cmd_mpi_run(int argc,char *argv[]);
+int mpi_Irxtx_test(int argc, char **argv);
+
 #endif //CMD_MPI
 
 typedef int (*MAINPTR)(int argc,char * argv[]);

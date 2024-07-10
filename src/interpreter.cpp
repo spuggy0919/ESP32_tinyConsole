@@ -36,7 +36,7 @@ int InterpreterCmdIndex;
 unsigned int InterpreterCmdOption = 0;
 
 
-int interpreterState =  INTERPRETER_STARTUP;
+int interpreterState =  INTERPRETER_READY; // for MPI INTERPRETER_STARTUP;
 char cmdline[CMDLINE_BUFFERSIZE]; // for CommandParser will be deleted
 #define ARGVPTR_SIZE 20
 
@@ -51,8 +51,9 @@ int separate (
 {
     int  i,n,dcnt=0,len;
     char delimiter = 0,c,*p1;
-    strcpy (argvline, str.c_str ());
-    wsMonitorPrintf("argv=%s\n",argvline);
+    memset(argvline,0,sizeof(argvline));
+    strncpy (argvline, str.c_str(),str.length());
+    Serial.printf("argv=%s\n",str.c_str());
     p1=argvline;
     for(i=0;*p1!=0;i++,p1++){
         c=*p1;
@@ -153,13 +154,19 @@ const char *statemsg[]={
 #define LINE_LIMIT 256
 char buf[LINE_LIMIT];
 int len = 0;
+/* long jump */
+// #include <setjmp.h>
+// jump_buf buf;
 
+void interpreter_exit(int errorcode){
+      // longjmp(env,errorcode);
+}
 int interpreter() {
     int ret;
     // Serial.printf("State:%s\n",statemsg[interpreterState]);
     switch(interpreterState) {
       case INTERPRETER_STARTUP:
-           if (!WebWSConnect()) break;
+          //  if (!WebWSConnect()) break; for MPI purpose
           tc_Banner();
           interpreterCmdBuf = "";
           interpreterState = INTERPRETER_WAITING;
@@ -193,6 +200,10 @@ int interpreter() {
           interpreterState = INTERPRETER_DONE;
           break;
        case INTERPRETER_DONE:
+          // if (setjmp(buf)==0){
+              // abort or exit hereh
+          //     Serial.printf("Interpreter Abort...%s\n",interpreterCmdBuf.c_str());
+          // }
           interpreterState = INTERPRETER_READY;
           break;
        default:

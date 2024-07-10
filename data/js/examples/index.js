@@ -37,7 +37,7 @@
  *  3. if autorun exit, or non autorun mode, the default shell interpreter will run.
  * 
  * @classname none
- * @instance none
+ * @instance 
  * 
  * @date Apirl 3, 2024
  */
@@ -45,15 +45,35 @@ let fs = require('fs');
 let sio = require('sio');
 let touch = require('touch');
 let wifi = require('wifi');
+let process = require('process');
 
-function kbhit(){ // by esc, control-c, q, Q
-    let b = false;
-    while(!b) {
-        b=sio.escape();
-    }
-    return b;
+
+
+function getuser(process){
+    process.usrInput = (sio.readline()).slice(0,-1); // delete linefeed
 }
-
+function getpass(process){
+    process.pwdInput = (sio.readline()).slice(0,-1); // delete linefeed
+}
+function IsMatch(process){
+    let ret = false;
+    ret = (process.user !== '' ) ;
+    ret |=(process.user !== 'anonymous' );
+    ret |= process.usrInput === 'super'; // funny
+    ret |= process.usrInput === '' || process.pwdInput === ''; // dummy
+    ret |= ((process.usrInput === process.user)&&(process.pwdInput === process.passwrd)); // actual
+    return(ret);
+}
+function Authorize(process){
+    // console.log(typeof process.user, process.user);
+        sio.flush();
+    while(1) {
+        if (IsMatch(process)) break;
+        sio.print('\nusername:');getuser(process); //sio.readline();
+        sio.print('\npassword:');getpass(process); //sio.readline();
+    }
+    sio.print('\n');
+}
 let waitcnt = 0; 
 while(!touch.attach()){ // websocket running touch is enable.
     waitcnt+=1;
@@ -64,14 +84,23 @@ delay(500); //wait for cls
 sio.print("\n\n\n\n\n\n\n\n\n\n");
 sio.print("\n\n\n\n\n\n\n\n\n\n"); // move cursor down
 sio.print("\ntinyConsole \n");
+Authorize(process);
 if (wifi.getmode() == wifi.WIFI_STA) { 
     console.log("WIFI_STA",wifi.ssid());
-    console.log("local IP",wifi.localIP());
+    console.log("hostIP  ",wifi.localIP());
+    console.log("clientIP",wifi.clientIP());
     console.log("status",wifi.status());
-    fs.cd('/js');
+    fs.cd('/js/');
 }else{
     console.log("WIFI_AP");
     console.log("config your ssid,password");
     console.log("%export ssid ABCD [enter]");
     console.log("%export password 12345678 [enter]");
 }
+console.log("Autorun cmd arglist");
+console.log("cwd=",process.cwd());
+console.log("argc=",process.argv.length);
+let i=0;
+process.argv.forEach(function(element){
+    console.log(`argv[${i}]`,element);     i++;
+});

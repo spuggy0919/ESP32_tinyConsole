@@ -75,10 +75,11 @@ function Authorize(process){
     sio.print('\n');
 }
 let waitcnt = 0; 
-while(!touch.attach()){ // websocket running touch is enable.
-    waitcnt+=1;
-    if (sio.escape()) break; // websocket running sio is enable.
-}; // if interactive, wait for websocket connect
+// mark for mpi
+// while(!touch.attach()){ // websocket running touch is enable.
+//     waitcnt+=1;
+//     if (sio.escape()) break; // websocket running sio is enable.
+// }; // if interactive, wait for websocket connect
 sio.print("\x1b[2J"); 
 delay(500); //wait for cls
 sio.print("\n\n\n\n\n\n\n\n\n\n");

@@ -26,6 +26,7 @@ testdata
 *.cxp
 .apple2js.html
 lib/WebServer/output
+lib/MPI/output
 template
 *.cxp
 *.hx

@@ -38,7 +38,7 @@
 #include "interpreter.h"
 #include "WifiSetting.h"
 #include "cmdconfig.h"
-#include "MPI_lw.h"
+#include "MPI_Lite.h" // for mpi mdns and upd init
 
 #undef LOOP_SSE_TEST
 
@@ -100,7 +100,7 @@ void setup(){
   WebServerPage(); // HTTP SSE WS
 
   // 3, start udp Server 
-  udpserver_init(); // HTTP SSE WS
+  MPI_udp_init(); // HTTP SSE WS
 
   // Interpreter
   // WebserForInterpreterSendCmd = interpreterSendCmd; 

@@ -84,7 +84,8 @@ COMMAND_TABLE commandTable[] = {
   // "mhello", cmd_mpi_hello,  "\t\t// mdns send hello to  esp32 nodes",
   "mpimsg", cmd_mpi_msg,  "LED 0 255\t//  general message pass command",
   "mpirun", cmd_mpi_run,  "[0|1|2...]\t//  run mpi build in examples",
-  "mhello", cmd_mpi_hello,  "\t//  run MPI hello examples",
+  "mhello", cmd_mpi_hello,  "\t//  run MPI hello examples", 
+  "mrxtx", mpi_Irxtx_test,  "\t//  run MPI IRecv ISent Test", 
 #endif
 #ifdef CMD_WIRE
   "wire",    cmd_wire,    "\t\t// wire example",

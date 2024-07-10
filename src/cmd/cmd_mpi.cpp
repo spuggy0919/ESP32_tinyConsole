@@ -26,7 +26,8 @@
 #ifdef CMD_MPI
 #include <unistd.h>
 
-#include "MPI_lw.h"
+#include "MPI_Lite.h"
+
 int _force_config(){
     if (_mpi_state == 0){// if not config
         MPI_MSG_Scan_And_Config(); // force config
@@ -94,11 +95,11 @@ int cmd_mpi_led(int argc,char *argv[]){
       int world_size;
       MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-      MPI_MSG_Sent_LED(BROADCAST_RANK,0); // all off
+      MPI_MSG_Sent_LED(MPI_BROADCAST_RANK,0); // all off
       delay(1000);
-      MPI_MSG_Sent_LED(BROADCAST_RANK,255); // all off
+      MPI_MSG_Sent_LED(MPI_BROADCAST_RANK,255); // all off
       delay(1000);
-      MPI_MSG_Sent_LED(BROADCAST_RANK,0); // all off
+      MPI_MSG_Sent_LED(MPI_BROADCAST_RANK,0); // all off
       delay(1000);
       int pre=0;
       for(int i=0; i<world_size; i++) {
@@ -145,13 +146,13 @@ int cmd_mpi_run(int argc,char *argv[]){  //mpi
      _force_config();
     if (argc==2) example = atoi(argv[1]);
     if (example>MPI_TUTORIALS) example = 0;
-    return MPI_MSG_Sent_RUN(BROADCAST_RANK,example); 
+    return MPI_MSG_Sent_RUN(MPI_BROADCAST_RANK,argv[1]); 
 }
 #include <cstring>
 #include <cctype> // for toupper()
 
 // Function to convert a C-style string to uppercase
-void toUpperCase(char* str) {
+void cstr_toUpperCases(char* str) {
     int len = strlen(str);
     
     for (int i = 0; i < len; i++) {
@@ -165,31 +166,54 @@ int cmd_mpi_msg(int argc,char *argv[]){  //mpi
     for( i=2;i<argc;i++){
         argint[n++] =  atoi(argv[i]);
     }
-    toUpperCase(argv[1]);
+    cstr_toUpperCases(argv[1]);
+    MPI_Packet *packet;
+    int status=0;
     if ((strncmp(argv[1], "PRT", 4) == 0) || \
          (strncmp(argv[1], "RUN", 4) == 0)) {
-        MPI_MSG_Sent_CMD(argv[1],argint[0],argv[3]); 
+        packet = MPI_MSG_Create_Packet(argv[1],argint[0],argv[3]); 
+        int status = udp_Block_Send(packet);
+        MPI_PRINTF("%s %d %s ret(%d)\n",argv[1],argint[0],argv[3],status); 
+        MPI_MSG_Free_Packet(packet);
+
         return 0;
     }
+       if ((strncmp(argv[1], "TXT", 4) == 0) ){
+        // TXT rank com tag 
+        // int typecode = (int)strtol(argv[6],NULL,16);
+        //                              TXT     rank      tag       comm      count
+        packet = MPI_MSG_Create_Packet("TXT",argint[0],0,0,16,MPI_CHAR,"hello mpi dump\n"); 
+        int status = udp_Block_Send(packet);
+        MPI_MSG_Free_Packet(packet);
+
+
+       }
+
     switch(n){
     case 0:
-      MPI_MSG_Sent_CMD(argv[1]); 
+      packet = MPI_MSG_Create_Packet(argv[1]); 
       break;
     case 1:
-      MPI_MSG_Sent_CMD(argv[1],argint[0]); 
+      packet = MPI_MSG_Create_Packet(argv[1],argint[0]); 
+      MPI_PRINTF("%s %d \n",argv[1],argint[0]); 
       break;      
     case 2:
-      MPI_MSG_Sent_CMD(argv[1],argint[0],argint[2]); 
+      packet = MPI_MSG_Create_Packet(argv[1],argint[0],argint[1]); 
+      MPI_PRINTF("%s %d %d\n",argv[1],argint[0],argint[1]); 
       break;      
     case 3:
-      MPI_MSG_Sent_CMD(argv[1],argint[0],argint[1],argint[2]); 
+      packet = MPI_MSG_Create_Packet(argv[1],argint[0],argint[1],argint[2]); 
       break;  
     case 4:
-      MPI_MSG_Sent_CMD(argv[1],argint[0],argint[1],argint[2],argint[3]); 
+      packet = MPI_MSG_Create_Packet(argv[1],argint[0],argint[1],argint[2],argint[3]); 
       break;  
     default:
       break;
     }
+    status = udp_Block_Send(packet);
+    MPI_PRINTF("%s %d  ret(%d)\n",argv[1],argint[0],status); 
+    MPI_MSG_Free_Packet(packet);
+
     return 0;
 }
 
@@ -198,7 +222,7 @@ int cmd_mpi_msg(int argc,char *argv[]){  //mpi
 // mpirun 255 0
 int cmd_mpi_hello(int argc,char *argv[]){
     
-    MPI_MSG_Sent_CMD("DBG",255,0); // turn off debug log
+    MPI_MSG_Sent_DBG(255,0); // turn off debug log
 
     MPI_Init(&argc, &argv);
 
@@ -220,5 +244,78 @@ int cmd_mpi_hello(int argc,char *argv[]){
     MPI_Finalize();
 
     return MPI_SUCCESS;
+}
+
+
+
+/*
+### Example Code mpi_Irxtx_test cmd
+
+In this example:
+- Rank 0 sends data to Rank 1 using `MPI_Isend`.
+- Rank 1 posts a receive request using `MPI_Irecv`.
+- Both ranks use `MPI_Test` to check the completion of their respective operations.
+
+This structure ensures that the sending and receiving operations are correctly 
+monitored and completed without blocking the program's execution.
+*/
+#define BUF_SIZE 100
+#define TAG 0
+
+int mpi_Irxtx_test(int argc, char **argv) {
+    MPI_Init(&argc, &argv);
+
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if (size < 2) {
+        // fprintf(stderr, "This program requires at least two MPI processes.\n");
+        MPI_printf( "This program requires at least two MPI processes.\n");
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
+
+    MPI_Request send_request, recv_request;
+    MPI_Status status;
+    char send_buf[BUF_SIZE], recv_buf[BUF_SIZE];
+    int flag = 0;
+
+    if (rank == 0) {
+        // Initialize send buffer
+        snprintf(send_buf, BUF_SIZE, "Hello from rank %d", rank);
+
+        // Non-blocking send to rank 1
+        MPI_Isend(send_buf, BUF_SIZE, MPI_CHAR, 1, TAG, MPI_COMM_WORLD, &send_request);
+
+        // Do some computation here
+        MPI_printf("Rank %d is doing some computation while waiting for the send to complete.\n", rank);
+
+        // Check if the send is complete
+        while (!flag) {
+            MPI_Test(&send_request, &flag, &status);
+        }
+
+        if (flag) {
+            MPI_printf("Rank %d: Send completed.\n", rank);
+        }
+    } else if (rank == 1) {
+        // Non-blocking receive from rank 0
+        MPI_Irecv(recv_buf, BUF_SIZE, MPI_CHAR, 0, TAG, MPI_COMM_WORLD, &recv_request);
+
+        // Do some computation here
+        MPI_printf("Rank %d is doing some computation while waiting for the receive to complete.\n", rank);
+
+        // Check if the receive is complete
+        while (!flag) {
+            MPI_Test(&recv_request, &flag, &status);
+        }
+
+        if (flag) {
+            MPI_printf("Rank %d: Received message: %s\n", rank, recv_buf);
+        }
+    }
+
+    MPI_Finalize();
+    return 0;
 }
 #endif //CMD_MPI

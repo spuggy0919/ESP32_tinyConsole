@@ -1,5 +1,5 @@
 
-#include "MPI_lw.h"
+#include "MPI_Lite.h"
 #include "ledpwm.h"         // TODO pwm led for ESP32 using arduino IO for dispatch
 #include "timerfun.h"         // TODO ESP32TIME rtc
 
@@ -31,7 +31,7 @@ int MPI_Iot_LED_Blink(int n){
 
 
 // mimic shell excute in tinyconsole, you can change to call mpich program name
-int MPI_Iot_MPICH(const char *cmd){
+int MPI_Iot_MPIRUN(const char *cmd){
         wsSerial.push(cmd,strlen(cmd)); //websocket input
         MPI_PRINTF(cmd); 
     return MPI_SUCCESS;
