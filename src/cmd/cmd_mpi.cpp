@@ -159,6 +159,7 @@ void cstr_toUpperCases(char* str) {
         str[i] = toupper(str[i]); // Convert each character to uppercase
     }
 }
+static uint8_t rxbuf[20];
 int cmd_mpi_msg(int argc,char *argv[]){  //mpi
     //  _force_config();
     int argint[10],n=0;
@@ -178,16 +179,23 @@ int cmd_mpi_msg(int argc,char *argv[]){  //mpi
 
         return 0;
     }
-       if ((strncmp(argv[1], "TXT", 4) == 0) ){
-        // TXT rank com tag 
+    if ((strncmp(argv[1], "TXT", 4) == 0) ){
+        uint8_t recvbuf[30]; recvbuf[0]=0x41;recvbuf[1]=0;
+        char    sentbuf[30]="hello mpi txt rxt test \n";
+        // TXT rank com tag  loopback test
         // int typecode = (int)strtol(argv[6],NULL,16);
-        //                              TXT     rank      tag       comm      count
-        packet = MPI_MSG_Create_Packet("TXT",argint[0],0,0,16,MPI_CHAR,"hello mpi dump\n"); 
+        //                              TXT     rank      tag       comm      count typcode  buffer
+        MPI_PRINTF("RXT recbuf register \n"); 
+        packet = MPI_MSG_Create_Packet("RXT",argint[0],    12,      123,       16, MPI_CHAR, recvbuf); 
         int status = udp_Block_Send(packet);
+        MPI_PRINTF("TXT send string data %s \n"); 
+        MPI_MSG_Free_Packet(packet);    packet = MPI_MSG_Create_Packet("TXT",argint[0],    12,      123,       strlen(sentbuf)+1, MPI_CHAR, sentbuf); 
+        status = udp_Block_Send(packet);
         MPI_MSG_Free_Packet(packet);
+        MPI_PRINTF("recbuf got %s status(%x)\n",recvbuf,status); 
+    return 0;
 
-
-       }
+    }
 
     switch(n){
     case 0:
@@ -221,8 +229,8 @@ int cmd_mpi_msg(int argc,char *argv[]){  //mpi
 // tutorial 0: MPI Hello World
 // mpirun 255 0
 int cmd_mpi_hello(int argc,char *argv[]){
-    
-    MPI_MSG_Sent_DBG(255,0); // turn off debug log
+
+    // MPI_MSG_Sent_DBG(255,0); // turn off debug log
 
     MPI_Init(&argc, &argv);
 
@@ -238,7 +246,6 @@ int cmd_mpi_hello(int argc,char *argv[]){
 
     MPI_printf("Hello from processor %s, rank %d out of %d processors\n", 
            processor_name, world_rank, world_size);
-    MPI_Iot_LED_Blink(world_rank+world_size);
 
 
     MPI_Finalize();

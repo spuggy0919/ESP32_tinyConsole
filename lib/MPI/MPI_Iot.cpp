@@ -7,31 +7,51 @@
 #include "wsSerial.h"         // TODO wsSerial IO  for ESP32 using arduino IO for dispatch
 #include <Freertos/FreeRTOS.h>
 #include <Freertos/task.h>
+#include <freertos/timers.h>
 
 
+TimerHandle_t timerHandle_LED_Blink;
+bool ledState = false;
+void timerLedBlinkCallback(TimerHandle_t xTimer) {
+    digitalWrite(LED_BUILTIN, ledState ? LOW : HIGH);
+    ledState = !ledState;
+}
+bool MPI_Iot_Setup()
+{
+    // Create a software timer
+    timerHandle_LED_Blink = xTimerCreate(
+        "LEDTimer",           // Timer name
+        pdMS_TO_TICKS(300),  // Period in milliseconds (1 second)
+        pdTRUE,               // Auto-reload timer
+        (void *) 0,           // Timer ID
+        timerLedBlinkCallback        // Timer callback function
+    );
+    return true;
+}
 
+int MPI_Iot_LED_Blink(int onoff,int pwmvalue){
+    if (timerHandle_LED_Blink != NULL) {
+        if (onoff){
+            pwmled(pwmvalue);
+            // Start the timer
+            xTimerStart(timerHandle_LED_Blink, 0);
+        }else{
+            xTimerStop(timerHandle_LED_Blink, 0);
+            pwmled(pwmvalue);
+        }
+    }
+    return MPI_SUCCESS;
+}
 int MPI_Iot_LED(int pwmvalue)
 {
     pwmled(pwmvalue);
     return MPI_SUCCESS;
 }
-int MPI_Iot_LED_Blink(int n){
-    int i,t;
-    for (t=0;t<5;t++){
-        for(int i=0;i<n+1;i++) {
-            pwmled(0); delay(50);
-            pwmled(255); delay(100);
-        }
-        pwmled(0); delay(50);
-        delay(100);
-    }
-    pwmled(255); 
-    return 0;
-}
+
 
 
 // mimic shell excute in tinyconsole, you can change to call mpich program name
-int MPI_Iot_MPIRUN(const char *cmd){
+int MPI_Iot_MPIRUN(const char *cmd){ // run at localhost
         wsSerial.push(cmd,strlen(cmd)); //websocket input
         MPI_PRINTF(cmd); 
     return MPI_SUCCESS;

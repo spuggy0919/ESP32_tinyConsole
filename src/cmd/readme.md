@@ -29,9 +29,13 @@ int cmd_hello(int argc,char *argv[]);
  //  below internal teing commands
   "hello",   cmd_hello,   "\t\t// dht example",   /* Here is */
 ```  
+### 2.3 run command in shell interpreter
+``` 
+%hello
+```  
 ### 3. background execution
 run a background task, only one task allow, 
-keyboard/console io will be ignored, if possible, use wsMonitorPrintf
+keyboard/console io will be ignored, if possible, use wsTextPrintf
 and use stack memory, to avoid task is killed then memory is not free.
 
 ``` 

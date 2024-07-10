@@ -17,8 +17,7 @@
 extern const uint16_t glistenPort;
 extern AsyncUDP udpServer;
 extern AsyncUDP udpClient;
-extern std::mutex udpmutex,upd_seq_mutex,upd_dispatch_mutex;
-
+extern std::mutex udpmutex,upd_seq_mutex,upd_dispatch_mutex,mallocMutex;
 
 extern uint32_t mpi_comm_size;
 extern uint32_t mpi_comm_rank;
@@ -143,8 +142,9 @@ IPAddress MDNS_IP(int i);
 /*---------------------------------------------------------------------------*/
 /* MPI_Iot function                                                          */
 /*---------------------------------------------------------------------------*/
+bool MPI_Iot_Setup();
 int MPI_Iot_LED(int pwmvalue);
-int MPI_Iot_LED_Blink(int n);
+int MPI_Iot_LED_Blink(int onoff, int ledpwm);
 int MPI_Iot_Restart(int shutdown);
 int MPI_Iot_MPIRUN(const char *cmd);
 void MPI_Iot_SetEpoch(unsigned long  Epoch);
@@ -222,7 +222,7 @@ int  MPI_MSG_Sent_DBG(int rank,int debug); //turn on debug mode
 typedef int MPI_Datatype;
 #define MPI_DATATYPE_NULL           ((MPI_Datatype)0x0c000000)
 
-#define MPI_SIZEOF(x)               (((x)&0xffff00)>>8)
+#define MPI_SIZEOF(x)               (((x)&(MPI_Datatype)0x00ff00)>>8)
 #define MPI_CHAR                    ((MPI_Datatype)0x4c000101)
 #define MPI_UNSIGNED_CHAR           ((MPI_Datatype)0x4c000102)
 #define MPI_SHORT                   ((MPI_Datatype)0x4c000203)

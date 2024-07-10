@@ -29,7 +29,7 @@ uint32_t mpi_comm_size = 0;
 #define RANK_INIT 0 // initial config for node
 uint32_t mpi_comm_rank = RANK_INIT;
 
-uint16_t MPI_debugLevel =  -1;//MPI_DBG_ERROR  | MPI_DBG_WARNING | MPI_DBG_PINGPONG;// |MPI_DBG_MSG;//| MPI_DBG_UDP ;//| MPI_DBG_INFO  | MPI_DBG_MSG ;//| MPI_DBG_UDP| MPI_DBG_MSG| MPI_DBG_API; // Enable error and warning messages
+uint16_t MPI_debugLevel = MPI_DBG_MSG; //MPI_DBG_UDPDUMP| MPI_DBG_ERROR  | MPI_DBG_WARNING | MPI_DBG_PINGPONG | MPI_DBG_MSG;//| MPI_DBG_UDP ;//| MPI_DBG_INFO  | MPI_DBG_MSG ;//| MPI_DBG_UDP| MPI_DBG_MSG| MPI_DBG_API; // Enable error and warning messages
 
 
 
@@ -55,6 +55,7 @@ uint32_t _IPAddressToUInt(IPAddress ip)
     return i;
 }
 #if 0
+// move to udp this part will be deleted
 void udpserver_onPacket(AsyncUDPPacket packet) {
     // Determine packet type, check ack, nak, pin without ack reply
     #define ACK_FLAG (1<<0)
@@ -105,7 +106,7 @@ void udpserver_onPacket(AsyncUDPPacket packet) {
     // udp_dump_packet("\n[UDP][RX]onPacket()Dump",packet.data(), packet.length());
 }
 
-#endif
+
 // client handle
 // bool udpclient_Connect(IPAddress serverIP, uint16_t port) {
 
@@ -222,7 +223,7 @@ int udp_Wait_Ack(int rank, int setStatusBit) {
    @return acks: for sucessful, acks cnt, else 0
  */
 #define MAX_RETRIES 5
-#if 0
+
 int udp_Block_Send(MPI_Packet *packet) {
     MPI_DBG_MSG_PRINTF("udp_Block_Send()\n");
     size_t  n = 0;
@@ -243,7 +244,7 @@ int udp_Block_Send(MPI_Packet *packet) {
         MPI_MSG_Packet_Dispatch(packet); 
         upd_dispatch_mutex.unlock();
 
-        udp_dump_packet("\n[UDP][RX]udp_Block_Send()Dump",(uint8_t *)packet, packet->length);
+        // udp_dump_packet("\n[UDP][RX]udp_Block_Send()Dump",(uint8_t *)packet, packet->length);
         if (rank != MPI_BROADCAST_RANK ) return packet->length; //localhost non broadcast
     }
     for (int retries = 0; retries < MAX_RETRIES; retries++) {
@@ -273,13 +274,13 @@ int udp_Block_Send(MPI_Packet *packet) {
 
     return 0;
 }
-#endif
+
 // nonBlock Mode
 size_t udp_Nonblock_Sent(int rank, uint8_t* data, int length, int statusBits) {
     return 0;
 
 }
-
+#endif
 /*---------------------------------------------------------------------------*/
 /* MPI_MSG layer, which format and decode Packet                             */
 /*---------------------------------------------------------------------------*/
@@ -346,12 +347,15 @@ typedef struct {
  */
 // TODO hash header.ptye to indirect call dispatch function
 // TODO retrieve RX_pkt_Queue, to examine, then  excute IO function or data processing
+static uint8_t *_recvbuf; // RXT
 bool MPI_MSG_Packet_Dispatch(MPI_Packet *packet){
     // Determine packet type
     MPI_DBG_MSG_PRINTF("[RX]dispatch(%s)[%d](%d,%d)\n",packet->pmsg,packet->seqno,packet->from,packet->to);
 
     if (strncmp(packet->pmsg, "CFG", PACKET_TYPE_SIZE) == 0) {
         // Parse the configuration
+        // mpi_comm_rank is assign by COM packet each
+        if (mpi_comm_rank == 0 && (_mpi_state & MPI_NODE_STATE_CONFIG)) return true; // root is always config
         MPI_MSG_Config_Parser((uint8_t *)packet, packet->length);
     } else if (strncmp(packet->pmsg, "COM", PACKET_TYPE_SIZE) == 0) {
         int size;
@@ -390,11 +394,12 @@ bool MPI_MSG_Packet_Dispatch(MPI_Packet *packet){
         // Implement logic for "Run" packet
 #endif
     } else if (strncmp(packet->pmsg, "TXT", PACKET_TYPE_SIZE) == 0) {
-           packet->payload[packet->length-1]=0;
-           MPI_PRINTF((const char *)(packet->payload)); // print message
-    } else if (strncmp(packet->pmsg, "PRT", PACKET_TYPE_SIZE) == 0) {
-           packet->payload[packet->length-1]=0;
-        MPI_PRINTF((const char *)(packet->payload)); // redirect IO to root
+           int bufsize =  packet->length - sizeof(MPI_Packet); 
+           memcpy(_recvbuf,packet->payload, bufsize);            
+    } else if (strncmp(packet->pmsg, "RXT", PACKET_TYPE_SIZE) == 0) {
+           int ptr;
+           memcpy(&ptr, packet->payload, sizeof(uint8_t *)); 
+           _recvbuf = (uint8_t *)ptr;
     } else if (strncmp(packet->pmsg, "LED", PACKET_TYPE_SIZE) == 0) {
         int onoff;
         memcpy(&onoff, packet->payload, sizeof(int)); 
@@ -428,8 +433,10 @@ bool MPI_MSG_Packet_Dispatch(MPI_Packet *packet){
 /*---------------------------------------------------------------------------*/
 bool _MPI_MSG_Config_Broadcast( MPI_NODE nodes[], int nodeCount) {
     int offset = 0;
-    MPI_DBG_MSG_PRINTF("_MPI_MSG_Config_Broadcast(size:%d)\n",nodeCount);
+    MPI_DBG_MSG_PRINTF("_MPI_MSG_Config_Broadcast(size:%d)----Create----\n",nodeCount);
+    mallocMutex.lock();
     unsigned char *buffer= (unsigned char *)malloc((sizeof(MPI_NODE)+MPI_IPV4SIZE)*nodeCount+sizeof(MPI_Packet)+100);
+    mallocMutex.unlock();
 
     MPI_Packet header = {"CFG"};
     header.from = 0;
@@ -453,7 +460,7 @@ bool _MPI_MSG_Config_Broadcast( MPI_NODE nodes[], int nodeCount) {
     packet->answer = MSG_NEED_REPLY_ACK;
     packet->length=offset;
     int ret = udp_Block_Send(packet);
-    free(buffer);
+    MPI_MSG_Free_Packet(packet);
     if (ret == MSG_STATE_ACK_PON)  return true; // config
 
     return false;
@@ -475,8 +482,11 @@ int MPI_MSG_Scan_And_Config(){  // broadcase
   }
   // wsTextPrintf("%d mdnsQuery found and %d services found\n",n,esp32nodes);
   // alloc mpinode to store 
+      mallocMutex.lock();
   if (mpinode!=NULL) free(mpinode);
   mpinode = (MPI_NODE*) malloc(sizeof(MPI_NODE)*esp32nodes);
+      mallocMutex.unlock();
+
   if (mpinode == NULL) return -1;
   int idx=0;
     strncpy(mpinode[idx].hostname, WifimDNSName().c_str(),MPI_HOSTNAMESIZE-1);  mpinode[idx].hostname[MPI_HOSTNAMESIZE-1]=0;
@@ -505,8 +515,8 @@ int MPI_MSG_Scan_And_Config(){  // broadcase
   mpi_comm_size = idx;
   mpi_comm_rank = 0;
   _mpi_state = MPI_NODE_STATE_CONFIG|MPI_NODE_STATE_ROOT;
-//   _MPI_Config_Dump();
-  MPI_Iot_LED_Blink(2);
+  _MPI_Config_Dump();
+  MPI_Iot_LED_Blink(1,255);
   // according ackmask is bitslice, then each node should know its rank, so we can not broadcast
   // only inform by ip not rank with root configuration for ack control flow 
   for(int i=1; i<mpi_comm_size;i++) {
@@ -514,6 +524,8 @@ int MPI_MSG_Scan_And_Config(){  // broadcase
   }
   // config
   _MPI_MSG_Config_Broadcast(mpinode, mpi_comm_size);
+  MPI_Iot_LED_Blink(0,255);
+
   return MPI_SUCCESS;
 }
 int MPI_MSG_Config_Parser(uint8_t* data, int dataSize) {
@@ -524,11 +536,15 @@ int MPI_MSG_Config_Parser(uint8_t* data, int dataSize) {
     offset+=sizeof(int);   
     if (esp32nodes<0||esp32nodes>MPI_MAX_NODES) return -1;
     // alloc mpinode to store 
+    mallocMutex.lock();
     if (mpinode!=NULL) free(mpinode); // free old 
     mpinode = (MPI_NODE *) malloc(sizeof(MPI_NODE)*esp32nodes);
+    mallocMutex.unlock();
+
     if (mpinode == NULL) return -1;
     String consoleStr = "ESPCONSOLE-XXXX";
     String fmtip = "192.168.001.001";
+    MPI_Iot_LED_Blink(1,255);
     for(int i=0;i<esp32nodes;i++){
         int rank;
         char ip[MPI_IPV4SIZE]; ip[MPI_IPV4SIZE-1]=0;
@@ -550,7 +566,7 @@ int MPI_MSG_Config_Parser(uint8_t* data, int dataSize) {
     // MPI_DBG_MSG_PRINTF("[udp_Config_Parser](size:%d,rank:%d)\n",mpi_comm_size,mpi_comm_rank);
     _mpi_state = MPI_NODE_STATE_CONFIG; // not root
     _MPI_Config_Dump();
-    if (mpi_comm_rank==0) MPI_Iot_LED_Blink(mpi_comm_size);
+    MPI_Iot_LED_Blink(0,255);
 
     return mpi_comm_size;
 }
@@ -593,8 +609,9 @@ MSGCODE_ITEM msgformat[]= {
                      0, "EOS", "i",     MSG_NEED_REPLY_ACK,    //7  ENO OF SEG
     MSG_MAX_LENGTH, "CUK", "i",     MSG_NEED_REPLY_ACK,    //7  CHUNK
     MSG_MAX_LENGTH-4*sizeof(int), "TXD", "in",     MSG_NEED_REPLY_ACK,    //7  TXD rank {comm tag  n typecode databufer ...}
-                   6*sizeof(int), "RXD", "in",     MSG_NEED_REPLY_ACK, //7  SEND rank {{ tag comm n typecode buferptr}
-    MSG_MAX_LENGTH-4*sizeof(int), "TXT", "in",     MSG_NEED_REPLY_ACK,    //7  dump TXT rank {comm tag  n typecode databufer ...}
+                   6*sizeof(int), "RXD", "in",     MSG_NONE_REPLY, //7  SEND rank {{ tag comm n typecode buferptr}
+    MSG_MAX_LENGTH+5*sizeof(int), "TXT", "in",     MSG_NEED_REPLY_ACK,    //7  dump TXT rank {comm tag  n typecode databufer ...}
+    MSG_MAX_LENGTH+5*sizeof(int), "RXT", "in",     MSG_NONE_REPLY,    //7  dump RXT rank {comm tag  n typecode databufer ...}
                     -1, ""   , "" ,     MSG_NONE_REPLY
 };
 /*
@@ -688,11 +705,15 @@ MPI_Packet* MPI_MSG_Create_Packet(const char* XXX, ...) { //send message packet
     const char* fmt=pmsg->fmt; 
     // 2.rank
     int rank =  (int)  va_arg(args, int); fmt++; //skip rank // first is rank, default 
-    MPI_DBG_MSG_PRINTF("MPI_MSG_Create_Packet()%s rank:%d \n",XXX,rank);
+    MPI_DBG_MSG_PRINTF("MPI_MSG_Create_Packet()----------Packet Create-----\n");
+    MPI_DBG_MSG_PRINTF("  MPI_MSG_Create_Packet()%s rank:%d \n",XXX,rank);
 
 
     // packet  alloced,  0, if only rank in header, rank is filled into from
+    mallocMutex.lock();
     uint8_t *buffer=(uint8_t *)malloc(pmsg->size+sizeof(MPI_Packet)); 
+    mallocMutex.unlock();
+
     // packet 
     MPI_Packet *packet = (MPI_Packet *)buffer; 
     memcpy(packet->pmsg,message.c_str(),4);
@@ -717,29 +738,40 @@ MPI_Packet* MPI_MSG_Create_Packet(const char* XXX, ...) { //send message packet
     uint8_t *buf;
     int str_len=0;
     while(fmtchar != 0) {
-        if (mpi_type.typecount != 1) mpi_type.typecount = 1; // array item count prefetch, otherwise 1
+        // mpi_type.typecount = 0; // array item count prefetch, otherwise 1
         mpi_type.typesize = -1; //reset n;
         switch(fmtchar){
         case 'n': // next arg will be array array lengths next char as array type 
             // n is a data structure which for irecv and isent
             // 1.tag
-            packet->tag = (int)  va_arg(args, int); //skip rank // first is rank, default 
+            packet->tag = (uint8_t)  va_arg(args, int); //skip rank // first is rank, default 
+            MPI_DBG_MSG_PRINTF("[MSG]txt(tag:%d)\n",packet->tag);
             // 2.comm
-            packet->comm =  (int)  va_arg(args, int);  //skip rank // first is rank, default 
+            packet->comm =  (uint8_t)   va_arg(args, int);  //skip rank // first is rank, default 
+            MPI_DBG_MSG_PRINTF("[MSG]txt(comm:%d)\n",packet->comm);
             // 3.count  at payload offset
             packet->count =  va_arg(args, int);  
+            MPI_DBG_MSG_PRINTF("[MSG]txt(count:%d)\n",packet->count);
             // 4.type size
             packet->typecode  =  va_arg(args, int);  
+            MPI_DBG_MSG_PRINTF("[MSG]txt(typecode:%x)\n",packet->typecode);
             mpi_type.typesize = MPI_SIZEOF(packet->typecode)*packet->count;
+            MPI_DBG_MSG_PRINTF("[MSG]txt(typesize:%d)\n",mpi_type.typesize);
             // 5.buffer
             buf = (uint8_t *)va_arg(args, char *);
+            MPI_DBG_MSG_PRINTF("[MSG]txt(buf:%s)at address%x\n",buf,&buf);
             if (udp_isMsgPacket(packet,"TXD") || udp_isMsgPacket(packet,"TXT") ) {
+                MPI_DBG_MSG_PRINTF("[MSG]txt(msg:%s)\n",packet->pmsg);
                 if ( mpi_type.typesize  > pmsg->size){
                     MPI_DBG_ERROR_PRINTF("MPI_MSG_Create_Packet()%s rank:%d exceed maximun size, data loss\n",XXX,rank);
                      mpi_type.typesize = pmsg->size;
                 }
                 memcpy(buffer + offset, buf, mpi_type.typesize);  offset+=mpi_type.typesize;
-            }else if (udp_isMsgPacket(packet,"RXD")) {
+                if(udp_isMsgPacket(packet,"TXT")){
+                    MPI_DBG_MSG_PRINTF("[MSG]txt(tag:%d,comm:%d,count:%d,typecode:%x,size%d,%s)\n",\
+                        packet->tag,packet->comm,packet->count,packet->typecode,mpi_type.typesize,packet->payload);
+                }
+            }else if (udp_isMsgPacket(packet,"RXD") || udp_isMsgPacket(packet,"RXT")) {
                 //  copy buffer pointer into packet for later grabe data
                 memcpy(buffer + offset, (uint8_t *)&buf, sizeof(uint8_t *));  offset+=sizeof(uint8_t *);
             }
@@ -756,7 +788,7 @@ MPI_Packet* MPI_MSG_Create_Packet(const char* XXX, ...) { //send message packet
         case 'i': // int array lengths next char as array type 
             mpi_type.typesize = sizeof(uint32_t);        
             type_argv.uint32_v = va_arg(args, uint32_t);
-            MPI_DBG_ERROR_PRINTF("[MSG]format(i)%d\n",type_argv.uint32_v);
+            MPI_DBG_MSG_PRINTF("[MSG]format(i)%d\n",type_argv.uint32_v);
             break;
         // case 'f': // float
         //     mpi_type.typesize = sizeof(float);        
@@ -807,11 +839,13 @@ MPI_Packet* MPI_MSG_Create_Packet(const char* XXX, ...) { //send message packet
     }
     va_end(args);
     packet->length =  offset;
-    udp_dump_packet("\n[MPI][MSG]MPI_MSG_Create_Packet()\n", (uint8_t *)packet, offset);
+    udp_dump_packet("\n[MPI][MSG]MPI_MSG_Create_Packet()\n", (uint8_t *)packet, packet->length);
     return packet;
 }
 
 void MPI_MSG_Free_Packet(MPI_Packet *packet) { //send message packet 
+    // udp_dump_packet("\n[MPI][MSG]MPI_MSG_Free_Packet()\n", (uint8_t *)packet, packet->length);
+    MPI_DBG_MSG_PRINTF("****(%s)***********Packet life endding*****************\n",packet->pmsg); 
     free(packet);
 }
 /**
@@ -819,7 +853,7 @@ void MPI_MSG_Free_Packet(MPI_Packet *packet) { //send message packet
    @details
          These API Sent dedicate MSGCODE to excute Iot Function
             int MPI_Iot_LED(int pwmvalue);
-            int MPI_Iot_LED_Blink(int n);
+            int MPI_Iot_LED_Blink(int blink, int led);
             int MPI_Iot_Restart(int shutdown);
             int MPI_Iot_MPIRUN(const char *cmd);
             // void MPI_Iot_SetEpoch(unsigned long  Epoch);
@@ -943,7 +977,7 @@ void MPI_printf(const char *fmt,...){
   int n=0;
   va_end(args);  
     
-        udp_dump_packet("\n[MPI][MSG]MPI_printf()\n", (uint8_t*)buffer, offset);
+        // udp_dump_packet("\n[MPI][MSG]MPI_printf()\n", (uint8_t*)buffer, offset);
         packet->length=offset;
         n = udp_Block_Send(packet); // MPI_printf 
 
@@ -980,6 +1014,8 @@ int MPI_Init(int *argc, char ***argv) {
     } 
     if (ret != MPI_SUCCESS) return ret;
     mpi_initialized = 1;
+    MPI_Iot_LED_Blink(mpi_initialized,255);
+
     MPI_DBG_API_PRINTF("[MPI_Init](%d)\n",*argc);
     return MPI_SUCCESS;
 }
@@ -1007,6 +1043,8 @@ int MPI_Finalize(void) {
     //     if (complete_pon) break;
     //     currentTime = millis();
     // }
+    MPI_Iot_LED_Blink(mpi_initialized,255);
+
     return MPI_SUCCESS;
 }
 
@@ -1106,10 +1144,12 @@ void interpreter_exit(int errorcode); // TODO external reference interpreter exi
 
 int MPI_Abort(MPI_Comm comm, int errorcode) {
     if (!mpi_initialized) return -1;
+    mpi_initialized = 0;
     // Simplified barrier: In a real implementation, you'd synchronize processes
     udp_FreeAllRequests();
     MPI_DBG_API_PRINTF("[MPI_Abort]abort (%d))\n",errorcode);
     interpreter_exit(errorcode); // TODO external reference interpreter exit function
+    MPI_Iot_LED_Blink(mpi_initialized,255);
     return MPI_SUCCESS;
 }
 
