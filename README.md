@@ -211,6 +211,20 @@ Blink example
 % js 0time.js       // run js file Date object
 % je [enter]        // JS REPL mode
 ```
+#### MPI-Lite
+Support multiple esp32s run `MPI-Lite` program, now `MPI_Irecv` `MPI_Isent` `MPI_test` for `mrxtx` example and root rank output with `MPI_printf` with `mhello` example
+
+```
+%mscan               # Configure IP tables, mapping rank to IP. Use option -f to force configuration.
+%mpimsg PIN 255      # Send a message packet to all nodes. 255 indicates broadcast. PIN toggles the LED.
+%mpimsg led 255 0    # Turn off all LEDs.
+%mled 255 255        # Turn on all LEDs.
+%mled 0 0            # Turn off LED on rank 0.
+
+%mpimsg run 255 mhello # Invoke all nodes to run the mhello example. During the program run, the LED will blink.
+%mpimsg run 255 mrxtx  # Invoke all nodes to run the mrxtx example.
+```
+The commands configure IP tables, control LEDs, and send messages to other nodes in an ESP32 MPI (Message Passing Interface) environment. The `%mpimsg run` commands instruct all nodes to run specific example programs, like `mhello` or `mrxtx`.
 
 ## Demo & graphics
 ![graphics](png/graphics.jpeg)

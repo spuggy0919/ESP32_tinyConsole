@@ -131,7 +131,7 @@ static uint8_t *_recvbuf; // RXT
 bool MPI_MSG_Packet_Dispatch(MPI_Packet *packet){
     // Determine packet type
     // MPI_DBG_MSG_PRINTF("[RX]dispatch(%s)[%d](%d,%d)\n",packet->pmsg,packet->seqno,packet->from,packet->to);
-
+    MPI_Iot_LED_Blink(1,255);
     if (strncmp(packet->pmsg, "CFG", PACKET_TYPE_SIZE) == 0) {
         // Parse the configuration
         // mpi_comm_rank is assign by COM packet each
@@ -208,6 +208,7 @@ bool MPI_MSG_Packet_Dispatch(MPI_Packet *packet){
         memcpy(&timeout, packet->payload, sizeof(int));  
         MPI_Iot_Restart(timeout);
     } 
+    MPI_Iot_LED_Blink(0,255);
     return true; // for free
 }
 
