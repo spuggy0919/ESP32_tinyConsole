@@ -29,10 +29,16 @@ uint32_t mpi_comm_size = 0;
 #define RANK_INIT 0 // initial config for node
 uint32_t mpi_comm_rank = RANK_INIT;
 
-uint16_t MPI_debugLevel = 0; //MPI_DBG_UDPDUMP| MPI_DBG_ERROR  | MPI_DBG_WARNING | MPI_DBG_PINGPONG | MPI_DBG_MSG;//| MPI_DBG_UDP ;//| MPI_DBG_INFO  | MPI_DBG_MSG ;//| MPI_DBG_UDP| MPI_DBG_MSG| MPI_DBG_API; // Enable error and warning messages
+uint16_t MPI_debugLevel = 0;//MPI_DBG_UDP |MPI_DBG_API; //MPI_DBG_UDPDUMP| MPI_DBG_ERROR  | MPI_DBG_WARNING | MPI_DBG_PINGPONG | MPI_DBG_MSG;//| MPI_DBG_UDP ;//| MPI_DBG_INFO  | MPI_DBG_MSG ;//| MPI_DBG_UDP| MPI_DBG_MSG| MPI_DBG_API; // Enable error and warning messages
+std::mutex debugMutex;
 
 
-
+bool upd_chkdebug(int x)
+{
+    std::lock_guard<std::mutex> lock(debugMutex);
+    bool ret = MPI_debugLevel&x;
+    return ret;
+}
 // udp server receive packet handle
 void udp_dump_packet(const char* msg,uint8_t *data, int len){
     MPI_DBG_CHK_RET_VOID(MPI_DBG_UDPDUMP);
@@ -54,233 +60,7 @@ uint32_t _IPAddressToUInt(IPAddress ip)
     uint32_t i = ((uint32_t)ip[3]<<24) | ((uint32_t)ip[2]<<16) | ((uint32_t)ip[1]<<8) | ((uint32_t)ip[0]);
     return i;
 }
-#if 0
-// move to udp this part will be deleted
-void udpserver_onPacket(AsyncUDPPacket packet) {
-    // Determine packet type, check ack, nak, pin without ack reply
-    #define ACK_FLAG (1<<0)
-    #define PIN_FLAG (2<<0)
-    uint8_t msg_Flag = ACK_FLAG;
-    MPI_Packet *header = (MPI_Packet *)packet.data();
-    header->length = packet.length();
-    MPI_DBG_UDP_PRINTF("[RX]onPacket(%s):[%d]frmIP:%s,from(%d,%d)\n", \
-            header->pmsg,header->seqno,packet.remoteIP().toString().c_str(),header->from,header->to);
-    if ((strncmp(header->pmsg, "ACK", PACKET_TYPE_SIZE) == 0) || \
-            (strncmp(header->pmsg, "PON", PACKET_TYPE_SIZE) == 0)){
-        upd_seq_mutex.lock();
-        _udp_arrive_seq = header->seqno;
-        upd_seq_mutex.unlock();
-        msg_Flag &= ~ ACK_FLAG;
-    }else if (strncmp(header->pmsg, "NAK", PACKET_TYPE_SIZE) == 0) {
-        msg_Flag &= ~ ACK_FLAG;
-    }else if (strncmp(header->pmsg, "PIN", PACKET_TYPE_SIZE) == 0){
-        msg_Flag &= ~ ACK_FLAG;
-        msg_Flag |=  PIN_FLAG;
-    }
-    if (msg_Flag & ACK_FLAG) { // ACK respone
-        MPI_Packet *packet_header = (MPI_Packet *)packet.data();
-        MPI_Packet ackPacket = {"ACK"};
-        ackPacket.seqno =  packet_header->seqno;
-        ackPacket.from = mpi_comm_rank;   // NOTICE for unconfig this rank is invalide
-        ackPacket.to =  packet_header->from;
-        // ackPacket.localip = _IPAddressToUInt(WifimDNSLocalIP());
-        udpClient.writeTo((uint8_t*)&ackPacket, sizeof(MPI_Packet), packet.remoteIP(), glistenPort); // Use  
-        MPI_DBG_UDP_PRINTF("[UDP]onPacket()ACK reply remoteIP:%s, from_to(%d,%d)\n", \
-        packet.remoteIP().toString().c_str(), mpi_comm_rank,packet_header->from);
-    }else if (msg_Flag & PIN_FLAG){ // PONG respone
-        MPI_Packet *packet_header = (MPI_Packet *)packet.data();
-        MPI_Packet pongPacket = {"PON"};
-        pongPacket.seqno =  packet_header->seqno;
-        pongPacket.from = mpi_comm_rank;   // NOTICE for unconfig this rank is invalide
-        pongPacket.to =  packet_header->from;
-        // pongPacket.localip = _IPAddressToUInt(WifimDNSLocalIP());
-        udpClient.writeTo((uint8_t*)&pongPacket, sizeof(MPI_Packet), packet.remoteIP(), glistenPort); // Use    
-        delay(100); // to avoid collision for MPI_DBG_MSG_PRINTF
-        MPI_DBG_MSG_PRINTF("[UDP]onPacket()PON reply remoteIP:%s, from_to(%d,%d)\n", \
-                 packet.remoteIP().toString().c_str(), mpi_comm_rank,packet_header->from);
-        return;  
-    }
-    upd_dispatch_mutex.lock(); // avoid reentry
-    MPI_MSG_Packet_Dispatch((MPI_Packet *)packet.data()); // process packet
-    upd_dispatch_mutex.unlock(); // avoid reentry
-    // udp_dump_packet("\n[UDP][RX]onPacket()Dump",packet.data(), packet.length());
-}
 
-
-// client handle
-// bool udpclient_Connect(IPAddress serverIP, uint16_t port) {
-
-//     MPI_DBG_INFO_PRINTF("[UDP] send to server %s:port%d\n",serverIP.toString().c_str(),port);
-//     if (udpClient.connect(serverIP, port)) {
-//         wsTextPrintf("[UDP][TX]:");
-//         udpClient.onPacket([](AsyncUDPPacket packet) {
-//             // reveive packet check what token is 
-//             wsTextPrintf("Received %u bytes from %s, Port %d\n", packet.length(), packet.remoteIP().toString().c_str(), packet.remotePort());
-
-//             for(int i=0;i<packet.length();i++)
-//               wsTextPrintf("[%2x]",packet.data()[i]);
-            
-//             wsTextPrintf("\n");
-//         });
-//         return true;
-//     }
-//     return false;
-// }
-
-
-// Block Mode
-// int udp_Send_Ack(uint8_t* data, int length) { // incoming packet data and length
-//      return 0;
-//     int offset = 0;
-//     uint8_t buffer[PACKETHEADER+4];
-//     MPI_Packet *packet_header = (MPI_Packet *)data;
-//     MPI_Packet header = {"ACK"};
-//     header.seqno =  packet_header->seqno;
-//     header.from = mpi_comm_rank;   // NOTICE for unconfig this rank is invalide
-//     header.to =  packet_header->from;
-//     MPI_DBG_UDP_PRINTF("[ACK]to IP: %s, seqno=%d, from %d to %d\n", mpinode[header.to ].ip.toString().c_str(), \
-//                             packet_header->seqno, packet_header->from, packet_header->to);
-//     // header.to = toRank;
-//     memcpy(buffer + offset, &header, sizeof(MPI_Packet)); 
-//     offset+=sizeof(MPI_Packet);
-//     memcpy(buffer + offset, &mpi_comm_rank, sizeof(uint32_t)); 
-//     offset+=sizeof(uint32_t); 
-//     udp_dump_packet("[UDP][TX]ACK",buffer, offset);
-//     return udpClient.writeTo(buffer, offset, mpinode[header.to ].ip, glistenPort); // Use  
-// }
-void udp_Clear_Ack(int rank) {
-    if (mpinode==NULL || mpi_comm_size == 0) return;
-    if (rank == MPI_BROADCAST_RANK) {  // check all ack 
-        int acks = 0;
-        for (int i=0;i<mpi_comm_size;i++) {
-            udpmutex.lock();
-            mpinode[i].status &= ~MPI_NODE_STATE_ACK;
-            // if (mpinode[idx].ip ==  WifiLocalIP() ) {
-            //     mpinode[idx].status |= MPI_NODE_STATUS_ACK; // sender no ack
-            // }
-            udpmutex.unlock();
-        }
-    }else{ // check dedicate rank
-        if (rank<0||rank>=mpi_comm_size) return;
-        udpmutex.lock();
-        mpinode[rank].status &= ~MPI_NODE_STATE_ACK;
-        udpmutex.unlock();
-
-    }
-}
-#define UDPTIMEOUT 5000
-int udp_Wait_Ack(int rank, int setStatusBit) {
-    unsigned long lastTime = millis();
-    unsigned long  currentTime = millis();
-    if (mpinode==NULL || mpi_comm_size == 0) return 0; // unconfig
-    if (_mpi_state == 0) { // unconfig
-        return (rank == MPI_BROADCAST_RANK)  ? mpi_comm_size:1;
-    }
-    while ((currentTime - lastTime) < UDPTIMEOUT) {
-        if (rank==MPI_BROADCAST_RANK) {  // check all ack 
-            int acks = 1; // for localhost
-            // return mpi_comm_size-1; // TODO ****DEBUG
-            for (int i=0;i<mpi_comm_size;i++) {
-                udpmutex.lock();
-                if (mpinode[i].status & MPI_NODE_STATE_ACK) {
-                    acks++;
-                    mpinode[i].status |= setStatusBit;
-                    MPI_DBG_UDP_PRINTF("[udp_Wait_Ack](rank:%d,status:%x)\n",i,mpinode[i].status); 
-                }
-                udpmutex.unlock();
-            }
-            if (acks==mpi_comm_size) return acks; // all except sender 
-        }else{ // check dedicate rank
-            // return 1; // TODO ****DEBUG
-            if (rank<0||rank>=mpi_comm_size||rank==mpi_comm_rank) return 1; // localhost
-            udpmutex.lock();
-            int ackbit = mpinode[rank].status & MPI_NODE_STATE_ACK;
-            udpmutex.unlock();
-            if (ackbit) {
-                udpmutex.lock();
-                mpinode[rank].status |= setStatusBit;
-                MPI_DBG_UDP_PRINTF("[udp_Wait_Ack](rank:%d,status:%x)\n",rank,mpinode[rank].status); 
-                udpmutex.unlock();
-                return 1; //ack done
-            }
-        }
-        delay(100);
-        currentTime = millis();
-    }
-    return -1; // timeout
-}
-
-/**
-   @brief Block mode Sent, the datapacket is sent then wait acks until timeout
-   @details
-   This function takes two integers as input and returns their sum.
-   
-   @param[in] rank MPI_BROADCAST_RANK is broadcast
-                   >0  is single and specific node rank. (must be less than mpi_comm_size)
-   @param[in] data   packet
-   @param[in] length  packet length
-   @param[in] statusBits  state bit, when config it will set to 0x8000 MSB turn on in root
-   @return acks: for sucessful, acks cnt, else 0
- */
-#define MAX_RETRIES 5
-
-int udp_Block_Send(MPI_Packet *packet) {
-    MPI_DBG_MSG_PRINTF("udp_Block_Send()\n");
-    size_t  n = 0;
-    // header
-    upd_seq_mutex.lock();
-    packet->seqno = _udp_send_seq+1; _udp_send_seq++;
-    upd_seq_mutex.unlock();
-    packet->from = (uint8_t)mpi_comm_rank;
-    uint8_t rank  = packet->to; 
-    if (_mpi_state == 0) { // unconfig
-        rank = MPI_BROADCAST_RANK; // unknow ip redirect to broadcast
-    }
-    MPI_DBG_MSG_PRINTF("%s(rank:%d[%d]from(%d,%d)\n",packet->pmsg,rank,packet->seqno,packet->from,packet->to); 
-    udp_Clear_Ack(rank);
-    int acks = 0;
-    if (rank == MPI_BROADCAST_RANK || rank == mpi_comm_rank) {// brodacast 
-        upd_dispatch_mutex.lock(); // avoid reentry
-        MPI_MSG_Packet_Dispatch(packet); 
-        upd_dispatch_mutex.unlock();
-
-        // udp_dump_packet("\n[UDP][RX]udp_Block_Send()Dump",(uint8_t *)packet, packet->length);
-        if (rank != MPI_BROADCAST_RANK ) return packet->length; //localhost non broadcast
-    }
-    for (int retries = 0; retries < MAX_RETRIES; retries++) {
-        packet->trycnt = retries;
-        if (rank == MPI_BROADCAST_RANK) {// brodacast 
-            acks++; // localhost
-            IPAddress broadcastIP(255,255,255,255);// = ~WiFi.subnetMask() | WiFi.gatewayIP();
-            n = udpClient.broadcastTo((uint8_t *)packet, packet->length, glistenPort); // Use  
-            MPI_DBG_MSG_PRINTF("[udp_Block_Send]broadcastTo,(rank:%d, retries%d,length:%d)\n",rank,retries,packet->length); 
-            acks += udp_Wait_Ack(rank,0);
-            if ( acks >= mpi_comm_size){ // consider unconfig mpi_comm_size == 0
-                MPI_DBG_MSG_PRINTF("[udp_Block_Send]broadcastTo Ack Done,(rank:%d,%d),retries:%d)\n",rank,n,retries); 
-                return n; // all nodes except sender acks back ;
-            } 
-        } else {
-            if (rank<0 || rank >= mpi_comm_size) return 0;
-            MPI_DBG_MSG_PRINTF("[udp_Block_Send]writeTo,(rank:%d,,retries%dlength:%d),ip%s\n",rank,retries,packet->length, mpinode[rank].ip.toString().c_str()); 
-            n = udpClient.writeTo((uint8_t *)packet, packet->length, mpinode[rank].ip, glistenPort); // Use  
-            if (udp_Wait_Ack(rank,0) == 1) {
-                MPI_DBG_MSG_PRINTF("[udp_Block_Send]writeTo Ack Done,(rank:%d,%d),retries:%d)\n",rank,n,retries); 
-                return n; // dedicate ack got
-            }
-        }
-        // fail retry
-    }
-    MPI_DBG_ERROR_PRINTF("[udp_Block_Send](rank:%d,length:%d) Fail\n",rank,packet->length); 
-
-    return 0;
-}
-
-// nonBlock Mode
-size_t udp_Nonblock_Sent(int rank, uint8_t* data, int length, int statusBits) {
-    return 0;
-
-}
-#endif
 /*---------------------------------------------------------------------------*/
 /* MPI_MSG layer, which format and decode Packet                             */
 /*---------------------------------------------------------------------------*/
@@ -350,7 +130,7 @@ typedef struct {
 static uint8_t *_recvbuf; // RXT
 bool MPI_MSG_Packet_Dispatch(MPI_Packet *packet){
     // Determine packet type
-    MPI_DBG_MSG_PRINTF("[RX]dispatch(%s)[%d](%d,%d)\n",packet->pmsg,packet->seqno,packet->from,packet->to);
+    // MPI_DBG_MSG_PRINTF("[RX]dispatch(%s)[%d](%d,%d)\n",packet->pmsg,packet->seqno,packet->from,packet->to);
 
     if (strncmp(packet->pmsg, "CFG", PACKET_TYPE_SIZE) == 0) {
         // Parse the configuration
@@ -395,7 +175,7 @@ bool MPI_MSG_Packet_Dispatch(MPI_Packet *packet){
 #endif
     } else if (strncmp(packet->pmsg, "PRT", PACKET_TYPE_SIZE) == 0) {
            packet->payload[packet->length-1]=0;
-            MPI_PRINTF((const char *)(packet->payload)); // redirect IO to root
+           MPI_PRINTF((const char *)(packet->payload)); // redirect IO to root
     } else if (strncmp(packet->pmsg, "TXT", PACKET_TYPE_SIZE) == 0) {
            int bufsize =  packet->length - sizeof(MPI_Packet); 
            memcpy(_recvbuf,packet->payload, bufsize);                         
@@ -410,10 +190,13 @@ bool MPI_MSG_Packet_Dispatch(MPI_Packet *packet){
         MPI_DBG_MSG_PRINTF("(rank:%d) onoff(%x)\n",mpi_comm_rank,onoff); 
         MPI_Iot_LED(onoff);
     } else if (strncmp(packet->pmsg, "DBG", PACKET_TYPE_SIZE) == 0) {
-        int debug;
-        memcpy(&debug, packet->payload, sizeof(int));
+        uint16_t debug;
+        memcpy(&debug, packet->payload, sizeof(uint16_t));
         MPI_DBG_MSG_PRINTF("(rank:%d) debug(%x)\n",mpi_comm_rank,debug); 
-        MPI_debugLevel = debug;    
+        debugMutex.lock();
+        MPI_debugLevel = debug;   
+        debugMutex.unlock();
+
     } else if (strncmp(packet->pmsg, "STM", PACKET_TYPE_SIZE) == 0) {
         unsigned long epoch;
         memcpy(&epoch, packet->payload, sizeof(unsigned long));
@@ -685,7 +468,10 @@ int MPI_MSG_TypeCode_sizeof(MPI_Datatype code){
    @param[in] ...  rank and arglist
    @return bytes: for sucessful, sent bytes, else 0
  */
+std::mutex createtMutex;
 MPI_Packet* MPI_MSG_Create_Packet(const char* XXX, ...) { //send message packet 
+    std::lock_guard<std::mutex> lock(createtMutex); // avoid reentry
+
     int offset = 0; // created packet size
     // exception , CFG
     String message = String(XXX);
@@ -1007,6 +793,8 @@ void MPI_printf(const char *fmt,...){
     MPI_MSG_Free_Packet(packet);
     return;
 }
+
+
 #endif
 /*---------------------------------------------------------------------------*/
 /* MPI_API subset                                                            */
@@ -1038,7 +826,8 @@ int MPI_Finalize(void) {
 #define UDPCOMPLETETIMEOUT 5000
     // unsigned long lastTime = millis();
     // unsigned long  currentTime = millis();
-    // MPI_MSG_Create_Packet("PIN",255);
+    MPI_MSG_Sent_PIN(255);
+    MPI_MSG_Sent_PIN(255); // toogle led, too
     // while ((currentTime - lastTime) < UDPCOMPLETETIMEOUT) {
     //     bool complete_pon = false;
     //     upd_seq_mutex.lock();
@@ -1101,18 +890,20 @@ int MPI_Recv(void *buf, int count, MPI_Datatype datatype, int source, int tag, M
 }
 int MPI_Irecv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request){
     if (!mpi_initialized) return MPI_FAIL;
-    MPI_DBG_API_PRINTF("[MPI_Irecv]Receiving %d items from process %d\n", count, source);
+    MPI_DBG_API_PRINTF("[MPI_Irecv]Receiving %x %d items from process %d\n", &buf, count, source);
+        //                                      RXD  rank   tag comm count typcode  buffer
     MPI_Packet *packet = MPI_MSG_Create_Packet("RXD",source,tag,comm,count,datatype,buf);
     // packet is free by udp_test
-    request = udp_Async_Recv_Packet(packet);
+    *request = udp_Async_Recv_Packet(packet);
     return MPI_SUCCESS;
 
 }
 
 int MPI_Isend(const void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request){
     if (!mpi_initialized) return MPI_FAIL;
+        //                                      TXD  rank tag comm count typcode  buffer
     MPI_Packet *packet = MPI_MSG_Create_Packet("TXD",dest,tag,comm,count,datatype,buf);
-    request = udp_Async_Send_Packet(packet);
+    *request = udp_Async_Send_Packet(packet);
 
     return MPI_SUCCESS;
 
@@ -1120,7 +911,11 @@ int MPI_Isend(const void *buf, int count, MPI_Datatype datatype, int dest, int t
 
 int MPI_Test(MPI_Request *request, int *flag, MPI_Status *status){
     if (!mpi_initialized) return MPI_FAIL;
-    return  udp_Test(request, flag, status);
+    int ret = udp_Test(request, flag, status);
+    if (*flag) { // free send packet
+
+    }
+    return ret;
 }
 
 

@@ -29,7 +29,7 @@
 #include "MPI_Lite.h"
 
 int _force_config(){
-    if (_mpi_state == 0){// if not config
+    if (_mpi_state == 0 && WebWSConnect() ){// if not config and websocket connect
         MPI_MSG_Scan_And_Config(); // force config
         return 0;
     } 
@@ -287,7 +287,7 @@ int mpi_Irxtx_test(int argc, char **argv) {
     MPI_Status status;
     char send_buf[BUF_SIZE], recv_buf[BUF_SIZE];
     int flag = 0;
-
+    recv_buf[0]='A';
     if (rank == 0) {
         // Initialize send buffer
         snprintf(send_buf, BUF_SIZE, "Hello from rank %d", rank);

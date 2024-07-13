@@ -12,8 +12,9 @@
 
 TimerHandle_t timerHandle_LED_Blink;
 bool ledState = false;
+int ledValue = false;
 void timerLedBlinkCallback(TimerHandle_t xTimer) {
-    digitalWrite(LED_BUILTIN, ledState ? LOW : HIGH);
+    pwmled(ledState ? 0:255);
     ledState = !ledState;
 }
 bool MPI_Iot_Setup()
@@ -21,14 +22,14 @@ bool MPI_Iot_Setup()
     // Create a software timer
     timerHandle_LED_Blink = xTimerCreate(
         "LEDTimer",           // Timer name
-        pdMS_TO_TICKS(300),  // Period in milliseconds (1 second)
+        pdMS_TO_TICKS(100),  // Period in milliseconds (1 second)
         pdTRUE,               // Auto-reload timer
         (void *) 0,           // Timer ID
         timerLedBlinkCallback        // Timer callback function
     );
     return true;
 }
-
+static int ledLastState = 255;
 int MPI_Iot_LED_Blink(int onoff,int pwmvalue){
     if (timerHandle_LED_Blink != NULL) {
         if (onoff){
@@ -37,14 +38,23 @@ int MPI_Iot_LED_Blink(int onoff,int pwmvalue){
             xTimerStart(timerHandle_LED_Blink, 0);
         }else{
             xTimerStop(timerHandle_LED_Blink, 0);
-            pwmled(pwmvalue);
+            pwmled(ledLastState);
         }
     }
     return MPI_SUCCESS;
 }
 int MPI_Iot_LED(int pwmvalue)
 {
+    xTimerStop(timerHandle_LED_Blink, 0);
     pwmled(pwmvalue);
+    ledLastState = pwmvalue;
+    return MPI_SUCCESS;
+}
+int MPI_Iot_LED_toggle()
+{
+    xTimerStop(timerHandle_LED_Blink, 0);
+    ledLastState = 255 - ledLastState;
+    pwmled(ledLastState);
     return MPI_SUCCESS;
 }
 
@@ -77,7 +87,7 @@ void setupTimeoutTask(TickType_t delayMillis) {
                 "RestartTask",             // Task name (for debugging)
                 configMINIMAL_STACK_SIZE,  // Stack size (configMINIMAL_STACK_SIZE is a FreeRTOS constant)
                 &delayMillis,              // Task parameters (pointer to delay duration)
-                1,                         // Priority (1 is higher priority, adjust as needed)
+                3,                         // Priority (1 is higher priority, adjust as needed)
                 NULL);                     // Task handle (optional, not used here)
 }
 

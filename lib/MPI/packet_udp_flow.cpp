@@ -71,6 +71,7 @@ SemaphoreHandle_t txSemaphore;
 SemaphoreHandle_t rxSemaphore; // Combined semaphore for rx and ack
 
 std::mutex dispatchMutex;
+std::mutex sendPacketMutex;
 
 
 std::list<MPI_AckContext *> outstandingPackets;
@@ -82,6 +83,7 @@ std::list<MPI_RecvContext *> recvContexts;
 std::list<MPI_Packet *> sentPackets;
 SemaphoreHandle_t matchSemaphore;
 
+
 int max_pong_respones = 0;
 std::set<uint32_t> pong_set;
 
@@ -90,6 +92,14 @@ void udp_onPacket(AsyncUDPPacket packet);
 void rxTask(void *params);
 void rxRetryTask(void *params);
 void matchTask(void *params);
+
+#define _OUTPUT_TASK_
+#ifdef _OUTPUT_TASK_
+QueueHandle_t outputQueue;
+void outputTask(void *params);
+SemaphoreHandle_t outputSemaphore;
+std::mutex outputMutex;
+#endif
 
 // init
 bool MPI_udp_init() {
@@ -104,7 +114,7 @@ bool MPI_udp_init() {
 
     // Setup UDP Server
     if (udpServer.listen(glistenPort)) {
-        MPI_DBG_UDP_PRINTF("MPI_udp_init():Listening on IP: %s, Port: %d\n", WiFi.localIP().toString().c_str(), glistenPort);
+        MPI_DBG_INFO_PRINTF("MPI_udp_init():Listening on IP: %s, Port: %d\n", WiFi.localIP().toString().c_str(), glistenPort);
         // Register the callback function to handle incoming packets
         udpServer.onPacket(udp_onPacket);
     }
@@ -122,6 +132,13 @@ bool MPI_udp_init() {
 // matching recv and sent
     matchSemaphore = xSemaphoreCreateBinary();
     xTaskCreate(matchTask, "matchTask", 2048, NULL, 1, NULL); // lower priority
+
+// output Task 
+#ifdef _OUTPUT_TASK_
+    outputSemaphore = xSemaphoreCreateBinary();
+    outputQueue = xQueueCreate(10, sizeof(MPI_Packet *));
+    xTaskCreate(outputTask, "outputTask", 2048, NULL, 2, NULL); // lower priority
+#endif
     return true;
 }
 
@@ -182,6 +199,7 @@ void udp_enQueueRxPacket(MPI_Packet *cpyRxPacket);
 MPI_Packet * udp_AllocMpiPacket(MPI_Packet *mpipkt);
 
 int udp_sendPacket(MPI_Packet *packet){
+    std::lock_guard<std::mutex> lock(sendPacketMutex);
     int n = 0;
     packet->timeStamp = millis();
     packet->seqno = sequence_number++;
@@ -287,7 +305,7 @@ void udp_FreeAllOutRequests() { // finalize
 std::mutex mallocMutex; // for allocate and free
 
 MPI_Packet * udp_AllocMpiPacket(MPI_Packet *mpipkt){
-    std::lock_guard<std::mutex> lock(mallocMutex);
+    // std::lock_guard<std::mutex> lock(mallocMutex);
     // TODO copy duplicate to free AsyncUDPPacket with memory pool
     // this will be free after processing or Finalize(possible)
     MPI_Packet *mpiPacket=(MPI_Packet *)malloc(mpipkt->length);
@@ -296,7 +314,7 @@ MPI_Packet * udp_AllocMpiPacket(MPI_Packet *mpipkt){
     return mpiPacket;
 }
 void udp_FreeMpiPacket(MPI_Packet *mpipkt){
-    std::lock_guard<std::mutex> lock(mallocMutex);
+    // std::lock_guard<std::mutex> lock(mallocMutex);
     udp_logMpiPacket("udp_FreeMpiPacket",mpipkt);
     free(mpipkt);
 }
@@ -331,6 +349,7 @@ bool udp_Reply_AckPonPacket(MPI_Packet *packet, IPAddress remoteIP){
     bool isPIN = udp_isMsgPacket(packet,"PIN");
     bool isCOM = udp_isMsgPacket(packet,"COM");
     if (isPIN) { // PIN reply PON
+            MPI_Iot_LED_toggle();
             memcpy((uint8_t*)&replyPacket,"PON",PACKET_TYPE_SIZE);
     }
     if (isCOM){
@@ -360,6 +379,7 @@ void udp_enQueueRxPacket(MPI_Packet *cpyRxPacket) {
         udp_FreeMpiPacket(cpyRxPacket);
     }
 }
+
 // AsyncUDPPacket onPacket Handle
 void udp_onPacket(AsyncUDPPacket packet) {
     // Check if ACK packet
@@ -447,7 +467,10 @@ void udp_processAck(MPI_Packet *ackPacket){
         MPI_DBG_UDP_PRINTF("udp_processAck() seqno(%d)  ip(%x)\n", ackPacket->seqno,ackPacket->remoteip);
         for (auto& it : outstandingPackets) { // ackRequest
             MPI_Packet *pkt=it->pkt;
-            if (it->ackstate & (MSG_STATE_TIMEOUT|MSG_STATE_ACK_PON)) continue;
+            if (it->ackstate & (MSG_STATE_TIMEOUT|MSG_STATE_ACK_PON)) {
+                xSemaphoreGive(it->ackSemaphore);
+                continue;
+            }
             if (udp_isMsgPacket(pkt,"PIN")) continue; // process by pong, ack no checking
             if (pkt->seqno == ackPacket->seqno) {
                 // Handle packet acknowledgment
@@ -466,20 +489,25 @@ void udp_processAckRetry(){
         int sizelist = outstandingPackets.size();
         if (sizelist==0) return;
         for (auto& it : outstandingPackets) { // polling all packet for timeout, retry
-            MPI_DBG_UDP_PRINTF("udp_processAckRetry() size=%d ackstate(%x)\n",sizelist,it->ackstate);
+            MPI_DBG_UDP_PRINTF("udp_processAckRetry(%s) size=%d ackstate(%x) mask(%x)\n",it->pkt->pmsg,sizelist,it->ackstate,it->pkt->ackmask);
 
-            if (it->ackstate & (MSG_STATE_TIMEOUT|MSG_STATE_ACK_PON)) continue;
+            if (it->ackstate & (MSG_STATE_TIMEOUT|MSG_STATE_ACK_PON)) {
+                xSemaphoreGive(it->ackSemaphore);
+                continue;
+            }
             if (udp_isMsgPacket(it->pkt,"PIN")) {
                 continue; // process by pong, ack retry ignore PIN packet
             }
             MPI_Packet *pkt = it->pkt;
-            // udp_logMpiPacket("  udp_processAckRetry",pkt);
-            if (pkt->from == pkt->to) { // localhost ack
+            udp_logMpiPacket("  udp_processAckRetry",pkt);
+            if (pkt->from == pkt->to || (_mpi_state!=0 && mpi_comm_size==1)) { // localhost ack
                 it->ackstate = MSG_STATE_ACK_PON;
                 // localhost no actual ack packet to be free
                 xSemaphoreGive(it->ackSemaphore);
             }
+            MPI_DBG_MSG_PRINTF("  X1XXXXXXudp_processAckRetry(%s) (%lu)\n",it->trycnt,millis());
             if (millis()-(pkt->timeStamp) > MSG_TIMEOUT_MS) {
+                MPI_DBG_MSG_PRINTF("  X2XXXXXXudp_processAckRetry(%s) (%lu)\n",it->trycnt,millis());
                 pkt->timeStamp = millis();
                 it->trycnt++;
                 if (it->trycnt >= MSG_MAX_RETRIES){
@@ -541,7 +569,12 @@ void udp_processPong(MPI_Packet *ponPacket){
                     if (pong_set.size() > max_pong_respones) {
                         max_pong_respones = pong_set.size();
                     }
-                    if (pkt->to != MPI_BROADCAST_RANK && pkt->to == ponPacket->from){
+                    if ((_mpi_state!=0) && (pong_set.size() == mpi_comm_size-1)) { // broadcast
+                        MPI_Iot_LED_toggle();
+                        it->ackstate = MSG_STATE_ACK_PON;
+                        xSemaphoreGive(it->ackSemaphore);
+                    }
+                    if (pkt->to != MPI_BROADCAST_RANK && pkt->to == ponPacket->from){ // onebyone
                         it->ackstate = MSG_STATE_ACK_PON;
                         xSemaphoreGive(it->ackSemaphore);
                     }
@@ -558,6 +591,11 @@ void udp_processPongWait(){
         for (auto& it : outstandingPackets) { // ackRequest
             MPI_Packet *pkt=it->pkt;
             if (udp_isMsgPacket(pkt,"PIN")){// process by pong, ack no checking
+                if (_mpi_state && ((pkt->to == pkt->from)||(pkt->from == mpi_comm_rank))) { // localhost
+                    MPI_Iot_LED_toggle();
+                    it->ackstate = MSG_STATE_ACK_PON;
+                    xSemaphoreGive(it->ackSemaphore);
+                }
                 if (it->ackstate&(MSG_STATE_TIMEOUT|MSG_STATE_ACK_PON)) return; // process did
                 if ((millis()-pkt->timeStamp) > MPI_NODE_PON_WAIT_TIME) { // timeout
                     // Handle packet pon state machine , collect pong respone set
@@ -658,9 +696,9 @@ This detailed approach ensures robustness and efficiency in  MPI-like communicat
 */
 void rxTask(void *params) {
     while (1) {
-        if (xSemaphoreTake(rxSemaphore, SHORT_WAIT)) {
+        // if (xSemaphoreTake(rxSemaphore, SHORT_WAIT)) {
             MPI_Packet *packet;
-            if (xQueueReceive(rxQueue, &packet, 0)) {
+            if (xQueueReceive(rxQueue, &packet, portMAX_DELAY)==pdPASS) {
                 MPI_DBG_UDP_PRINTF("rxTask(%s) from(%x)\n",\
                 (char *)packet->pmsg,packet->remoteip);
                 if (udp_isMsgPacket(packet,"ACK")) {
@@ -685,7 +723,7 @@ void rxTask(void *params) {
                     udp_FreeMpiPacket(packet);
                 }
             }
-        }
+        // }
     }
 }
 void rxRetryTask(void *params) {
@@ -731,12 +769,20 @@ void udp_processMatchRecvSent() {
     for(auto &rxctx:recvContexts) {
         MPI_Packet *recvpkt = rxctx->pkt;
         for(auto &sentpkt:sentPackets) {
-            if ((recvpkt->to==sentpkt->to)&&(recvpkt->comm==sentpkt->comm)&& \
+                MPI_DBG_UDP_PRINTF("udp_processMatchRecvSent(%s) recvfrom(%d,%d)sentpkt(%d,%d)\n",\
+                    recvpkt->pmsg,recvpkt->from,recvpkt->to,sentpkt->from,sentpkt->to);
+            if ((recvpkt->from==sentpkt->to)&&(recvpkt->comm==sentpkt->comm)&& \
                (recvpkt->tag==sentpkt->tag)&&(recvpkt->count==sentpkt->count)) { //match
+                MPI_DBG_UDP_PRINTF("  udp_processMatchRecvSent(%s) matching recvfrom(%d,%d)sentpkt(%d,%d)\n",\
+                    recvpkt->pmsg,recvpkt->from,recvpkt->to,sentpkt->from,sentpkt->to);
                     rxctx->status = MSG_STATE_MATCH;
                     uint8_t* recvBuf ; 
-                    memcpy((uint8_t*)&recvBuf,recvpkt->payload,sizeof(uint8_t *)); //get buffer ptr
+                    int ptr;
+                    memcpy(&ptr, recvpkt->payload, sizeof(int)); 
+                    recvBuf = (uint8_t *)ptr; //get buffer ptr
+                MPI_DBG_UDP_PRINTF("  udp_processMatchRecvSent(%x,%s)  matching \n",recvBuf,recvBuf);
                     memcpy(recvBuf,sentpkt->payload,sentpkt->length-sizeof(MPI_Packet));
+                MPI_DBG_UDP_PRINTF("  udp_processMatchRecvSent(%x,%s)  matching \n",recvBuf,recvBuf);
                     udp_removeSentFromList(sentpkt);  
                     xSemaphoreGive(rxctx->matchSemaphore);
             }else if (millis()-recvpkt->timeStamp > MPI_NODE_RECV_WAIT_TIME ){
@@ -818,7 +864,50 @@ void matchTask(void *params) {
     }
 }
 
+void udp_enQueueOutputPacket(MPI_Packet *outputPacket) {
+    if (xQueueSend(outputQueue, &outputPacket, portMAX_DELAY) == pdTRUE) {
+        // MPI_PRINTF("output_local() enQueuu(%s)(%s) seqno(%d) from(%s)\n",(char *)outputPacket->pmsg,outputPacket->payload,outputPacket->seqno,outputPacket->remoteip);
+        // xSemaphoreGive(outputSemaphore);
+    }else{
+        MPI_PRINTF("output_local() enQueuu Full, packet loss\n");
+        udp_FreeMpiPacket(outputPacket);
+    }
+}
+void udp_printf_local(const char *fmt,...){
+    std::lock_guard<std::mutex> lock(outputMutex);
+    int sizebuf =256;
+    char buffer[256];
+    va_list args;
+    va_start(args, fmt);
+    int length = vsnprintf(buffer, sizebuf, fmt, args); 
+    va_end(args);  
+    MPI_Packet *packet =  MPI_MSG_Create_Packet("PRT",mpi_comm_rank,buffer);
+    udp_enQueueOutputPacket(packet);
+    return;
+}
+// sent rx packet free here
+void outputTask(void *params) {
+    MPI_Packet *outputPacket;
+    MPI_Packet *lastPacket=NULL;
 
+    while(1) {
+        // if (xSemaphoreTake(outputSemaphore, portMAX_DELAY)){
+            if (xQueueReceive(outputQueue, &outputPacket, portMAX_DELAY)==pdPASS) {
+                MPI_PRINTF("deQueue:"); // redirect IO to root
+                outputPacket->payload[outputPacket->length-1]=0;
+                MPI_PRINTF((const char *)(outputPacket->payload)); // redirect IO to root
+                lastPacket = outputPacket;
+                vTaskDelay( 200 / portTICK_PERIOD_MS ); 
+                if (lastPacket) {
+                    udp_FreeMpiPacket(lastPacket);
+                    lastPacket = NULL;
+                }  
+        }
+        // }
+        vTaskDelay( 500 / portTICK_PERIOD_MS ); 
+
+    }
+}
 
 
 /* TX RX functions*/
@@ -871,16 +960,18 @@ int udp_Block_Recv(MPI_Packet* &packet){
     MPI_DBG_UDP_PRINTF("udp_Block_Recv(%s:len:%d)  ackstate(%x) from(%d,%d)\n",packet->pmsg,packet->length,state,packet->from,packet->to);
     return state;
 }
-MPI_Request * udp_Async_Send_Packet(MPI_Packet *packet){
+MPI_Request udp_Async_Send_Packet(MPI_Packet *packet){
         MPI_AckContext *ackctx = udp_addRequestToOutstanding(packet);
+        MPI_DBG_UDP_PRINTF("udp_Async_Send_Packet()ackctx(%x)",ackctx);
         udp_sendPacket(packet);
-        return (MPI_Request *)ackctx;
+        return (MPI_Request)ackctx;
 }
 
-MPI_Request *udp_Async_Recv_Packet(MPI_Packet* packet){
+MPI_Request udp_Async_Recv_Packet(MPI_Packet* packet){
         // recctx is allocated here and free at test
     MPI_RecvContext* recvctx=udp_addRecvToList(packet); // Listen and match
-    return (MPI_Request *)recvctx;
+        MPI_DBG_UDP_PRINTF("udp_Async_Recv_Packet()recvctx(%x)",recvctx);
+    return (MPI_Request)recvctx;
 }
 /*
 The `MPI_Test` function can be used for different types of non-blocking operations, 
@@ -919,15 +1010,19 @@ is intended for the current receive request.
 
 */
 int udp_Test(MPI_Request *request, int *flag, MPI_Status *status){
-    MPI_RecvContext* recvctx= (MPI_RecvContext *)request;
+    MPI_RecvContext* recvctx= (MPI_RecvContext *)(*request);
+    MPI_DBG_UDP_PRINTF("udp_Test()request(%x)",recvctx);
     MPI_Packet *packet = recvctx->pkt;
-    matchMutex.lock();
-    int matchstatus = recvctx->status;
-    matchMutex.unlock();
+
     *flag = 0;
     *status = MPI_FAIL;
 
     if (packet!=NULL && udp_isMsgPacket(packet,"RXD")) { // receive Request, listen match flow 
+      if (xSemaphoreTake(recvctx->matchSemaphore, 0) == pdTRUE){
+        matchMutex.lock();
+        int matchstatus = recvctx->status;
+        matchMutex.unlock();
+        MPI_DBG_UDP_PRINTF("udp_Test(%s:len:%d)  from(%d,%d) ret(%x)\n",packet->pmsg,packet->length,packet->from,packet->to,matchstatus);
 
         if (matchstatus & (MSG_STATE_TIMEOUT|MSG_STATE_MATCH)) *flag=1;
         if (matchstatus == MSG_STATE_MATCH) *status = MPI_SUCCESS;
@@ -937,14 +1032,21 @@ int udp_Test(MPI_Request *request, int *flag, MPI_Status *status){
             udp_removeRecvFromList((MPI_RecvContext *)recvctx);
             *request = 0;
         }
-    } else if (packet!=NULL) { // transfer send Request, ack flow
-
-        if (matchstatus & (MSG_STATE_TIMEOUT|MSG_STATE_ACK_PON)) *flag=1;
-        if (matchstatus == MSG_STATE_ACK_PON) *status = MPI_SUCCESS;
-        if (matchstatus == MSG_STATE_TIMEOUT) *status = MPI_FAIL;
-        if (*flag) {
-            udp_checkAndFreeAckContext((MPI_AckContext *)recvctx);
-            *request = 0;
+      }
+    } else {// if (packet!=NULL && udp_isMsgPacket(packet,"TXD")) { // transfer send Request, ack flow
+        MPI_AckContext *ackctx =  (MPI_AckContext *)recvctx;   
+        if (xSemaphoreTake(ackctx->ackSemaphore, 0) == pdTRUE){
+            MPI_Packet *packet = ackctx->pkt;
+            MPI_DBG_UDP_PRINTF("udp_Test(%s:len:%d)  from(%d,%d) ret(%x)\n",packet->pmsg,packet->length,packet->from,packet->to,ackctx->ackstate);
+            int state  = ackctx->ackstate;
+            if (state & (MSG_STATE_TIMEOUT|MSG_STATE_ACK_PON)) *flag=2;
+            if (state == MSG_STATE_ACK_PON) *status = MPI_SUCCESS;
+            if (state == MSG_STATE_TIMEOUT) *status = MPI_FAIL;
+            if (*flag) {
+                udp_FreeMpiPacket(packet); // free sent packet ??
+                udp_checkAndFreeAckContext(ackctx);
+                *request = 0;
+            }
         }
     }
     return *status;

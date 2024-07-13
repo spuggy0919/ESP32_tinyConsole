@@ -6,24 +6,27 @@
 #include <mutex>
 #include <queue>   // TODO on mutex maybe remove
 
+bool upd_chkdebug(int x);
+
 #define _TINYCONSOLE_
 // Macro for printing debug messages based on the debug level
 // this is for ESPTinyCONSOLE project , use websocket for serial
 #ifdef _TINYCONSOLE_
 void wsTextPrintf(const char *fmt,...); // tinyconsolee websocket
+void udp_printf_local(const char *fmt,...); // tinyconsolee udp task
 
 #define MPI_PRINTF( fmt, ...) \
     do { \
         wsTextPrintf(fmt, ##__VA_ARGS__); \
     } while (0)
-#define MPI_MPRINTF( fmt, ...) \
+#define MPI_UDPPRINTF( fmt, ...) \
     do { \
         wsTextPrintf(fmt, ##__VA_ARGS__); \
     } while (0)
 #else
 #include <Arduino.h>
 #define MPI_PRINTF( fmt, ...)  Serial.printf(fmt, ##__VA_ARGS__); 
-#define MPI_MPRINTF( fmt, ...)  Serial.printf(fmt, ##__VA_ARGS__); 
+#define MPI_UDPPRINTF( fmt, ...)  Serial.printf(fmt, ##__VA_ARGS__); 
 #endif
 
 
@@ -42,7 +45,7 @@ void wsTextPrintf(const char *fmt,...); // tinyconsolee websocket
 extern uint16_t MPI_debugLevel; // Enable error and warning messages
 
 // Macro to check if a specific bit is set in the debug level
-#define IS_MPI_DBG_ENABLED(level) ((MPI_debugLevel & (level)) != 0)
+#define IS_MPI_DBG_ENABLED(level) upd_chkdebug(level)
 
 
 #define MPI_DBG_FOREVER_DEAD() \
@@ -58,59 +61,59 @@ extern uint16_t MPI_debugLevel; // Enable error and warning messages
 #define MPI_DBG_PINGPONG_PRINTF( fmt, ...) \
     do { \
         if (IS_MPI_DBG_ENABLED(MPI_DBG_PINGPONG)) { \
-            MPI_MPRINTF(fmt, ##__VA_ARGS__); \
+            MPI_PRINTF(fmt, ##__VA_ARGS__); \
         } \
     } while (0)
 
 #define MPI_DBG_PRINTF(level, fmt, ...) \
     do { \
         if (IS_MPI_DBG_ENABLED(level)) { \
-            MPI_MPRINTF(fmt, ##__VA_ARGS__); \
+            MPI_PRINTF(fmt, ##__VA_ARGS__); \
         } \
     } while (0)
 #define MPI_DBG_ERROR_PRINTF( fmt, ...) \
     do { \
         if (IS_MPI_DBG_ENABLED(MPI_DBG_ERROR)) { \
-            MPI_MPRINTF("[MPI]ERROR:"); \
-            MPI_MPRINTF(fmt, ##__VA_ARGS__); \
+            MPI_PRINTF("[MPI]ERROR:"); \
+            MPI_PRINTF(fmt, ##__VA_ARGS__); \
         } \
     } while (0)
 #define MPI_DBG_WARNING_PRINTF( fmt, ...) \
     do { \
         if (IS_MPI_DBG_ENABLED(MPI_DBG_WARNING)) { \
-            MPI_MPRINTF("[MPI]WARNING:"); \
-            MPI_MPRINTF(fmt, ##__VA_ARGS__); \
+            MPI_PRINTF("[MPI]WARNING:"); \
+            MPI_PRINTF(fmt, ##__VA_ARGS__); \
         } \
     } while (0)
 #define MPI_DBG_INFO_PRINTF( fmt, ...) \
     do { \
         if (IS_MPI_DBG_ENABLED(MPI_DBG_INFO)) { \
-            MPI_MPRINTF("[MPI]"); \
-            MPI_MPRINTF(fmt, ##__VA_ARGS__); \
+            MPI_PRINTF("[MPI]"); \
+            MPI_PRINTF(fmt, ##__VA_ARGS__); \
         } \
     } while (0)
 
 #define MPI_DBG_UDP_PRINTF( fmt, ...) \
     do { \
         if (IS_MPI_DBG_ENABLED(MPI_DBG_UDP)) { \
-            MPI_MPRINTF("[MPI][UDP]"); \
-            MPI_MPRINTF(fmt, ##__VA_ARGS__); \
+            MPI_UDPPRINTF("[MPI][UDP]"); \
+            MPI_UDPPRINTF(fmt, ##__VA_ARGS__); \
         } \
     } while (0)
 
 #define MPI_DBG_MSG_PRINTF( fmt, ...) \
     do { \
         if (IS_MPI_DBG_ENABLED(MPI_DBG_MSG)) { \
-            MPI_MPRINTF("[MPI][MSG]"); \
-            MPI_MPRINTF(fmt, ##__VA_ARGS__); \
+            MPI_PRINTF("[MPI][MSG]"); \
+            MPI_PRINTF(fmt, ##__VA_ARGS__); \
         } \
     } while (0)
 
 #define MPI_DBG_API_PRINTF( fmt, ...) \
     do { \
         if (IS_MPI_DBG_ENABLED(MPI_DBG_API)) { \
-            MPI_MPRINTF("[MPI][API]"); \
-            MPI_MPRINTF(fmt, ##__VA_ARGS__); \
+            MPI_PRINTF("[MPI][API]"); \
+            MPI_PRINTF(fmt, ##__VA_ARGS__); \
         } \
     } while (0)
 

@@ -176,7 +176,7 @@ void wsTextPrintln(String msg){
 std::mutex wsTextMutex; 
 void wsTextPrintf(const char *fmt,...){
       if (!WebWSConnect()) return;
-  std::lock_guard<std::mutex> lock(wsTextMutex); // avoid reentry 
+  // std::lock_guard<std::mutex> lock(wsTextMutex); // avoid reentry 
   int sizebuf = strlen(fmt)+100;
   char *buf=(char *)malloc(sizebuf);
   va_list args;
@@ -188,7 +188,7 @@ void wsTextPrintf(const char *fmt,...){
 }
 void wsMonitorPrintf(const char *fmt,...){
       if (!WebWSConnect()) return;
-  std::lock_guard<std::mutex> lock(wsTextMutex); // avoid reentry 
+  // std::lock_guard<std::mutex> lock(wsTextMutex); // avoid reentry 
   int sizebuf = strlen(fmt)+100;
   char *buf=(char *)malloc(sizebuf);
   va_list args;

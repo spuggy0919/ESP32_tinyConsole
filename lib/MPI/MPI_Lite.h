@@ -58,7 +58,7 @@ typedef int MPI_Status;
 #define MSG_MAX_NODES  MPI_MAX_NODES    // Maximum number of nodes (0-254, 255 reserved for broadcast)
 
 #define MSG_MAX_LENGTH 256
-#define MSG_MAX_STRING 128
+#define MSG_MAX_STRING 256
 #define MSG_INT_SIZE   sizeof(int)
 #define MSG_ACTION_NOACK (1<<0)
 
@@ -145,6 +145,7 @@ IPAddress MDNS_IP(int i);
 bool MPI_Iot_Setup();
 int MPI_Iot_LED(int pwmvalue);
 int MPI_Iot_LED_Blink(int onoff, int ledpwm);
+int MPI_Iot_LED_toggle();
 int MPI_Iot_Restart(int shutdown);
 int MPI_Iot_MPIRUN(const char *cmd);
 void MPI_Iot_SetEpoch(unsigned long  Epoch);
@@ -177,8 +178,8 @@ int udp_Block_Recv(MPI_Packet *packet);
 uint32_t _IPAddressToUInt(IPAddress ip);
 void udp_FreeAllRequests(); // finalize
 bool udp_isMsgPacket(MPI_Packet *packet, const char *msg);
-MPI_Request *udp_Async_Send_Packet(MPI_Packet *packet);
-MPI_Request *udp_Async_Recv_Packet(MPI_Packet *packet);
+MPI_Request udp_Async_Send_Packet(MPI_Packet *packet);
+MPI_Request udp_Async_Recv_Packet(MPI_Packet *packet);
 int udp_Test(MPI_Request *request, int *flag, MPI_Status *status);
 
 /*---------------------------------------------------------------------------*/
